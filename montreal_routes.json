@@ -1,0 +1,113 @@
+[
+  {
+    "route_id": 0,
+    "duration_sec": 2.524,
+    "transfers": 0,
+    "legs": [
+      {
+        "mode": "WALK",
+        "from": "Origin",
+        "to": "Station Square-Victoria–OACI",
+        "start_time": 1780574490000,
+        "end_time": 1780575060000,
+        "duration_sec": 0.57,
+        "distance_m": 431.95,
+        "route": ""
+      },
+      {
+        "mode": "SUBWAY",
+        "from": "Station Square-Victoria–OACI",
+        "to": "Station Henri-Bourassa",
+        "start_time": 1780575060000,
+        "end_time": 1780576260000,
+        "duration_sec": 1.2,
+        "distance_m": 11186.84,
+        "route": "Line 2 - Orange"
+      },
+      {
+        "mode": "WALK",
+        "from": "Station Henri-Bourassa",
+        "to": "Destination",
+        "start_time": 1780576260000,
+        "end_time": 1780577014000,
+        "duration_sec": 0.754,
+        "distance_m": 660.47,
+        "route": ""
+      }
+    ]
+  },
+  {
+    "route_id": 1,
+    "duration_sec": 2.464,
+    "transfers": 0,
+    "legs": [
+      {
+        "mode": "WALK",
+        "from": "Origin",
+        "to": "Station Square-Victoria–OACI",
+        "start_time": 1780574730000,
+        "end_time": 1780575300000,
+        "duration_sec": 0.57,
+        "distance_m": 431.95,
+        "route": ""
+      },
+      {
+        "mode": "SUBWAY",
+        "from": "Station Square-Victoria–OACI",
+        "to": "Station Henri-Bourassa",
+        "start_time": 1780575300000,
+        "end_time": 1780576440000,
+        "duration_sec": 1.14,
+        "distance_m": 11186.84,
+        "route": "Line 2 - Orange"
+      },
+      {
+        "mode": "WALK",
+        "from": "Station Henri-Bourassa",
+        "to": "Destination",
+        "start_time": 1780576440000,
+        "end_time": 1780577194000,
+        "duration_sec": 0.754,
+        "distance_m": 660.47,
+        "route": ""
+      }
+    ]
+  },
+  {
+    "route_id": 2,
+    "duration_sec": 2.524,
+    "transfers": 0,
+    "legs": [
+      {
+        "mode": "WALK",
+        "from": "Origin",
+        "to": "Station Square-Victoria–OACI",
+        "start_time": 1780574910000,
+        "end_time": 1780575480000,
+        "duration_sec": 0.57,
+        "distance_m": 431.95,
+        "route": ""
+      },
+      {
+        "mode": "SUBWAY",
+        "from": "Station Square-Victoria–OACI",
+        "to": "Station Henri-Bourassa",
+        "start_time": 1780575480000,
+        "end_time": 1780576680000,
+        "duration_sec": 1.2,
+        "distance_m": 11186.84,
+        "route": "Line 2 - Orange"
+      },
+      {
+        "mode": "WALK",
+        "from": "Station Henri-Bourassa",
+        "to": "Destination",
+        "start_time": 1780576680000,
+        "end_time": 1780577434000,
+        "duration_sec": 0.754,
+        "distance_m": 660.47,
+        "route": ""
+      }
+    ]
+  }
+]

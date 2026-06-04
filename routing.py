@@ -1,57 +1,69 @@
 import requests
+import json
 
 OTP_BASE_URL = "http://localhost:8080/otp/routers/default/plan"
 
-def get_routes(from_lat, from_lon, to_lat, to_lon, modes="WALK,TRANSIT"):
+
+def get_routes(from_lat, from_lon, to_lat, to_lon,
+               modes="WALK,TRANSIT",
+               num_itineraries=3):
+
     params = {
         "fromPlace": f"{from_lat},{from_lon}",
         "toPlace": f"{to_lat},{to_lon}",
         "mode": modes,
-        "numItineraries": 3,
+        "numItineraries": num_itineraries,
         "maxWalkDistance": 1500,
         "arriveBy": "false",
         "date": "2026-06-04",
         "time": "08:00am"
     }
 
-    r = requests.get(OTP_BASE_URL, params=params)
-    r.raise_for_status()
-    data = r.json()
+    response = requests.get(OTP_BASE_URL, params=params)
+    response.raise_for_status()
+    data = response.json()
 
     itineraries = data.get("plan", {}).get("itineraries", [])
 
-    results = []
-    for i, itin in enumerate(itineraries):
+    routes_output = []
+
+    for idx, itin in enumerate(itineraries):
         route = {
-            "duration_sec": itin["duration"] / 1000,
-            "transfers": itin["transfers"],
+            "route_id": idx,
+            "duration_sec": itin.get("duration", 0) / 1000,
+            "transfers": itin.get("transfers", 0),
             "legs": []
         }
 
-        for leg in itin["legs"]:
+        for leg in itin.get("legs", []):
             route["legs"].append({
-                "mode": leg["mode"],
-                "start": leg["from"]["name"],
-                "end": leg["to"]["name"],
-                "duration_sec": leg["duration"] / 1000,
+                "mode": leg.get("mode"),
+                "from": leg.get("from", {}).get("name"),
+                "to": leg.get("to", {}).get("name"),
+                "start_time": leg.get("startTime"),
+                "end_time": leg.get("endTime"),
+                "duration_sec": leg.get("duration", 0) / 1000,
                 "distance_m": leg.get("distance", 0),
-                "route": leg.get("route", None)
+                "route": leg.get("route")
             })
 
-        results.append(route)
+        routes_output.append(route)
 
-    return results
+    return routes_output
 
 
-# Example: Montreal (approx coordinates)
-routes = get_routes(
-    from_lat=45.5017, from_lon=-73.5673,   # downtown Montreal
-    to_lat=45.5590, to_lon=-73.6692        # example: Parc Jarry area
-)
+def save_routes_to_json(routes, filename="otp_routes.json"):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(routes, f, indent=2, ensure_ascii=False)
+    print(f"Saved {len(routes)} routes to {filename}")
 
-for i, r in enumerate(routes):
-    print(f"\n=== Route {i+1} ===")
-    print("Duration (min):", r["duration_sec"] / 60)
-    print("Transfers:", r["transfers"])
-    for leg in r["legs"]:
-        print(" ", leg)
+
+
+"""exmample in montreal"""
+if __name__ == "__main__":
+    routes = get_routes(
+        from_lat=45.5017, from_lon=-73.5673,   # downtown Montreal
+        to_lat=45.5590, to_lon=-73.6692        # Jarry Park area
+    )
+
+    save_routes_to_json(routes, "montreal_routes.json")
