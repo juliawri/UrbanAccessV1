@@ -1,47 +1,39 @@
 #!/bin/bash
 set -e
 
-echo "STARTING OTP 2.5 SERVER"
+echo "🚀 Starting OTP server"
 
-# Go to project root (adjust if needed)
+# go to project root (adjust if needed)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
-echo "Project root: $(pwd)"
-
 DATA_DIR="data"
 
-echo "Checking GTFS + OSM data..."
+echo "📂 Checking data folder..."
 ls -lh "$DATA_DIR"
 
-
-echo "Java version:"
+echo "☕ Java version:"
 java -version
 
-
-echo "Finding OTP 2.5 jar..."
+echo "🔎 Finding OTP jar..."
 
 OTP_JAR=$(find . -maxdepth 3 -name "otp-2.5.0-shaded.jar" | head -n 1)
 
 if [ -z "$OTP_JAR" ]; then
-  echo " ERROR: otp-2.5.0-shaded.jar not found!"
+  echo "❌ OTP jar not found"
   exit 1
 fi
 
-echo "Using OTP JAR: $OTP_JAR"
+echo "✅ Using: $OTP_JAR"
 
-echo "Cleaning old graph (optional but recommended)..."
+echo "🧹 Cleaning old graph (optional)"
 rm -rf "$DATA_DIR/graph" || true
 
-
-echo "Building graph + starting server..."
+echo "⚙️ Building + starting OTP server..."
 
 java -Xmx6G -jar "$OTP_JAR" \
   --build "$DATA_DIR" \
-  --server \
+  --serve \
   --port 8080
 
-
-echo "OTP is running!"
-echo "Test: http://localhost:8080/otp/routers"
-echo "Plan: http://localhost:8080/otp/routers/default/plan"
+echo "✅ OTP running at http://localhost:8080"
