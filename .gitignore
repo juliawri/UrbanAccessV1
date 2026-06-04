@@ -1,0 +1,23 @@
+# Large GIS / OTP files
+*.pbf
+*.osm.pbf
+*.jar
+graph.obj
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Data folders (optional safety)
+data/
+*.pbf
+*.jar
+data/
+*.log
+.DS_Store
