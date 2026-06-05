@@ -12,7 +12,21 @@
     #map { height: 500px; width: 100%; margin-top: 10px; }
     #panel { margin-bottom: 10px; }
     input, select { margin: 5px; padding: 5px; }
-    #output { white-space: pre-wrap; margin-top: 12px; background: #f4f4f4; padding: 12px; border-radius: 6px; }
+    #directions { margin-top: 14px; }
+    #directions h4 { margin: 0 0 8px 0; }
+    .leg-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-left: 4px solid #ccc; margin-bottom: 6px; background: #fafafa; border-radius: 0 4px 4px 0; }
+    .leg-step.WALK  { border-color: #2196F3; }
+    .leg-step.BUS   { border-color: #FF9800; }
+    .leg-step.SUBWAY { border-color: #9C27B0; }
+    .leg-step.TRAM  { border-color: #4CAF50; }
+    .leg-badge { font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 3px; color: white; white-space: nowrap; }
+    .leg-badge.WALK   { background: #2196F3; }
+    .leg-badge.BUS    { background: #FF9800; }
+    .leg-badge.SUBWAY { background: #9C27B0; }
+    .leg-badge.TRAM   { background: #4CAF50; }
+    .leg-text { font-size: 13px; line-height: 1.5; }
+    .leg-meta { font-size: 11px; color: #777; }
+    #output { white-space: pre-wrap; margin-top: 12px; background: #f4f4f4; padding: 12px; border-radius: 6px; font-size: 13px; }
   </style>
 </head>
 
@@ -37,6 +51,8 @@
 
 <div id="map"></div>
 
+<div id="directions"></div>
+
 <pre id="output"></pre>
 
 <script>
@@ -50,9 +66,65 @@ let origin = null;
 let destination = null;
 let originMarker = null;
 let destinationMarker = null;
+let routeLayers = [];
 
 const status = document.getElementById("status");
 const output = document.getElementById("output");
+const directionsDiv = document.getElementById("directions");
+
+const LEG_COLORS = { WALK: "#2196F3", BUS: "#FF9800", SUBWAY: "#9C27B0", TRAM: "#4CAF50" };
+
+function clearRoutes() {
+  routeLayers.forEach(l => map.removeLayer(l));
+  routeLayers = [];
+  directionsDiv.innerHTML = "";
+}
+
+function fmtDist(m) {
+  return m >= 1000 ? (m / 1000).toFixed(1) + " km" : Math.round(m) + " m";
+}
+
+function fmtTime(sec) {
+  const m = Math.round(sec / 60);
+  return m < 1 ? "<1 min" : m + " min";
+}
+
+function drawRoutes(routes) { 
+  clearRoutes();
+  if (!routes || routes.length === 0) return;
+
+  // Draw the top route on the map and show its directions
+  const route = routes[0];
+
+  route.legs.forEach(leg => {
+    const color = LEG_COLORS[leg.mode] || "#888";
+    const pts = leg.geometry_sampled_50m;
+    if (pts && pts.length > 1) {
+      const line = L.polyline(pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon]), { color, weight: 5, opacity: 0.8 }).addTo(map);
+      routeLayers.push(line);
+    }
+  });
+
+  if (routeLayers.length > 0) {
+    const group = L.featureGroup(routeLayers);
+    map.fitBounds(group.getBounds().pad(0.1));
+  }
+
+  // Build directions panel
+  const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec || 0), 0) / 60);
+  let html = `<h4>Recommended Route directions</h4>`;
+
+  route.legs.forEach(leg => {
+    const mode = leg.mode || "?";
+    const badge = `<span class="leg-badge ${mode}">${mode}</span>`;
+    let desc = `${leg.from || "?"} &rarr; ${leg.to || "?"}`;
+    if (leg.route) desc += ` <span class="leg-meta">(${leg.route})</span>`;
+    const meta = [leg.distance_m != null ? fmtDist(leg.distance_m) : null, leg.duration_sec != null ? fmtTime(leg.duration_sec) : null].filter(Boolean).join(" &bull; ");
+    html += `<div class="leg-step ${mode}">${badge}<div class="leg-text">${desc}<br><span class="leg-meta">${meta}</span></div></div>`;
+  });
+
+  directionsDiv.innerHTML = html;
+}
 
 map.on('click', async function (e) {
   const { lat, lng } = e.latlng;
@@ -71,6 +143,7 @@ map.on('click', async function (e) {
     destinationMarker = L.marker([lat, lng]).addTo(map).bindPopup("Destination").openPopup();
     status.innerText = "Processing...";
     output.innerText = "";
+    clearRoutes();
 
     const payload = {
       source: origin,
@@ -88,7 +161,8 @@ map.on('click', async function (e) {
 
       const data = await res.json();
       status.innerText = "Done. Click origin to plan a new route.";
-      output.innerText = data.result || JSON.stringify(data, null, 2);
+      drawRoutes(data.routes);
+      output.innerText = data.result || "";
     } catch (err) {
       status.innerText = "Error. See console for details.";
       output.innerText = err.toString();
