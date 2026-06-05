@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Accessibility Routing</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; }
+    #map { height: 500px; width: 100%; margin-top: 10px; }
+    #panel { margin-bottom: 10px; }
+    input, select { margin: 5px; padding: 5px; }
+    #output { white-space: pre-wrap; margin-top: 12px; background: #f4f4f4; padding: 12px; border-radius: 6px; }
+  </style>
+</head>
+
+<body>
+
+<h3>Accessibility Route Planner</h3>
+
+<div id="panel">
+  <label>Disability type:</label>
+  <select id="disability">
+    <option value="wheelchair user">Wheelchair user</option>
+    <option value="visual impairment">Visual impairment</option>
+    <option value="limited mobility">Limited mobility</option>
+    <option value="hearing impairment">Hearing impairment</option>
+  </select>
+
+  <label>Date:</label>
+  <input type="date" id="date" value="2025-01-15"/>
+
+  <p id="status">Click origin on the map</p>
+</div>
+
+<div id="map"></div>
+
+<pre id="output"></pre>
+
+<script>
+const map = L.map('map').setView([45.5017, -73.5673], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+let origin = null;
+let destination = null;
+let originMarker = null;
+let destinationMarker = null;
+
+const status = document.getElementById("status");
+const output = document.getElementById("output");
+
+map.on('click', async function (e) {
+  const { lat, lng } = e.latlng;
+
+  if (!origin) {
+    origin = { lat, lng };
+    if (originMarker) map.removeLayer(originMarker);
+    originMarker = L.marker([lat, lng]).addTo(map).bindPopup("Origin").openPopup();
+    status.innerText = "Click destination on the map";
+    return;
+  }
+
+  if (!destination) {
+    destination = { lat, lng };
+    if (destinationMarker) map.removeLayer(destinationMarker);
+    destinationMarker = L.marker([lat, lng]).addTo(map).bindPopup("Destination").openPopup();
+    status.innerText = "Processing...";
+    output.innerText = "";
+
+    const payload = {
+      source: origin,
+      destination: destination,
+      disability_type: document.getElementById("disability").value,
+      date: document.getElementById("date").value
+    };
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      status.innerText = "Done. Click origin to plan a new route.";
+      output.innerText = data.result || JSON.stringify(data, null, 2);
+    } catch (err) {
+      status.innerText = "Error. See console for details.";
+      output.innerText = err.toString();
+      console.error(err);
+    }
+
+    origin = null;
+    destination = null;
+  }
+});
+</script>
+
+</body>
+</html>
