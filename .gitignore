@@ -1,3 +1,8 @@
+echo "data/" >> .gitignore
+echo "*.pbf" >> .gitignore
+echo "*.zip" >> .gitignore
+echo "*.parquet" >> .gitignore
+
 # Large GIS / OTP files
 *.pbf
 *.osm.pbf
@@ -23,7 +28,4 @@ data/
 data/
 *.log
 .DS_Store
-<<<<<<< HEAD
-=======
 data/
->>>>>>> f30b9a3 (clean HF deploy (no large files))
