@@ -2,7 +2,45 @@ import os
 import gradio as gr
 from huggingface_hub import InferenceClient
 
+with open("routes_with_accessibility.json", "r") as f:
+    ROUTES_DATA = json.load(f)
+
 client = InferenceClient(token=os.environ.get("HF_TOKEN"))
+
+
+def format_routes_for_llm(routes_data, max_routes=3):
+    blocks = []
+
+    for route in routes_data[:max_routes]:
+        route_id = route["route_id"]
+        summary = route.get("summary", {})
+
+        summary_text = "\n".join([
+            f"- {k}: {v}" for k, v in summary.items()
+        ])
+
+        points = route.get("points", [])[:10]  # limit context size
+
+        point_text = "\n".join([
+            f"  ({p.get('lat'):.5f}, {p.get('lon'):.5f}) | "
+            f"heat={p.get('heat_class')} | "
+            f"dist={p.get('distance_to_access_m', 0):.1f}m"
+            for p in points
+        ])
+
+        blocks.append(
+            f"""Route {route_id}:
+Summary:
+{summary_text}
+
+Sample points:
+{point_text}
+"""
+        )
+
+    return "\n\n".join(blocks)
+
+
 
 STATION_INFO = {
     'Berri-UQAM': 'Elevator available. Accessible entrance on Berri St. Tactile strips present.',
@@ -13,17 +51,8 @@ STATION_INFO = {
 
 INCIDENTS = 'Icy sidewalk near Berri St (Jan 2025). Construction blocking curb cut on Ste-Catherine (ongoing).'
 
-SAMPLE_PATHS = """
-Path 1:
-- Walk 5 min (near Berri St)
-- Metro Green line: board at Berri-UQAM, exit at McGill
-- Walk 3 min (near McGill College Ave)
-
-Path 2:
-- Walk 8 min (near Sherbrooke / St-Denis)
-- Bus line 24: board at Stop Sherbrooke / St-Denis, exit at Stop McGill College / Sherbrooke
-- Walk 2 min (near McGill College Ave)
-"""
+def get_route_context():
+    return format_routes_for_llm(ROUTES_DATA)
 
 SYSTEM_PROMPT = (
     "You are an accessibility routing assistant for Montreal transit.\n\n"
@@ -37,17 +66,20 @@ SYSTEM_PROMPT = (
 )
 
 def build_prompt(origin, destination, disability_type, date):
-    station_context = "\n".join([f"- {k}: {v}" for k, v in STATION_INFO.items()])
+    #station_context = "\n".join([f"- {k}: {v}" for k, v in STATION_INFO.items()])
+    route_context = get_route_context()
+
     return (
         f"User profile:\n"
         f"- Origin: {origin}\n"
         f"- Destination: {destination}\n"
         f"- Disability type: {disability_type}\n"
         f"- Date: {date}\n\n"
-        f"Station accessibility info:\n{station_context}\n\n"
+        #f"Station accessibility info:\n{station_context}\n\n"
+        f"Route accessibility data (from GIS analysis):\n{route_context}\n\n"
         f"Sidewalk/crosswalk incidents:\n{INCIDENTS}\n\n"
-        f"Available paths:\n{SAMPLE_PATHS}\n\n"
-        "Please rank these paths and recommend the best one for this user."
+        "Task:\n"
+        "Rank the routes from most to least accessible and explain briefly why."
     )
 
 def get_recommendation(origin, destination, disability_type, date):
