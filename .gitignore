@@ -3,6 +3,7 @@
 *.osm.pbf
 *.jar
 graph.obj
+data/quebec-260603.osm.pbf
 
 # Logs
 *.log
@@ -18,6 +19,11 @@ __pycache__/
 data/
 *.pbf
 *.jar
+*.zip
 data/
 *.log
 .DS_Store
+<<<<<<< HEAD
+=======
+data/
+>>>>>>> f30b9a3 (clean HF deploy (no large files))
