@@ -1,16 +1,28 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form, Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
 from run_pipeline import run_pipeline
 from app import get_recommendation
 
+from sql.database import SessionLocal
+from sql.models import Feedback
+
 app = FastAPI()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -59,3 +71,20 @@ def process(req: Request):
         "routes": routes,
         "result": result
     }
+
+@app.post("/submit")
+def submit_feedback(
+    rating: int = Form(...),
+    comment: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    feedback = Feedback(rating=rating, comment=comment)
+    db.add(feedback)
+    db.commit()
+    db.refresh(feedback)
+
+    return {"message": "saved", "id": feedback.id}
+
+@app.get("/feedback")
+def get_feedback(db: Session = Depends(get_db)):
+    return db.query(Feedback).all()

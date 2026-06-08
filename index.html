@@ -35,12 +35,14 @@
 <h3>Accessibility Route Planner</h3>
 
 <div id="panel">
-  <label>Disability type:</label>
+  <label>Mobility Aid:</label>
   <select id="disability">
-    <option value="wheelchair user">Wheelchair user</option>
-    <option value="visual impairment">Visual impairment</option>
-    <option value="limited mobility">Limited mobility</option>
-    <option value="hearing impairment">Hearing impairment</option>
+    <option value="manual wheelchair">Manual Wheelchair</option>
+    <option value="electric wheelchair">Electric Wheelchair</option>
+    <option value="walker">Walker</option>
+    <option value="walking cane">Walking Cane</option>
+    <option value="mobility scooter">Mobility Scooter</option>
+    <option value="no mobility aid">No Mobility Aid</option>
   </select>
 
   <label>Date:</label>
@@ -174,6 +176,25 @@ map.on('click', async function (e) {
   }
 });
 </script>
+
+<h2>Leave Feedback</h2>
+
+  <form action="http://127.0.0.1:8000/submit" method="post">
+
+    <label>Rating (1–5):</label>
+    <input type="number" name="rating" min="1" max="5" required>
+
+    <br><br>
+
+    <label>Comment:</label>
+    <textarea name="comment"></textarea>
+
+    <br><br>
+
+    <button type="submit">Submit</button>
+
+  </form>
+
 
 </body>
 </html>
