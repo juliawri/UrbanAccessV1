@@ -1,14 +1,7 @@
-echo "data/" >> .gitignore
-echo "*.pbf" >> .gitignore
-echo "*.zip" >> .gitignore
-echo "*.parquet" >> .gitignore
 
 # Large GIS / OTP files
-*.pbf
-*.osm.pbf
-*.jar
+
 graph.obj
-data/quebec-260603.osm.pbf
 
 # Logs
 *.log
@@ -22,10 +15,5 @@ __pycache__/
 
 # Data folders (optional safety)
 data/
-*.pbf
-*.jar
-*.zip
-data/
 *.log
 .DS_Store
-data/
