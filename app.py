@@ -1,4 +1,5 @@
 import os
+import re
 from huggingface_hub import InferenceClient
 
 client = InferenceClient(token=os.environ.get("HF_TOKEN"))
@@ -11,8 +12,9 @@ SYSTEM_PROMPT = (
     "for walking segments, data from a Montreal urban accessibility dataset with fields such as "
     "heat_class (urban heat island intensity), collisions, construction permits, "
     "road obstructions (entraves), and tree cover.\n\n"
-    "Start your response with exactly one line: RECOMMENDED:<id> (e.g. RECOMMENDED:1) "
-    "identifying the single most accessible route ID.\n"
+    "Start your response with exactly one line containing only: RECOMMENDED:<id> "
+    "where <id> is the integer route ID (e.g. RECOMMENDED:0 or RECOMMENDED:2). "
+    "No extra words or punctuation on that line.\n"
     "Then evaluate every route provided using the labels "
     "'Recommended Route', 'Alternative 1', 'Alternative 2'.\n"
     "Do not use route ID numbers in the evaluation text.\n"
@@ -94,11 +96,12 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
 
     best_id = 0
     lines = text.split('\n')
-    if lines[0].upper().startswith('RECOMMENDED:'):
-        try:
-            best_id = int(lines[0].split(':')[1].strip())
-        except Exception:
-            pass
+    if lines[0].upper().lstrip().startswith('RECOMMENDED:'):
+        m = re.search(r'\d+', lines[0].split(':', 1)[1])
+        if m:
+            candidate = int(m.group())
+            if 0 <= candidate < len(routes_data):
+                best_id = candidate
         text = '\n'.join(lines[1:]).strip()
 
     all_ids = list(range(len(routes_data)))
