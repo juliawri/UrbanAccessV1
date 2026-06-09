@@ -33,7 +33,7 @@ def add_access(filename="montreal_routes.json", routes_data=None):
     walk_routes = {}
 
     if not df.empty:
-        access = pd.read_csv("collation_points_grid_centre-ville.csv")
+        access = pd.read_csv("collation_points_grid_centre-ville_cleaned.csv")
         access = access.rename(columns={"latitude": "lat", "longitude": "lon"})
         access = access.dropna(subset=["lat", "lon"])
 

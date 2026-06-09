@@ -19,10 +19,10 @@ SYSTEM_PROMPT = (
     "'Recommended Route', 'Alternative 1', 'Alternative 2'.\n"
     "Do not use route ID numbers in the evaluation text.\n"
     "For each route, describe specific accessibility advantages and concerns for the user's mobility aid, "
-    "drawing on the route legs and walk-segment data provided.\n"
-    "Give a confidence level (Low/Medium/High) for your top recommendation.\n"
+    "drawing on the route legs and walk-segment data provided. DO NOT evaluate the route only by what is fastest\n"
+    "Give a confidence level (Low/Medium/High) for your top recommendation\n"
     "Consider the date and season when assessing walking conditions.\n"
-    "Do not invent information not in the data. Be concise and practical."
+    "Do not invent information not in the data. If you cannot find good available data, say so. Be concise and practical, listing your recommendations in bullet point form so they are easy to read."
 )
 
 SKIP_POINT_KEYS = {"leg_from", "leg_to", "point_index", "lat", "lon"}
