@@ -1,65 +1,107 @@
 import os
-import json
 from huggingface_hub import InferenceClient
 
 client = InferenceClient(token=os.environ.get("HF_TOKEN"))
 
 MODEL = "Qwen/Qwen2.5-72B-Instruct"
 
-with open("routes_with_accessibility.json", "r") as f:
-    ROUTES_DATA = json.load(f)
-
 SYSTEM_PROMPT = (
     "You are an accessibility routing assistant for Montreal transit.\n\n"
-    "Your task:\n"
-    "1. Rank the routes from most to least accessible for the user's disability type.\n"
-    "2. For each route, briefly note accessibility concerns or advantages.\n"
-    "3. Give a confidence level (Low/Medium/High) for your top recommendation.\n"
-    "4. Consider the date and season when assessing walking conditions.\n"
-    "5. Do not invent information not provided. If data is missing, say so.\n"
-    "6. Be concise and practical."
+    "You are given route options. Each route includes its legs (transit steps) and, "
+    "for walking segments, data from a Montreal urban accessibility dataset with fields such as "
+    "heat_class (urban heat island intensity), collisions, construction permits, "
+    "road obstructions (entraves), and tree cover.\n\n"
+    "Start your response with exactly one line: RECOMMENDED:<id> (e.g. RECOMMENDED:1) "
+    "identifying the single most accessible route ID.\n"
+    "Then evaluate every route provided using the labels "
+    "'Recommended Route', 'Alternative 1', 'Alternative 2'.\n"
+    "Do not use route ID numbers in the evaluation text.\n"
+    "For each route, describe specific accessibility advantages and concerns for the user's mobility aid, "
+    "drawing on the route legs and walk-segment data provided.\n"
+    "Give a confidence level (Low/Medium/High) for your top recommendation.\n"
+    "Consider the date and season when assessing walking conditions.\n"
+    "Do not invent information not in the data. Be concise and practical."
 )
 
+SKIP_POINT_KEYS = {"leg_from", "leg_to", "point_index", "lat", "lon"}
 
-def format_routes_for_llm(routes_data, max_routes=3):
+
+def format_routes_for_llm(routes_data):
     blocks = []
-    for route in routes_data[:max_routes]:
-        route_id = route["route_id"]
-        summary = route.get("summary", {})
-        summary_text = "\n".join([f"- {k}: {v}" for k, v in summary.items()])
-        points = route.get("points", [])[:10]
-        point_text = "\n".join([
-            f"  ({p.get('lat'):.5f}, {p.get('lon'):.5f}) | "
-            f"heat={p.get('heat_class')} | "
-            f"dist={p.get('distance_to_access_m', 0):.1f}m"
-            for p in points
-        ])
-        blocks.append(f"Route {route_id}:\nSummary:\n{summary_text}\n\nSample points:\n{point_text}\n")
+    for route in routes_data[:3]:
+        dur_min = round(route.get("duration_sec", 0) / 60)
+        transfers = route.get("transfers", 0)
+
+        legs = route.get("legs", [])
+        leg_lines = []
+        for i, l in enumerate(legs, 1):
+            l_dur = round(l.get("duration_sec", 0) / 60)
+            l_dist = round(l.get("distance_m", 0))
+            route_label = l.get("route") or ""
+            name = f"{l.get('mode','?')}" + (f" ({route_label})" if route_label else "")
+            leg_lines.append(
+                f"  {i}. {name}: {l.get('from','?')} → {l.get('to','?')}"
+                f" | {l_dur} min, {l_dist} m"
+            )
+        leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
+
+        points = route.get("points", [])[:15]
+        point_lines = []
+        for p in points:
+            coords = f"({p.get('lat'):.5f}, {p.get('lon'):.5f})"
+            fields = " | ".join(
+                f"{k}={v}" for k, v in p.items()
+                if k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
+            )
+            point_lines.append(f"  {coords} | {fields}")
+        point_text = "\n".join(point_lines) if point_lines else "  (no walk segment data)"
+
+        blocks.append(
+            f"=== Route {route['route_id']} ({dur_min} min, {transfers} transfer(s)) ===\n"
+            f"Legs:\n{leg_text}\n\n"
+            f"Walk segment data ({len(points)} sampled points):\n{point_text}"
+        )
     return "\n\n".join(blocks)
 
 
-def build_prompt(origin, destination, disability_type, date):
-    route_context = format_routes_for_llm(ROUTES_DATA)
-    return (
+def get_recommendation(origin, destination, disability_type, date, routes_data):
+    print(f"LLM input: {len(routes_data)} routes")
+    for r in routes_data:
+        modes = [l.get("mode") for l in r.get("legs", [])]
+        print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
+    route_context = format_routes_for_llm(routes_data)
+
+    user_prompt = (
         f"User profile:\n"
         f"- Origin: {origin}\n"
         f"- Destination: {destination}\n"
-        f"- Disability type: {disability_type}\n"
+        f"- Mobility aid: {disability_type}\n"
         f"- Date: {date}\n\n"
-        f"Route accessibility data for walking segments:\n{route_context}\n\n"
-        #f"Sidewalk/crosswalk incidents:\n{INCIDENTS}\n\n"
-        "Task:\nRank the routes from most to least accessible and explain briefly why."
+        f"Routes:\n{route_context}\n\n"
+        "Analyse the routes above and identify which is most accessible for this user."
     )
 
-
-def get_recommendation(origin, destination, disability_type, date):
     response = client.chat_completion(
         model=MODEL,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_prompt(origin, destination, disability_type, date)},
+            {"role": "user", "content": user_prompt},
         ],
         max_tokens=1024,
         temperature=0.2,
     )
-    return response.choices[0].message.content
+    text = response.choices[0].message.content.strip()
+
+    best_id = 0
+    lines = text.split('\n')
+    if lines[0].upper().startswith('RECOMMENDED:'):
+        try:
+            best_id = int(lines[0].split(':')[1].strip())
+        except Exception:
+            pass
+        text = '\n'.join(lines[1:]).strip()
+
+    all_ids = list(range(len(routes_data)))
+    ranked_ids = [best_id] + [i for i in all_ids if i != best_id]
+
+    return {"text": text, "ranked_ids": ranked_ids}

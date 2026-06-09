@@ -27,6 +27,8 @@
     .leg-text { font-size: 13px; line-height: 1.5; }
     .leg-meta { font-size: 11px; color: #777; }
     #output { white-space: pre-wrap; margin-top: 12px; background: #f4f4f4; padding: 12px; border-radius: 6px; font-size: 13px; }
+    #feedbackSection { display: none; margin-top: 24px; border-top: 2px solid #e0e0e0; padding-top: 16px; }
+    #feedbackStatus { margin-top: 8px; color: #388E3C; font-size: 13px; }
   </style>
 </head>
 
@@ -91,14 +93,12 @@ function fmtTime(sec) {
   return m < 1 ? "<1 min" : m + " min";
 }
 
-function drawRoutes(routes) { 
+function drawRoutes(routes) {
   clearRoutes();
   if (!routes || routes.length === 0) return;
 
-  // Draw the top route on the map and show its directions
-  const route = routes[0];
-
-  route.legs.forEach(leg => {
+  // Draw only the top recommended route on the map
+  routes[0].legs.forEach(leg => {
     const color = LEG_COLORS[leg.mode] || "#888";
     const pts = leg.geometry_sampled_50m;
     if (pts && pts.length > 1) {
@@ -106,25 +106,25 @@ function drawRoutes(routes) {
       routeLayers.push(line);
     }
   });
+  if (routeLayers.length > 0) map.fitBounds(L.featureGroup(routeLayers).getBounds().pad(0.1));
 
-  if (routeLayers.length > 0) {
-    const group = L.featureGroup(routeLayers);
-    map.fitBounds(group.getBounds().pad(0.1));
-  }
-
-  // Build directions panel
-  const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec || 0), 0) / 60);
-  let html = `<h4>Recommended Route directions</h4>`;
-
-  route.legs.forEach(leg => {
-    const mode = leg.mode || "?";
-    const badge = `<span class="leg-badge ${mode}">${mode}</span>`;
-    let desc = `${leg.from || "?"} &rarr; ${leg.to || "?"}`;
-    if (leg.route) desc += ` <span class="leg-meta">(${leg.route})</span>`;
-    const meta = [leg.distance_m != null ? fmtDist(leg.distance_m) : null, leg.duration_sec != null ? fmtTime(leg.duration_sec) : null].filter(Boolean).join(" &bull; ");
-    html += `<div class="leg-step ${mode}">${badge}<div class="leg-text">${desc}<br><span class="leg-meta">${meta}</span></div></div>`;
+  // Show all routes' directions in accessibility order
+  const labels = ["Recommended Route", "Alternative 1", "Alternative 2"];
+  let html = "";
+  routes.forEach((route, idx) => {
+    const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec || 0), 0) / 60);
+    const label = labels[idx] || `Option ${idx + 1}`;
+    if (idx > 0) html += `<hr style="margin:14px 0;border:none;border-top:1px solid #e0e0e0;">`;
+    html += `<h4 style="margin:0 0 8px 0">${label} <span class="leg-meta">&bull; ${totalMin} min</span></h4>`;
+    route.legs.forEach(leg => {
+      const mode = leg.mode || "?";
+      const badge = `<span class="leg-badge ${mode}">${mode}</span>`;
+      let desc = `${leg.from || "?"} &rarr; ${leg.to || "?"}`;
+      if (leg.route) desc += ` <span class="leg-meta">(${leg.route})</span>`;
+      const meta = [leg.distance_m != null ? fmtDist(leg.distance_m) : null, leg.duration_sec != null ? fmtTime(leg.duration_sec) : null].filter(Boolean).join(" &bull; ");
+      html += `<div class="leg-step ${mode}">${badge}<div class="leg-text">${desc}<br><span class="leg-meta">${meta}</span></div></div>`;
+    });
   });
-
   directionsDiv.innerHTML = html;
 }
 
@@ -165,6 +165,7 @@ map.on('click', async function (e) {
       status.innerText = "Done. Click origin to plan a new route.";
       drawRoutes(data.routes);
       output.innerText = data.result || "";
+      showFeedbackForm(payload, data);
     } catch (err) {
       status.innerText = "Error. See console for details.";
       output.innerText = err.toString();
@@ -175,25 +176,135 @@ map.on('click', async function (e) {
     destination = null;
   }
 });
+
+function extractRecommendedSection(text) {
+  if (!text) return "";
+  const idx = text.search(/###\s*Alternative/i);
+  return idx !== -1 ? text.slice(0, idx).trim() : text.trim();
+}
+
+function showFeedbackForm(payload, data) {
+  document.getElementById("feedbackSection").style.display = "block";
+  document.getElementById("feedbackForm").reset();
+  document.getElementById("feedbackStatus").innerText = "";
+  document.getElementById("f_origin_lat").value = payload.source.lat;
+  document.getElementById("f_origin_lng").value = payload.source.lng;
+  document.getElementById("f_dest_lat").value = payload.destination.lat;
+  document.getElementById("f_dest_lng").value = payload.destination.lng;
+  document.getElementById("f_disability_type").value = payload.disability_type;
+  document.getElementById("f_route_date").value = payload.date;
+  document.getElementById("f_recommendation").value = extractRecommendedSection(data.result || "");
+
+  const route = data.routes && data.routes[0];
+  if (route) {
+    const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec || 0), 0) / 60);
+    document.getElementById("f_total_min").value = totalMin;
+    document.getElementById("f_num_transfers").value = route.transfers || 0;
+
+    const modes = route.legs.map(l => l.route ? `${l.mode} ${l.route}` : l.mode);
+    document.getElementById("f_modes").value = modes.join(" → ");
+
+    const legLines = route.legs.map(l => {
+      const dist = l.distance_m >= 1000 ? (l.distance_m / 1000).toFixed(1) + " km" : Math.round(l.distance_m) + " m";
+      const dur = Math.round((l.duration_sec || 0) / 60) + " min";
+      const label = l.route ? `${l.mode} ${l.route}` : l.mode;
+      return `${label}: ${l.from || "?"} → ${l.to || "?"} | ${dist}, ${dur}`;
+    });
+    document.getElementById("f_legs_summary").value = legLines.join("\n");
+
+    const walkPts = route.legs
+      .filter(l => l.mode === "WALK" && l.geometry_sampled_50m)
+      .flatMap(l => l.geometry_sampled_50m.map(p => Array.isArray(p) ? p.join(",") : `${p.lat},${p.lon}`));
+    document.getElementById("f_walk_waypoints").value = walkPts.join(";");
+
+    const transitStops = route.legs
+      .filter(l => l.mode !== "WALK")
+      .flatMap(l => {
+        const stops = [];
+        if (l.from_lat != null) stops.push(`${l.from || ""}|${l.from_lat}|${l.from_lon}|${l.mode}`);
+        if (l.to_lat != null)   stops.push(`${l.to   || ""}|${l.to_lat}|${l.to_lon}|${l.mode}`);
+        return stops;
+      });
+    document.getElementById("f_transit_stops").value = transitStops.join(";");
+  }
+
+  document.getElementById("feedbackSection").scrollIntoView({ behavior: "smooth" });
+}
 </script>
 
-<h2>Leave Feedback</h2>
-
-  <form action="http://127.0.0.1:8000/submit" method="post">
+<div id="feedbackSection">
+  <h2>How was this route?</h2>
+  <form id="feedbackForm">
+    <input type="hidden" id="f_origin_lat">
+    <input type="hidden" id="f_origin_lng">
+    <input type="hidden" id="f_dest_lat">
+    <input type="hidden" id="f_dest_lng">
+    <input type="hidden" id="f_disability_type">
+    <input type="hidden" id="f_route_date">
+    <input type="hidden" id="f_total_min">
+    <input type="hidden" id="f_num_transfers">
+    <input type="hidden" id="f_modes">
+    <input type="hidden" id="f_legs_summary">
+    <input type="hidden" id="f_walk_waypoints">
+    <input type="hidden" id="f_transit_stops">
+    <input type="hidden" id="f_recommendation">
 
     <label>Rating (1–5):</label>
-    <input type="number" name="rating" min="1" max="5" required>
+    <input type="number" id="rating" name="rating" min="1" max="5" required>
 
     <br><br>
 
     <label>Comment:</label>
-    <textarea name="comment"></textarea>
+    <textarea id="comment" name="comment"></textarea>
 
     <br><br>
 
-    <button type="submit">Submit</button>
-
+    <button type="submit">Submit Feedback</button>
   </form>
+  <p id="feedbackStatus"></p>
+</div>
+
+<script>
+document.getElementById("feedbackForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const fv = id => document.getElementById(id).value;
+    const payload = {
+        rating: parseInt(fv("rating")),
+        comment: fv("comment"),
+        origin_lat: parseFloat(fv("f_origin_lat")) || null,
+        origin_lng: parseFloat(fv("f_origin_lng")) || null,
+        dest_lat: parseFloat(fv("f_dest_lat")) || null,
+        dest_lng: parseFloat(fv("f_dest_lng")) || null,
+        disability_type: fv("f_disability_type") || null,
+        route_date: fv("f_route_date") || null,
+        route_total_min: parseInt(fv("f_total_min")) || null,
+        route_num_transfers: parseInt(fv("f_num_transfers")) >= 0 ? parseInt(fv("f_num_transfers")) : null,
+        route_modes: fv("f_modes") || null,
+        route_legs_summary: fv("f_legs_summary") || null,
+        route_walk_waypoints: fv("f_walk_waypoints") || null,
+        route_transit_stops: fv("f_transit_stops") || null,
+        recommendation: fv("f_recommendation") || null,
+    };
+    try {
+        const response = await fetch("http://127.0.0.1:8000/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.text();
+            document.getElementById("feedbackStatus").innerText = "Error saving feedback: " + err;
+            return;
+        }
+        const data = await response.json();
+        document.getElementById("feedbackStatus").innerText = "Thanks! Feedback saved (ID: " + data.id + ")";
+        document.getElementById("feedbackSection").style.display = "none";
+    } catch (err) {
+        document.getElementById("feedbackStatus").innerText = "Network error: " + err;
+    }
+});
+</script>
+
 
 
 </body>
