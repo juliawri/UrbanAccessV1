@@ -1,7 +1,10 @@
 import html as _html
 import json as _json
+from pathlib import Path
 from fastapi import FastAPI, Depends
 from fastapi.responses import FileResponse, HTMLResponse
+
+BASE_DIR = Path(__file__).parent
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -90,7 +93,7 @@ class FeedbackSubmit(BaseModel):
 # -------------------------
 @app.get("/")
 def index():
-    return FileResponse("index.html")
+    return FileResponse(BASE_DIR / "index.html")
 
 
 @app.post("/process")
