@@ -1,6 +1,10 @@
 fastapi
 uvicorn[standard]
-gradio
 huggingface_hub
 pydantic
 pandas
+numpy
+scikit-learn
+requests
+polyline
+sqlalchemy
