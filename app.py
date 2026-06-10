@@ -1,5 +1,6 @@
 import os
 import re
+import random
 from huggingface_hub import InferenceClient
 
 client = InferenceClient(token=os.environ.get("HF_TOKEN"))
@@ -47,7 +48,16 @@ def format_routes_for_llm(routes_data):
             )
         leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
 
-        points = route.get("points", [])[:15]
+        all_points = route.get("points", [])
+        eligible = [
+            p for p in all_points
+            if any(
+                k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
+                for k, v in p.items()
+            )
+        ]
+        points = random.sample(eligible, min(30, len(eligible)))
+        print(points)
         point_lines = []
         for p in points:
             coords = f"({p.get('lat'):.5f}, {p.get('lon'):.5f})"
@@ -61,13 +71,12 @@ def format_routes_for_llm(routes_data):
         blocks.append(
             f"=== Route {route['route_id']} ({dur_min} min, {transfers} transfer(s)) ===\n"
             f"Legs:\n{leg_text}\n\n"
-            f"Walk segment data ({len(points)} sampled points):\n{point_text}"
+            f"Walk segment data ({len(points)} of {len(eligible)} eligible points sampled):\n{point_text}"
         )
     return "\n\n".join(blocks)
 
 
 def get_recommendation(origin, destination, disability_type, date, routes_data):
-    print(f"LLM input: {len(routes_data)} routes")
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
         print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
@@ -83,6 +92,15 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
         "Analyse the routes above and identify which is most accessible for this user."
     )
 
+    print( f"User profile:\n")
+    print(f"- Origin: {origin}\n")
+    print(f"- Destination: {destination}\n")
+    print(f"- Mobility aid: {disability_type}\n")
+    print(f"- Date: {date}\n\n")
+    print( f"Routes:\n{route_context}\n\n")
+    print("Analyse the routes above and identify which is most accessible for this user.")
+
+
     response = client.chat_completion(
         model=MODEL,
         messages=[
@@ -93,6 +111,7 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
         temperature=0.2,
     )
     text = response.choices[0].message.content.strip()
+
 
     best_id = 0
     lines = text.split('\n')
