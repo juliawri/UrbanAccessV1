@@ -8,3 +8,4 @@ scikit-learn
 requests
 polyline
 sqlalchemy
+psycopg2-binary

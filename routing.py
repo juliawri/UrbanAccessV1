@@ -1,9 +1,10 @@
+import os
 import requests
 import json
 import polyline
 import math
 
-OTP_BASE_URL = "http://localhost:8080/otp/routers/default/plan"
+OTP_BASE_URL = os.environ.get("OTP_URL", "http://localhost:8080/otp/routers/default/plan")
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371000  # meters
