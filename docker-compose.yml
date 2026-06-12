@@ -14,12 +14,12 @@ services:
       - "5432:5432"
 
   otp:
-    image: eclipse-temurin:17-jre
+    image: eclipse-temurin:21-jre
     working_dir: /otp
     volumes:
       - ./otp-2.5.0-shaded.jar:/otp/otp.jar
       - ./data:/otp/data
-    command: java -Xmx4g -jar otp.jar --build --serve /otp/data
+    command: java -Xmx8g -jar otp.jar --build --serve /otp/data
     ports:
       - "8080:8080"
 
