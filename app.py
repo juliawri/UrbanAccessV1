@@ -8,7 +8,7 @@ import os
 
 load_dotenv()
 
-client = InferenceClient(token=os.environ.get("HF_TOKEN"))
+client = InferenceClient(token="YOUR_TOKEN_HERE")
 
 MODEL = "Qwen/Qwen2.5-72B-Instruct"
 
@@ -68,7 +68,7 @@ def _fetch_three_views(lat, lon, radius=20):
         "fields": "id,thumb_2048_url,is_pano,geometry",
         "access_token": MAPILLARY_TOKEN,
     }
-    resp = requests.get("https://graph.mapillary.com/images", params=params, timeout=10)
+    resp = requests.get("https://graph.mapillary.com/images", params=params, timeout=30)
     resp.raise_for_status()
     data = resp.json().get("data", [])
     if not data:
@@ -123,8 +123,8 @@ MOBILITY_AID_CRITERIA = {
 
 def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
     """
-    Randomly select 15 points from `points`, fetch 3 Mapillary views per point
-    (45 images total), and call Gemini once to score pedestrian accessibility.
+    Score all points in `points` using Mapillary street-view images and Gemini.
+    Fetches 3 views per point and calls Gemini once with the full batch.
 
     Returns a dict mapping _coord_key(lat, lon) -> {"score": int, "comments": str}
     where score is the average of the 3 per-view scores and comments concatenates
@@ -141,7 +141,7 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
         print("GEMINI_API_KEY or MAPILLARY_TOKEN not set; skipping VLM scoring.")
         return {}, ""
 
-    sample = random.sample(points, min(15, len(points)))
+    sample = list(points)
 
     def _fetch_point(p):
         lat, lon = p["lat"], p["lon"]
@@ -236,18 +236,31 @@ def _eligible_points(route):
 
 
 def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
-    # Collect all eligible points across all routes, score once with Gemini.
-    all_eligible = []
+    # Build per-route eligible lists and select 5 unique points per route for Gemini.
+    route_eligible = []
+    gemini_sample = []
+    seen_coords = set()
     for route in routes_data[:3]:
-        all_eligible.extend(_eligible_points(route))
+        eligible = _eligible_points(route)
+        route_eligible.append(eligible)
+        shuffled = random.sample(eligible, len(eligible))
+        added = 0
+        for p in shuffled:
+            if added >= 5:
+                break
+            key = _coord_key(p.get("lat"), p.get("lon"))
+            if key not in seen_coords:
+                seen_coords.add(key)
+                gemini_sample.append(p)
+                added += 1
 
-    # ── Gemini VLM scoring – comment out the next line to disable ──────────
+    # ── Gemini VLM scoring: 5 unique points per route, all different ────────
     gemini_scores, gemini_raw = {}, []
-    #gemini_scores, gemini_raw = fetch_gemini_scores(all_eligible, disability_type)
+   # gemini_scores, gemini_raw = fetch_gemini_scores(gemini_sample, disability_type)
     # ───────────────────────────────────────────────────────────────────────
 
     blocks = []
-    for route in routes_data[:3]:
+    for route, eligible in zip(routes_data[:3], route_eligible):
         dur_min = round(route.get("duration_sec", 0) / 60)
         transfers = route.get("transfers", 0)
 
@@ -264,11 +277,8 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
             )
         leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
 
-        eligible = _eligible_points(route)
-        points = random.sample(eligible, min(30, len(eligible)))
-
         point_lines = []
-        for p in points:
+        for p in eligible:
             coords = f"({p.get('lat'):.5f}, {p.get('lon'):.5f})"
             fields = " | ".join(
                 f"{k}={v}" for k, v in p.items()
@@ -287,7 +297,7 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
         blocks.append(
             f"=== Route {route['route_id']} ({dur_min} min, {transfers} transfer(s)) ===\n"
             f"Legs:\n{leg_text}\n\n"
-            f"Walk segment data ({len(points)} of {len(eligible)} eligible points sampled):\n{point_text}"
+            f"Walk segment data ({len(eligible)} eligible points):\n{point_text}"
         )
     return "\n\n".join(blocks), gemini_raw
 
@@ -296,7 +306,7 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
         print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
-    route_context, gemini_raw = format_routes_for_llm(routes_data)
+    route_context, gemini_raw = format_routes_for_llm(routes_data, disability_type)
 
     user_prompt = (
         f"User profile:\n"
