@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8d3e13ca732d3c605692c0e204198e4a258a4b0c807af03968d276774905061e
-size 167
+
+# Large GIS / OTP files
+
+graph.obj
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Data folders (optional safety)
+data/
+*.log
+.DS_Store
+
+#env
+.env

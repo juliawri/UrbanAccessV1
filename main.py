@@ -1,14 +1,29 @@
+<<<<<<< HEAD
 import html as _html
 import json as _json
 from pathlib import Path
 from fastapi import FastAPI, Depends
+=======
+import csv
+import html as _html
+import io
+import json as _json
+import zipfile
+from functools import lru_cache
+from pathlib import Path
+from fastapi import FastAPI, Depends, Query
+>>>>>>> f239854 (reconfig api keys & added searachable fields)
 from fastapi.responses import FileResponse, HTMLResponse
 
 BASE_DIR = Path(__file__).parent
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
+<<<<<<< HEAD
 from typing import Optional
+=======
+from typing import Optional, List, Dict
+>>>>>>> f239854 (reconfig api keys & added searachable fields)
 
 from run_pipeline import run_pipeline
 from app import get_recommendation
@@ -58,6 +73,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+<<<<<<< HEAD
+=======
+@lru_cache(maxsize=1)
+def _load_gtfs_stops() -> List[Dict]:
+    stops = []
+    seen_names = set()
+    with zipfile.ZipFile(BASE_DIR / "data" / "gtfs_stm.zip") as z:
+        with z.open("stops.txt") as f:
+            for row in csv.DictReader(io.TextIOWrapper(f, "utf-8")):
+                loc_type = row.get("location_type", "0")
+                if loc_type not in ("0", "1"):
+                    continue
+                name = row["stop_name"].strip()
+                name_lower = name.lower()
+                if name_lower in seen_names:
+                    continue
+                seen_names.add(name_lower)
+                stops.append({
+                    "name": name,
+                    "lat": float(row["stop_lat"]),
+                    "lon": float(row["stop_lon"]),
+                    "type": "metro_station" if loc_type == "1" else "bus_stop",
+                })
+    return stops
+
+
+@app.get("/stops")
+def search_stops(q: str = Query(default="", min_length=0)):
+    if len(q) < 2:
+        return []
+    q_lower = q.lower()
+    matches = [s for s in _load_gtfs_stops() if q_lower in s["name"].lower()]
+    # Exact prefix matches first
+    matches.sort(key=lambda s: (not s["name"].lower().startswith(q_lower), s["name"]))
+    return matches[:10]
+
+
+>>>>>>> f239854 (reconfig api keys & added searachable fields)
 # -------------------------
 # MODELS FIRST
 # -------------------------

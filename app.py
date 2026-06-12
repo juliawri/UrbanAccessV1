@@ -3,13 +3,17 @@ import re
 import random
 from concurrent.futures import ThreadPoolExecutor
 from huggingface_hub import InferenceClient
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 client = InferenceClient(token=os.environ.get("HF_TOKEN"))
 
 MODEL = "Qwen/Qwen2.5-72B-Instruct"
 
-MAPILLARY_TOKEN = os.environ.get("", "")
-GEMINI_API_KEY = os.environ.get("", "")
+MAPILLARY_TOKEN = os.getenv("MAPILLARY_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = "gemini-2.5-flash"
 
 SYSTEM_PROMPT = (
