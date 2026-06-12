@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import html as _html
-import json as _json
-from pathlib import Path
-from fastapi import FastAPI, Depends
-=======
 import csv
 import html as _html
 import io
@@ -12,18 +6,13 @@ import zipfile
 from functools import lru_cache
 from pathlib import Path
 from fastapi import FastAPI, Depends, Query
->>>>>>> f239854 (reconfig api keys & added searachable fields)
 from fastapi.responses import FileResponse, HTMLResponse
 
 BASE_DIR = Path(__file__).parent
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-<<<<<<< HEAD
-from typing import Optional
-=======
 from typing import Optional, List, Dict
->>>>>>> f239854 (reconfig api keys & added searachable fields)
 
 from run_pipeline import run_pipeline
 from app import get_recommendation
@@ -73,8 +62,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-<<<<<<< HEAD
-=======
 @lru_cache(maxsize=1)
 def _load_gtfs_stops() -> List[Dict]:
     stops = []
@@ -110,7 +97,6 @@ def search_stops(q: str = Query(default="", min_length=0)):
     return matches[:10]
 
 
->>>>>>> f239854 (reconfig api keys & added searachable fields)
 # -------------------------
 # MODELS FIRST
 # -------------------------
