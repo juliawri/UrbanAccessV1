@@ -1,3 +1,11 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3ce4a7038ed146610b6d3b67f98f22a8683c16b8d098a99fa498fd7c39ee4181
-size 106
+fastapi
+uvicorn[standard]
+huggingface_hub
+pydantic
+pandas
+numpy
+scikit-learn
+requests
+polyline
+sqlalchemy
+
