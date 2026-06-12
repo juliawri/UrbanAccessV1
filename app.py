@@ -1,11 +1,20 @@
 import os
 import re
 import random
+from concurrent.futures import ThreadPoolExecutor
 from huggingface_hub import InferenceClient
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 client = InferenceClient(token=os.environ.get("HF_TOKEN"))
 
 MODEL = "Qwen/Qwen2.5-72B-Instruct"
+
+MAPILLARY_TOKEN = os.getenv("MAPILLARY_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = "gemini-2.5-flash"
 
 SYSTEM_PROMPT = (
     "You are an accessibility routing assistant for Montreal transit.\n\n"
@@ -29,7 +38,214 @@ SYSTEM_PROMPT = (
 SKIP_POINT_KEYS = {"leg_from", "leg_to", "point_index", "lat", "lon"}
 
 
-def format_routes_for_llm(routes_data):
+# ─────────────────────────────────────────────────────────────────────────────
+# Gemini / Mapillary VLM scoring functions
+# To disable: comment out the `gemini_scores = fetch_gemini_scores(points)` line
+# in format_routes_for_llm(). The functions themselves are safe to leave in place.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _coord_key(lat, lon):
+    """Normalise a lat/lon pair to 5 d.p. for consistent dict lookups."""
+    return (round(float(lat), 5), round(float(lon), 5))
+
+
+def _fetch_three_views(lat, lon, radius=20):
+    """
+    Fetch a Mapillary street-view image near (lat, lon) and return 3 PIL views.
+    Prefers non-panoramic images; always produces 3 horizontal crops for
+    consistent batch sizing (1 coord = 3 images).
+    Returns [] if no image is found.
+    """
+    import requests
+    from io import BytesIO
+    from PIL import Image
+
+    params = {
+        "lat": lat,
+        "lng": lon,
+        "radius": radius,
+        "limit": 16,
+        "fields": "id,thumb_2048_url,is_pano,geometry",
+        "access_token": MAPILLARY_TOKEN,
+    }
+    resp = requests.get("https://graph.mapillary.com/images", params=params, timeout=10)
+    resp.raise_for_status()
+    data = resp.json().get("data", [])
+    if not data:
+        print(f"  Mapillary: no image within {radius}m of ({lat:.5f}, {lon:.5f})")
+        return []
+    img_meta = next((i for i in data if not i.get("is_pano", False)), data[0])
+    url = img_meta.get("thumb_2048_url")
+    if not url:
+        return []
+    img_resp = requests.get(url, timeout=15)
+    img_resp.raise_for_status()
+    img = Image.open(BytesIO(img_resp.content)).convert("RGB")
+    img = img.resize((1024, 512))
+    w, h = img.size
+    views = [
+        img.crop((0, 0, w // 3, h)),
+        img.crop((w // 3, 0, 2 * w // 3, h)),
+        img.crop((2 * w // 3, 0, w, h)),
+    ]
+    for v in views:
+        v.thumbnail((512, 512), Image.Resampling.LANCZOS)
+    return views
+
+
+MOBILITY_AID_CRITERIA = {
+    "manual wheelchair": (
+        "a manual wheelchair user. Focus on: kerb cuts and ramp availability, pavement smoothness, "
+        "cross-slopes, obstacles blocking the path, and minimum clear width (≥90 cm)."
+    ),
+    "electric wheelchair": (
+        "an electric wheelchair user. Focus on: kerb cuts and ramps, pavement smoothness and firmness, "
+        "steep inclines or cross-slopes, path width (≥120 cm preferred), and overhead clearance."
+    ),
+    "mobility scooter": (
+        "a mobility scooter user. Focus on: kerb cuts, wide turning radius requirements, pavement "
+        "smoothness, steep slopes, path width (≥150 cm preferred), and surface stability."
+    ),
+    "walker": (
+        "a walker (rollator) user. Focus on: pavement evenness, kerb cuts, obstacles, surface "
+        "grip/traction, and avoiding uneven or loose surfaces."
+    ),
+    "walking cane": (
+        "a walking cane user. Focus on: pavement evenness, trip hazards, surface grip/traction, "
+        "kerb drops, and icy or slippery surfaces."
+    ),
+    "no mobility aid": (
+        "a pedestrian with no mobility aid. Focus on: general pavement condition, obstacles, "
+        "and pedestrian safety."
+    ),
+}
+
+
+def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
+    """
+    Randomly select 15 points from `points`, fetch 3 Mapillary views per point
+    (45 images total), and call Gemini once to score pedestrian accessibility.
+
+    Returns a dict mapping _coord_key(lat, lon) -> {"score": int, "comments": str}
+    where score is the average of the 3 per-view scores and comments concatenates
+    the 3 per-view justification sentences.
+    Returns {} if tokens are missing, packages unavailable, or no images fetched.
+    """
+    try:
+        from google import genai as _genai
+    except ImportError:
+        print("google-genai not installed; skipping VLM scoring.")
+        return {}, ""
+
+    if not GEMINI_API_KEY or not MAPILLARY_TOKEN:
+        print("GEMINI_API_KEY or MAPILLARY_TOKEN not set; skipping VLM scoring.")
+        return {}, ""
+
+    sample = random.sample(points, min(15, len(points)))
+
+    def _fetch_point(p):
+        lat, lon = p["lat"], p["lon"]
+        print(f"  Fetching Mapillary image for ({lat:.5f}, {lon:.5f})")
+        return [(lat, lon, v) for v in _fetch_three_views(lat, lon)]
+
+    dataset = []  # list of (lat, lon, PIL.Image)
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        for views in executor.map(_fetch_point, sample):
+            dataset.extend(views)
+
+    if not dataset:
+        print("  No Mapillary images fetched; skipping Gemini call.")
+        return {}, ""
+
+    aid_criteria = MOBILITY_AID_CRITERIA.get(
+        mobility_aid.lower(), MOBILITY_AID_CRITERIA["no mobility aid"]
+    )
+
+    # Build index -> (lat, lon) so we never rely on Gemini echoing coordinates accurately.
+    idx_to_coord = {i + 1: (lat, lon) for i, (lat, lon, _) in enumerate(dataset)}
+    image_labels = "\n".join(
+        f"  Image {i + 1}: latitude={round(lat, 5)}, longitude={round(lon, 5)}"
+        for i, (lat, lon, _) in enumerate(dataset)
+    )
+    prompt = (
+        f"You are an urban accessibility analyst evaluating routes for {aid_criteria}\n\n"
+        f"Below are {len(dataset)} street-level images.\n"
+        f"The images are provided in this order:\n{image_labels}\n\n"
+        "For each image, output exactly one line in this format:\n"
+        "  <image_number>,<score>,<just>\n\n"
+        "Where <image_number> is the integer shown above (1, 2, 3 …), "
+        "<score> is an integer from 1 (very inaccessible) to 5 (fully accessible) "
+        "for this specific user's mobility aid.\n"
+        "<just> is a 1 sentence justification referencing the relevant features for this user. "
+        "Do not use commas inside <just>."
+    )
+
+    gemini_client = _genai.Client(api_key=GEMINI_API_KEY)
+    contents = [prompt] + [img for _, _, img in dataset]
+    print(f"  Calling Gemini with {len(dataset)} images across {len(sample)} coordinates...")
+    response = gemini_client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=contents,
+    )
+
+    # Parse response lines: image_number,score,justification
+    # Split on first 2 commas only so any remaining commas stay in justification text.
+    raw_entries = {}  # _coord_key -> [(score, comment), ...]
+    for line in response.text.strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split(",", 2)
+        if len(parts) < 3:
+            print(f"  Could not parse Gemini line: {line}")
+            continue
+        try:
+            img_num = int(parts[0])
+            score = int(parts[1])
+            comment = parts[2].strip()
+        except ValueError:
+            print(f"  Could not parse Gemini line: {line}")
+            continue
+        coord = idx_to_coord.get(img_num)
+        if coord is None:
+            print(f"  Unknown image index from Gemini: {img_num}")
+            continue
+        raw_entries.setdefault(_coord_key(*coord), []).append((score, comment))
+
+    # Aggregate: average score across 3 views; concatenate the 3 justification sentences.
+    result = {}
+    for key, entries in raw_entries.items():
+        avg_score = round(sum(s for s, _ in entries) / len(entries))
+        combined_comments = " ".join(c for _, c in entries)
+        result[key] = {"score": avg_score, "comments": combined_comments}
+
+    print(f"  Gemini scored {len(result)} coordinates.")
+    return result, response.text
+
+# ── End Gemini / Mapillary functions ──────────────────────────────────────────
+
+
+def _eligible_points(route):
+    return [
+        p for p in route.get("points", [])
+        if any(
+            k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
+            for k, v in p.items()
+        )
+    ]
+
+
+def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
+    # Collect all eligible points across all routes, score once with Gemini.
+    all_eligible = []
+    for route in routes_data[:3]:
+        all_eligible.extend(_eligible_points(route))
+
+    # ── Gemini VLM scoring – comment out the next line to disable ──────────
+    gemini_scores, gemini_raw = {}, []
+    #gemini_scores, gemini_raw = fetch_gemini_scores(all_eligible, disability_type)
+    # ───────────────────────────────────────────────────────────────────────
+
     blocks = []
     for route in routes_data[:3]:
         dur_min = round(route.get("duration_sec", 0) / 60)
@@ -48,16 +264,9 @@ def format_routes_for_llm(routes_data):
             )
         leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
 
-        all_points = route.get("points", [])
-        eligible = [
-            p for p in all_points
-            if any(
-                k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
-                for k, v in p.items()
-            )
-        ]
+        eligible = _eligible_points(route)
         points = random.sample(eligible, min(30, len(eligible)))
-        print(points)
+
         point_lines = []
         for p in points:
             coords = f"({p.get('lat'):.5f}, {p.get('lon'):.5f})"
@@ -65,7 +274,14 @@ def format_routes_for_llm(routes_data):
                 f"{k}={v}" for k, v in p.items()
                 if k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
             )
-            point_lines.append(f"  {coords} | {fields}")
+            g_data = gemini_scores.get(_coord_key(p.get("lat"), p.get("lon")), {})
+            g_score = str(g_data.get("score", "")) if g_data else ""
+            g_comments = g_data.get("comments", "") if g_data else ""
+            point_lines.append(
+                f"  {coords} | {fields}"
+                f" | gemini_accessibility_score={g_score}"
+                f" | gemini_accessibility_comments={g_comments}"
+            )
         point_text = "\n".join(point_lines) if point_lines else "  (no walk segment data)"
 
         blocks.append(
@@ -73,14 +289,14 @@ def format_routes_for_llm(routes_data):
             f"Legs:\n{leg_text}\n\n"
             f"Walk segment data ({len(points)} of {len(eligible)} eligible points sampled):\n{point_text}"
         )
-    return "\n\n".join(blocks)
+    return "\n\n".join(blocks), gemini_raw
 
 
 def get_recommendation(origin, destination, disability_type, date, routes_data):
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
         print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
-    route_context = format_routes_for_llm(routes_data)
+    route_context, gemini_raw = format_routes_for_llm(routes_data)
 
     user_prompt = (
         f"User profile:\n"
@@ -92,13 +308,15 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
         "Analyse the routes above and identify which is most accessible for this user."
     )
 
-    print( f"User profile:\n")
-    print(f"- Origin: {origin}\n")
-    print(f"- Destination: {destination}\n")
-    print(f"- Mobility aid: {disability_type}\n")
-    print(f"- Date: {date}\n\n")
-    print( f"Routes:\n{route_context}\n\n")
-    print("Analyse the routes above and identify which is most accessible for this user.")
+    with open("prompt_debug.txt", "w") as f:
+        f.write("=== SYSTEM PROMPT ===\n")
+        f.write(SYSTEM_PROMPT)
+        f.write("\n\n=== USER PROMPT ===\n")
+        f.write(user_prompt)
+        if gemini_raw:
+            f.write("\n\n=== GEMINI VLM RAW RESPONSE ===\n")
+            f.write(gemini_raw)
+    print("Prompts written to prompt_debug.txt")
 
 
     response = client.chat_completion(

@@ -93,10 +93,10 @@ def add_access(filename="montreal_routes.json", routes_data=None):
             "points": walk_data.get("points", []),
         })
         modes = [l["mode"] for l in legs_meta if l["mode"]]
-        print(f"  route {route_id}: {len(legs_meta)} legs {modes}, {len(walk_data.get('points', []))} walk pts")
-
+        
     with open("routes_with_accessibility.json", "w") as f:
         json.dump(routes_out, f, indent=2)
 
-    print(f"routes_with_accessibility.json: {len(routes_out)} routes")
     return routes_out
+
+

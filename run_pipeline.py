@@ -18,3 +18,4 @@ def run_pipeline(src_lat, src_lon, dst_lat, dst_lon, date=None):
     routes_with_access = add_accessibility.add_access(routes_data=routes)
 
     return routes, routes_with_access
+
