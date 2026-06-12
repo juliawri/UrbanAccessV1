@@ -30,7 +30,14 @@
     #feedbackSection { display: none; margin-top: 24px; border-top: 2px solid #e0e0e0; padding-top: 16px; }
     #feedbackStatus { margin-top: 8px; color: #388E3C; font-size: 13px; }
 
-    /* Location search inputs */
+    /* Mode toggle */
+    .mode-toggle { display: flex; gap: 0; margin: 8px 5px 12px 5px; border: 1px solid #1976D2; border-radius: 6px; overflow: hidden; width: fit-content; }
+    .mode-btn { padding: 8px 20px; font-size: 13px; font-weight: bold; background: white; color: #1976D2; border: none; cursor: pointer; transition: background .15s, color .15s; }
+    .mode-btn:first-child { border-right: 1px solid #1976D2; }
+    .mode-btn.active { background: #1976D2; color: white; }
+    .mode-btn:hover:not(.active) { background: #e3f0fd; }
+
+    /* Search inputs */
     .location-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
     .location-row label { white-space: nowrap; min-width: 80px; }
     .ac-wrap { position: relative; flex: 1; min-width: 220px; }
@@ -71,35 +78,41 @@
   <label>Date:</label>
   <input type="date" id="date" value="2026-04-15"/>
 
-  <div class="location-row">
-    <label>Origin:</label>
-    <div class="ac-wrap">
-      <input type="text" id="originInput" placeholder="Address or transit stop in Montreal…" autocomplete="off"/>
-      <div class="ac-dropdown" id="originDropdown"></div>
-    </div>
+  <br>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btnSearch" onclick="setMode('search')">Search by address</button>
+    <button class="mode-btn" id="btnMap" onclick="setMode('map')">Click on map</button>
   </div>
 
-  <div class="location-row">
-    <label>Destination:</label>
-    <div class="ac-wrap">
-      <input type="text" id="destInput" placeholder="Address or transit stop in Montreal…" autocomplete="off"/>
-      <div class="ac-dropdown" id="destDropdown"></div>
+  <!-- Search mode UI -->
+  <div id="searchUI">
+    <div class="location-row">
+      <label>Origin:</label>
+      <div class="ac-wrap">
+        <input type="text" id="originInput" placeholder="Address or transit stop in Montreal…" autocomplete="off"/>
+        <div class="ac-dropdown" id="originDropdown"></div>
+      </div>
     </div>
+    <div class="location-row">
+      <label>Destination:</label>
+      <div class="ac-wrap">
+        <input type="text" id="destInput" placeholder="Address or transit stop in Montreal…" autocomplete="off"/>
+        <div class="ac-dropdown" id="destDropdown"></div>
+      </div>
+    </div>
+    <button id="planBtn">Plan Route</button>
   </div>
 
-  <button id="planBtn">Plan Route</button>
   <p id="status"></p>
 </div>
 
 <div id="map"></div>
-
 <div id="directions"></div>
-
 <pre id="output"></pre>
 
 <script>
 const map = L.map('map').setView([45.5017, -73.5673], 13);
-
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap'
 }).addTo(map);
@@ -107,12 +120,38 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 let originMarker = null;
 let destinationMarker = null;
 let routeLayers = [];
+let mapClickOrigin = null;   // used in map-click mode
 
 const status = document.getElementById("status");
 const output = document.getElementById("output");
 const directionsDiv = document.getElementById("directions");
-
 const LEG_COLORS = { WALK: "#2196F3", BUS: "#FF9800", SUBWAY: "#9C27B0", TRAM: "#4CAF50" };
+
+// ── Mode switching ────────────────────────────────────────────────────────────
+
+let currentMode = "search";
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById("searchUI").style.display = mode === "search" ? "block" : "none";
+  document.getElementById("btnSearch").classList.toggle("active", mode === "search");
+  document.getElementById("btnMap").classList.toggle("active", mode === "map");
+
+  // Clear state when switching
+  mapClickOrigin = null;
+  originCoords = null;
+  destCoords = null;
+  if (originMarker)     { map.removeLayer(originMarker);     originMarker = null; }
+  if (destinationMarker){ map.removeLayer(destinationMarker); destinationMarker = null; }
+
+  if (mode === "map") {
+    status.innerText = "Click your origin on the map";
+  } else {
+    status.innerText = "";
+  }
+}
+
+// ── Shared route drawing ──────────────────────────────────────────────────────
 
 function clearRoutes() {
   routeLayers.forEach(l => map.removeLayer(l));
@@ -120,19 +159,12 @@ function clearRoutes() {
   directionsDiv.innerHTML = "";
 }
 
-function fmtDist(m) {
-  return m >= 1000 ? (m / 1000).toFixed(1) + " km" : Math.round(m) + " m";
-}
-
-function fmtTime(sec) {
-  const m = Math.round(sec / 60);
-  return m < 1 ? "<1 min" : m + " min";
-}
+function fmtDist(m) { return m >= 1000 ? (m/1000).toFixed(1)+" km" : Math.round(m)+" m"; }
+function fmtTime(sec) { const m = Math.round(sec/60); return m < 1 ? "<1 min" : m+" min"; }
 
 function drawRoutes(routes) {
   clearRoutes();
-  if (!routes || routes.length === 0) return;
-
+  if (!routes || !routes.length) return;
   routes[0].legs.forEach(leg => {
     const color = LEG_COLORS[leg.mode] || "#888";
     const pts = leg.geometry_sampled_50m;
@@ -141,19 +173,19 @@ function drawRoutes(routes) {
       routeLayers.push(line);
     }
   });
-  if (routeLayers.length > 0) map.fitBounds(L.featureGroup(routeLayers).getBounds().pad(0.1));
+  if (routeLayers.length) map.fitBounds(L.featureGroup(routeLayers).getBounds().pad(0.1));
 
   const labels = ["Recommended Route", "Alternative 1", "Alternative 2"];
   let html = "";
   routes.forEach((route, idx) => {
-    const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec || 0), 0) / 60);
-    const label = labels[idx] || `Option ${idx + 1}`;
+    const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec||0), 0) / 60);
+    const label = labels[idx] || `Option ${idx+1}`;
     if (idx > 0) html += `<hr style="margin:14px 0;border:none;border-top:1px solid #e0e0e0;">`;
     html += `<h4 style="margin:0 0 8px 0">${label} <span class="leg-meta">&bull; ${totalMin} min</span></h4>`;
     route.legs.forEach(leg => {
       const mode = leg.mode || "?";
       const badge = `<span class="leg-badge ${mode}">${mode}</span>`;
-      let desc = `${leg.from || "?"} &rarr; ${leg.to || "?"}`;
+      let desc = `${leg.from||"?"} &rarr; ${leg.to||"?"}`;
       if (leg.route) desc += ` <span class="leg-meta">(${leg.route})</span>`;
       const meta = [leg.distance_m != null ? fmtDist(leg.distance_m) : null, leg.duration_sec != null ? fmtTime(leg.duration_sec) : null].filter(Boolean).join(" &bull; ");
       html += `<div class="leg-step ${mode}">${badge}<div class="leg-text">${desc}<br><span class="leg-meta">${meta}</span></div></div>`;
@@ -162,20 +194,57 @@ function drawRoutes(routes) {
   directionsDiv.innerHTML = html;
 }
 
-// ── Autocomplete ──────────────────────────────────────────────────────────────
-
-// All GTFS stops loaded once from the backend into memory on first search
-let gtfsStopsCache = null;
-
-async function getGtfsStops() {
-  if (gtfsStopsCache) return gtfsStopsCache;
+async function submitRoute(originLatLng, destLatLng) {
+  const payload = {
+    source:      { lat: originLatLng.lat, lng: originLatLng.lng },
+    destination: { lat: destLatLng.lat,   lng: destLatLng.lng },
+    disability_type: document.getElementById("disability").value,
+    date: document.getElementById("date").value,
+  };
+  output.innerText = "";
+  clearRoutes();
   try {
-    const r = await fetch("/stops?q=a");  // warm the cache with a broad query
-    // We actually want all stops — fetch the full list via a blank-ish query
-    // Instead, we'll load them lazily per query but cache the full result after first hit
-  } catch (_) {}
-  return [];
+    const res = await fetch("http://127.0.0.1:8000/process", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    drawRoutes(data.routes);
+    output.innerText = data.result || "";
+    showFeedbackForm(payload, data);
+    return true;
+  } catch (err) {
+    output.innerText = err.toString();
+    console.error(err);
+    return false;
+  }
 }
+
+// ── Map-click mode ────────────────────────────────────────────────────────────
+
+map.on("click", async function(e) {
+  if (currentMode !== "map") return;
+  const { lat, lng } = e.latlng;
+
+  if (!mapClickOrigin) {
+    mapClickOrigin = { lat, lng };
+    if (originMarker) map.removeLayer(originMarker);
+    originMarker = L.marker([lat, lng]).addTo(map).bindPopup("Origin").openPopup();
+    status.innerText = "Now click your destination on the map";
+    return;
+  }
+
+  if (destinationMarker) map.removeLayer(destinationMarker);
+  destinationMarker = L.marker([lat, lng]).addTo(map).bindPopup("Destination").openPopup();
+  status.innerText = "Processing…";
+
+  const ok = await submitRoute(mapClickOrigin, { lat, lng });
+  status.innerText = ok ? "Done. Click origin to plan a new route." : "Error. See console.";
+  mapClickOrigin = null;
+});
+
+// ── Search mode: autocomplete ─────────────────────────────────────────────────
 
 function debounce(fn, delay) {
   let timer;
@@ -184,53 +253,36 @@ function debounce(fn, delay) {
 
 async function searchLocations(q) {
   const results = [];
-
-  // 1. GTFS stops from backend (instant once server has loaded them)
   try {
     const r = await fetch(`/stops?q=${encodeURIComponent(q)}`);
     if (r.ok) {
-      const stops = await r.json();
-      stops.forEach(s => results.push({
+      (await r.json()).forEach(s => results.push({
         label: s.name,
         sub: s.type === "metro_station" ? "Metro Station" : "Bus Stop",
         badge: s.type === "metro_station" ? "metro" : "bus",
-        lat: s.lat,
-        lng: s.lon,
+        lat: s.lat, lng: s.lon,
       }));
     }
   } catch (_) {}
-
-  // 2. Nominatim (OpenStreetMap geocoder) — bounded to Montreal
   try {
-    const url = `https://nominatim.openstreetmap.org/search?` +
-      `q=${encodeURIComponent(q + " Montreal")}&format=json&limit=5` +
-      `&countrycodes=ca&viewbox=-74.1,45.2,-73.3,45.8&bounded=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+" Montreal")}&format=json&limit=5&countrycodes=ca&viewbox=-74.1,45.2,-73.3,45.8&bounded=1`;
     const r = await fetch(url, { headers: { "Accept-Language": "en" } });
     if (r.ok) {
-      const places = await r.json();
-      places.forEach(p => {
+      (await r.json()).forEach(p => {
         const parts = p.display_name.split(",");
-        results.push({
-          label: parts.slice(0, 2).join(",").trim(),
-          sub: p.display_name,
-          badge: "addr",
-          lat: parseFloat(p.lat),
-          lng: parseFloat(p.lon),
-        });
+        results.push({ label: parts.slice(0,2).join(",").trim(), sub: p.display_name, badge: "addr", lat: parseFloat(p.lat), lng: parseFloat(p.lon) });
       });
     }
   } catch (_) {}
-
   return results;
 }
 
 function renderItem(r) {
-  const badgeLabel = r.badge === "metro" ? "METRO" : r.badge === "bus" ? "BUS" : "ADDR";
-  return `
-    <div class="ac-item" data-lat="${r.lat}" data-lng="${r.lng}" data-label="${r.label.replace(/"/g, '&quot;')}">
-      <span class="ac-badge ${r.badge}">${badgeLabel}</span>${r.label}
-      <div class="ac-item-sub">${r.sub}</div>
-    </div>`;
+  const bl = r.badge === "metro" ? "METRO" : r.badge === "bus" ? "BUS" : "ADDR";
+  return `<div class="ac-item" data-lat="${r.lat}" data-lng="${r.lng}" data-label="${r.label.replace(/"/g,'&quot;')}">
+    <span class="ac-badge ${r.badge}">${bl}</span>${r.label}
+    <div class="ac-item-sub">${r.sub}</div>
+  </div>`;
 }
 
 function setupAutocomplete(inputId, dropdownId, onSelect) {
@@ -242,33 +294,27 @@ function setupAutocomplete(inputId, dropdownId, onSelect) {
     if (q.length < 2) { dropdown.style.display = "none"; return; }
     const results = await searchLocations(q);
     if (!results.length) { dropdown.style.display = "none"; return; }
-
     activeIdx = -1;
     dropdown.innerHTML = results.map(renderItem).join("");
     dropdown.style.display = "block";
-
-    dropdown.querySelectorAll(".ac-item").forEach((el) => {
-      el.addEventListener("mousedown", (e) => {
+    dropdown.querySelectorAll(".ac-item").forEach(el => {
+      el.addEventListener("mousedown", e => {
         e.preventDefault();
-        const lat = parseFloat(el.dataset.lat);
-        const lng = parseFloat(el.dataset.lng);
-        const label = el.dataset.label;
-        input.value = label;
+        input.value = el.dataset.label;
         dropdown.style.display = "none";
-        onSelect({ lat, lng, label });
+        onSelect({ lat: parseFloat(el.dataset.lat), lng: parseFloat(el.dataset.lng), label: el.dataset.label });
       });
     });
   }, 300);
 
   input.addEventListener("input", () => { onSelect(null); doSearch(input.value.trim()); });
-  input.addEventListener("blur", () => setTimeout(() => { dropdown.style.display = "none"; }, 150));
+  input.addEventListener("blur",  () => setTimeout(() => { dropdown.style.display = "none"; }, 150));
   input.addEventListener("focus", () => { if (input.value.trim().length >= 2) doSearch(input.value.trim()); });
-
-  input.addEventListener("keydown", (e) => {
+  input.addEventListener("keydown", e => {
     const items = dropdown.querySelectorAll(".ac-item");
     if (!items.length) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, items.length - 1); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); }
+    if (e.key === "ArrowDown") { e.preventDefault(); activeIdx = Math.min(activeIdx+1, items.length-1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); activeIdx = Math.max(activeIdx-1, 0); }
     else if (e.key === "Enter" && activeIdx >= 0) { items[activeIdx].dispatchEvent(new Event("mousedown")); return; }
     else if (e.key === "Escape") { dropdown.style.display = "none"; return; }
     items.forEach((el, i) => el.classList.toggle("active", i === activeIdx));
@@ -278,39 +324,31 @@ function setupAutocomplete(inputId, dropdownId, onSelect) {
 let originCoords = null;
 let destCoords = null;
 
-setupAutocomplete("originInput", "originDropdown", (r) => {
+setupAutocomplete("originInput", "originDropdown", r => {
   originCoords = r;
   if (originMarker) { map.removeLayer(originMarker); originMarker = null; }
   if (r) originMarker = L.marker([r.lat, r.lng]).addTo(map).bindPopup("Origin: " + r.label);
 });
-
-setupAutocomplete("destInput", "destDropdown", (r) => {
+setupAutocomplete("destInput", "destDropdown", r => {
   destCoords = r;
   if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
   if (r) destinationMarker = L.marker([r.lat, r.lng]).addTo(map).bindPopup("Destination: " + r.label);
 });
 
 async function geocodeText(text) {
-  const url = `https://nominatim.openstreetmap.org/search?` +
-    `q=${encodeURIComponent(text + " Montreal")}&format=json&limit=1&countrycodes=ca`;
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(text+" Montreal")}&format=json&limit=1&countrycodes=ca`;
   try {
     const r = await fetch(url, { headers: { "Accept-Language": "en" } });
-    const data = await r.json();
-    if (data.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    const d = await r.json();
+    if (d.length) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
   } catch (_) {}
   return null;
 }
 
-// ── Plan Route button ─────────────────────────────────────────────────────────
-
 document.getElementById("planBtn").addEventListener("click", async () => {
   const originText = document.getElementById("originInput").value.trim();
   const destText   = document.getElementById("destInput").value.trim();
-
-  if (!originText || !destText) {
-    status.innerText = "Please enter both origin and destination.";
-    return;
-  }
+  if (!originText || !destText) { status.innerText = "Please enter both origin and destination."; return; }
 
   const btn = document.getElementById("planBtn");
   btn.disabled = true;
@@ -321,56 +359,24 @@ document.getElementById("planBtn").addEventListener("click", async () => {
 
   if (!origin) {
     origin = await geocodeText(originText);
-    if (!origin) {
-      status.innerText = "Could not find origin. Try a more specific address.";
-      btn.disabled = false;
-      return;
-    }
+    if (!origin) { status.innerText = "Could not find origin. Try a more specific address."; btn.disabled = false; return; }
     if (originMarker) map.removeLayer(originMarker);
     originMarker = L.marker([origin.lat, origin.lng]).addTo(map).bindPopup("Origin");
   }
-
   if (!destination) {
     destination = await geocodeText(destText);
-    if (!destination) {
-      status.innerText = "Could not find destination. Try a more specific address.";
-      btn.disabled = false;
-      return;
-    }
+    if (!destination) { status.innerText = "Could not find destination. Try a more specific address."; btn.disabled = false; return; }
     if (destinationMarker) map.removeLayer(destinationMarker);
     destinationMarker = L.marker([destination.lat, destination.lng]).addTo(map).bindPopup("Destination");
   }
 
   status.innerText = "Processing…";
-  output.innerText = "";
-  clearRoutes();
-
-  const payload = {
-    source:      { lat: origin.lat, lng: origin.lng },
-    destination: { lat: destination.lat, lng: destination.lng },
-    disability_type: document.getElementById("disability").value,
-    date: document.getElementById("date").value,
-  };
-
-  try {
-    const res = await fetch("http://127.0.0.1:8000/process", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    status.innerText = "Done.";
-    btn.disabled = false;
-    drawRoutes(data.routes);
-    output.innerText = data.result || "";
-    showFeedbackForm(payload, data);
-  } catch (err) {
-    status.innerText = "Error. See console for details.";
-    output.innerText = err.toString();
-    btn.disabled = false;
-    console.error(err);
-  }
+  const ok = await submitRoute(origin, destination);
+  status.innerText = ok ? "Done." : "Error. See console.";
+  btn.disabled = false;
 });
+
+// ── Feedback helpers ──────────────────────────────────────────────────────────
 
 function extractRecommendedSection(text) {
   if (!text) return "";
@@ -392,37 +398,27 @@ function showFeedbackForm(payload, data) {
 
   const route = data.routes && data.routes[0];
   if (route) {
-    const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec || 0), 0) / 60);
+    const totalMin = Math.round(route.legs.reduce((s,l) => s+(l.duration_sec||0), 0)/60);
     document.getElementById("f_total_min").value = totalMin;
     document.getElementById("f_num_transfers").value = route.transfers || 0;
-
-    const modes = route.legs.map(l => l.route ? `${l.mode} ${l.route}` : l.mode);
-    document.getElementById("f_modes").value = modes.join(" → ");
-
-    const legLines = route.legs.map(l => {
-      const dist = l.distance_m >= 1000 ? (l.distance_m / 1000).toFixed(1) + " km" : Math.round(l.distance_m) + " m";
-      const dur = Math.round((l.duration_sec || 0) / 60) + " min";
-      const label = l.route ? `${l.mode} ${l.route}` : l.mode;
-      return `${label}: ${l.from || "?"} → ${l.to || "?"} | ${dist}, ${dur}`;
-    });
-    document.getElementById("f_legs_summary").value = legLines.join("\n");
-
-    const walkPts = route.legs
+    document.getElementById("f_modes").value = route.legs.map(l => l.route ? `${l.mode} ${l.route}` : l.mode).join(" → ");
+    document.getElementById("f_legs_summary").value = route.legs.map(l => {
+      const dist = l.distance_m >= 1000 ? (l.distance_m/1000).toFixed(1)+" km" : Math.round(l.distance_m)+" m";
+      return `${l.route ? l.mode+" "+l.route : l.mode}: ${l.from||"?"} → ${l.to||"?"} | ${dist}, ${Math.round((l.duration_sec||0)/60)} min`;
+    }).join("\n");
+    document.getElementById("f_walk_waypoints").value = route.legs
       .filter(l => l.mode === "WALK" && l.geometry_sampled_50m)
-      .flatMap(l => l.geometry_sampled_50m.map(p => Array.isArray(p) ? p.join(",") : `${p.lat},${p.lon}`));
-    document.getElementById("f_walk_waypoints").value = walkPts.join(";");
-
-    const transitStops = route.legs
+      .flatMap(l => l.geometry_sampled_50m.map(p => Array.isArray(p) ? p.join(",") : `${p.lat},${p.lon}`))
+      .join(";");
+    document.getElementById("f_transit_stops").value = route.legs
       .filter(l => l.mode !== "WALK")
       .flatMap(l => {
-        const stops = [];
-        if (l.from_lat != null) stops.push(`${l.from || ""}|${l.from_lat}|${l.from_lon}|${l.mode}`);
-        if (l.to_lat != null)   stops.push(`${l.to   || ""}|${l.to_lat}|${l.to_lon}|${l.mode}`);
-        return stops;
-      });
-    document.getElementById("f_transit_stops").value = transitStops.join(";");
+        const s = [];
+        if (l.from_lat != null) s.push(`${l.from||""}|${l.from_lat}|${l.from_lon}|${l.mode}`);
+        if (l.to_lat   != null) s.push(`${l.to  ||""}|${l.to_lat}|${l.to_lon}|${l.mode}`);
+        return s;
+      }).join(";");
   }
-
   document.getElementById("feedbackSection").scrollIntoView({ behavior: "smooth" });
 }
 </script>
@@ -446,14 +442,10 @@ function showFeedbackForm(payload, data) {
 
     <label>Rating (1–5):</label>
     <input type="number" id="rating" name="rating" min="1" max="5" required>
-
     <br><br>
-
     <label>Comment:</label>
     <textarea id="comment" name="comment"></textarea>
-
     <br><br>
-
     <button type="submit">Submit Feedback</button>
   </form>
   <p id="feedbackStatus"></p>
@@ -461,42 +453,41 @@ function showFeedbackForm(payload, data) {
 
 <script>
 document.getElementById("feedbackForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    const fv = id => document.getElementById(id).value;
-    const payload = {
-        rating: parseInt(fv("rating")),
-        comment: fv("comment"),
-        origin_lat: parseFloat(fv("f_origin_lat")) || null,
-        origin_lng: parseFloat(fv("f_origin_lng")) || null,
-        dest_lat: parseFloat(fv("f_dest_lat")) || null,
-        dest_lng: parseFloat(fv("f_dest_lng")) || null,
-        disability_type: fv("f_disability_type") || null,
-        route_date: fv("f_route_date") || null,
-        route_total_min: parseInt(fv("f_total_min")) || null,
-        route_num_transfers: parseInt(fv("f_num_transfers")) >= 0 ? parseInt(fv("f_num_transfers")) : null,
-        route_modes: fv("f_modes") || null,
-        route_legs_summary: fv("f_legs_summary") || null,
-        route_walk_waypoints: fv("f_walk_waypoints") || null,
-        route_transit_stops: fv("f_transit_stops") || null,
-        recommendation: fv("f_recommendation") || null,
-    };
-    try {
-        const response = await fetch("http://127.0.0.1:8000/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        if (!response.ok) {
-            const err = await response.text();
-            document.getElementById("feedbackStatus").innerText = "Error saving feedback: " + err;
-            return;
-        }
-        const data = await response.json();
-        document.getElementById("feedbackStatus").innerText = "Thanks! Feedback saved (ID: " + data.id + ")";
-        document.getElementById("feedbackSection").style.display = "none";
-    } catch (err) {
-        document.getElementById("feedbackStatus").innerText = "Network error: " + err;
+  e.preventDefault();
+  const fv = id => document.getElementById(id).value;
+  const payload = {
+    rating: parseInt(fv("rating")),
+    comment: fv("comment"),
+    origin_lat: parseFloat(fv("f_origin_lat")) || null,
+    origin_lng: parseFloat(fv("f_origin_lng")) || null,
+    dest_lat: parseFloat(fv("f_dest_lat")) || null,
+    dest_lng: parseFloat(fv("f_dest_lng")) || null,
+    disability_type: fv("f_disability_type") || null,
+    route_date: fv("f_route_date") || null,
+    route_total_min: parseInt(fv("f_total_min")) || null,
+    route_num_transfers: parseInt(fv("f_num_transfers")) >= 0 ? parseInt(fv("f_num_transfers")) : null,
+    route_modes: fv("f_modes") || null,
+    route_legs_summary: fv("f_legs_summary") || null,
+    route_walk_waypoints: fv("f_walk_waypoints") || null,
+    route_transit_stops: fv("f_transit_stops") || null,
+    recommendation: fv("f_recommendation") || null,
+  };
+  try {
+    const response = await fetch("http://127.0.0.1:8000/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      document.getElementById("feedbackStatus").innerText = "Error saving feedback: " + await response.text();
+      return;
     }
+    const data = await response.json();
+    document.getElementById("feedbackStatus").innerText = "Thanks! Feedback saved (ID: " + data.id + ")";
+    document.getElementById("feedbackSection").style.display = "none";
+  } catch (err) {
+    document.getElementById("feedbackStatus").innerText = "Network error: " + err;
+  }
 });
 </script>
 
