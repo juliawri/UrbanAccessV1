@@ -24,6 +24,7 @@ services:
       - "8080:8080"
 
   app:
+    image: humantea/urbanaccessv1-app:latest
     build: .
     ports:
       - "8000:8000"

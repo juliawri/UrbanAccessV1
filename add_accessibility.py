@@ -34,7 +34,9 @@ def add_access(filename="montreal_routes.json", routes_data=None):
 
     if not df.empty:
         access = pd.read_csv("collation_points_grid_centre-ville_cleaned.csv")
+        print("initial col:", repr(access.columns.tolist()))
         access = access.rename(columns={"latitude": "lat", "longitude": "lon"})
+        print("second col:", repr(access.columns.tolist()))
         access = access.dropna(subset=["lat", "lon"])
 
         access_coords = np.radians(access[["lat", "lon"]].values)
