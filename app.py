@@ -8,7 +8,7 @@ import os
 
 load_dotenv()
 
-client = InferenceClient(token="YOUR_TOKEN_HERE")
+client = InferenceClient(token=os.environ["HF_TOKEN"])
 
 MODEL = "Qwen/Qwen2.5-72B-Instruct"
 
