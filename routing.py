@@ -85,12 +85,15 @@ def _parse_itinerary(idx, itin):
 
 
 def _route_signature(itin):
-    """Key based on which transit lines are used — used for deduplication."""
+    """Key based on transit lines and their boarding/alighting stops — used for deduplication."""
     parts = []
     for leg in itin.get("legs", []):
         mode = leg.get("mode", "")
         if mode != "WALK":
-            parts.append(f"{mode}:{leg.get('route') or leg.get('routeId') or ''}")
+            route = leg.get("route") or leg.get("routeId") or ""
+            from_name = (leg.get("from") or {}).get("name", "") if isinstance(leg.get("from"), dict) else leg.get("from", "")
+            to_name = (leg.get("to") or {}).get("name", "") if isinstance(leg.get("to"), dict) else leg.get("to", "")
+            parts.append(f"{mode}:{route}:{from_name}→{to_name}")
     return "|".join(parts) or "WALK"
 
 
@@ -98,7 +101,7 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
     eff_date = date or "2026-06-04"
 
     # Single broad request — OTP returns its best options first
-    transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 6, eff_date)
+    transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date)
     walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 1, eff_date)
 
     # Keep only itineraries that actually use a non-walk mode
@@ -110,7 +113,7 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
     # If the requested date falls outside OTP's GTFS feed, retry with the known-good fallback date
     if not transit_itins and eff_date != "2026-06-04":
         print("No transit for requested date — retrying with fallback date 2026-06-04")
-        transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 6, "2026-06-04")
+        transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, "2026-06-04")
         walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 1, "2026-06-04")
         transit_itins = [it for it in transit_raw
                          if any(l.get("mode") != "WALK" for l in it.get("legs", []))]

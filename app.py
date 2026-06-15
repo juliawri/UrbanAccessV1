@@ -4,11 +4,10 @@ import random
 from concurrent.futures import ThreadPoolExecutor
 from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
-client = InferenceClient(token="YOUR_TOKEN_HERE")
+client = InferenceClient(token=os.getenv("HF_TOKEN"))
 
 MODEL = "Qwen/Qwen2.5-72B-Instruct"
 
@@ -150,8 +149,12 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
 
     dataset = []  # list of (lat, lon, PIL.Image)
     with ThreadPoolExecutor(max_workers=8) as executor:
-        for views in executor.map(_fetch_point, sample):
-            dataset.extend(views)
+        try:
+            for views in executor.map(_fetch_point, sample):
+                dataset.extend(views)
+        except Exception as e:
+            print(f"  Mapillary fetch error, skipping Gemini scoring: {e}")
+            return {}, ""
 
     if not dataset:
         print("  No Mapillary images fetched; skipping Gemini call.")
@@ -183,10 +186,15 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
     gemini_client = _genai.Client(api_key=GEMINI_API_KEY)
     contents = [prompt] + [img for _, _, img in dataset]
     print(f"  Calling Gemini with {len(dataset)} images across {len(sample)} coordinates...")
-    response = gemini_client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=contents,
-    )
+
+    try:
+        response = gemini_client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=contents,
+        )
+    except Exception as e:
+        print(f"  Gemini call failed, skipping scores: {e}")
+        return {}, ""
 
     # Parse response lines: image_number,score,justification
     # Split on first 2 commas only so any remaining commas stay in justification text.
@@ -201,7 +209,7 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
             continue
         try:
             img_num = int(parts[0])
-            score = int(parts[1])
+            score = round(float(parts[1]))
             comment = parts[2].strip()
         except ValueError:
             print(f"  Could not parse Gemini line: {line}")
@@ -248,6 +256,8 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
         for p in shuffled:
             if added >= 5:
                 break
+            if p.get("lat") is None or p.get("lon") is None:
+                continue
             key = _coord_key(p.get("lat"), p.get("lon"))
             if key not in seen_coords:
                 seen_coords.add(key)
@@ -255,7 +265,7 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
                 added += 1
 
     # ── Gemini VLM scoring: 5 unique points per route, all different ────────
-    gemini_scores, gemini_raw = {}, []
+    gemini_scores, gemini_raw = {}, ""
    # gemini_scores, gemini_raw = fetch_gemini_scores(gemini_sample, disability_type)
     # ───────────────────────────────────────────────────────────────────────
 
@@ -277,27 +287,32 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
             )
         leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
 
+        MAX_POINTS = 15
+        display_points = random.sample(eligible, min(MAX_POINTS, len(eligible)))
+
         point_lines = []
-        for p in eligible:
+        for p in display_points:
+            if p.get("lat") is None or p.get("lon") is None:
+                continue
             coords = f"({p.get('lat'):.5f}, {p.get('lon'):.5f})"
             fields = " | ".join(
                 f"{k}={v}" for k, v in p.items()
                 if k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
             )
             g_data = gemini_scores.get(_coord_key(p.get("lat"), p.get("lon")), {})
-            g_score = str(g_data.get("score", "")) if g_data else ""
-            g_comments = g_data.get("comments", "") if g_data else ""
-            point_lines.append(
-                f"  {coords} | {fields}"
-                f" | gemini_accessibility_score={g_score}"
-                f" | gemini_accessibility_comments={g_comments}"
+            gemini_suffix = (
+                f" | gemini_accessibility_score={g_data['score']}"
+                f" | gemini_accessibility_comments={g_data['comments']}"
+                if g_data else ""
             )
+            point_lines.append(f"  {coords} | {fields}{gemini_suffix}")
         point_text = "\n".join(point_lines) if point_lines else "  (no walk segment data)"
+        sampled_note = f" (showing {len(display_points)} of {len(eligible)})" if len(eligible) > MAX_POINTS else ""
 
         blocks.append(
             f"=== Route {route['route_id']} ({dur_min} min, {transfers} transfer(s)) ===\n"
             f"Legs:\n{leg_text}\n\n"
-            f"Walk segment data ({len(eligible)} eligible points):\n{point_text}"
+            f"Walk segment data ({len(eligible)} eligible points{sampled_note}):\n{point_text}"
         )
     return "\n\n".join(blocks), gemini_raw
 
@@ -338,17 +353,23 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
         max_tokens=1024,
         temperature=0.2,
     )
+    if not response.choices:
+        return {"text": "No response from model.", "ranked_ids": list(range(len(routes_data)))}
     text = response.choices[0].message.content.strip()
 
 
     best_id = 0
     lines = text.split('\n')
     if lines[0].upper().lstrip().startswith('RECOMMENDED:'):
-        m = re.search(r'\d+', lines[0].split(':', 1)[1])
+        m = re.fullmatch(r'\s*(\d+)\s*', lines[0].split(':', 1)[1])
         if m:
-            candidate = int(m.group())
+            candidate = int(m.group(1))
             if 0 <= candidate < len(routes_data):
                 best_id = candidate
+            else:
+                print(f"  RECOMMENDED id {candidate} out of range, defaulting to 0")
+        else:
+            print(f"  Could not parse RECOMMENDED line: {lines[0]!r}, defaulting to route 0")
         text = '\n'.join(lines[1:]).strip()
 
     all_ids = list(range(len(routes_data)))
