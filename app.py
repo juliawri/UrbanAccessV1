@@ -134,11 +134,11 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
         from google import genai as _genai
     except ImportError:
         print("google-genai not installed; skipping VLM scoring.")
-        return {}, ""
+        return {}, "", "google-genai package not installed"
 
     if not GEMINI_API_KEY or not MAPILLARY_TOKEN:
         print("GEMINI_API_KEY or MAPILLARY_TOKEN not set; skipping VLM scoring.")
-        return {}, ""
+        return {}, "", "GEMINI_API_KEY or MAPILLARY_TOKEN not set"
 
     sample = list(points)
 
@@ -154,11 +154,11 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
                 dataset.extend(views)
         except Exception as e:
             print(f"  Mapillary fetch error, skipping Gemini scoring: {e}")
-            return {}, ""
+            return {}, "", f"Mapillary fetch error: {e}"
 
     if not dataset:
         print("  No Mapillary images fetched; skipping Gemini call.")
-        return {}, ""
+        return {}, "", "No Mapillary images fetched"
 
     aid_criteria = MOBILITY_AID_CRITERIA.get(
         mobility_aid.lower(), MOBILITY_AID_CRITERIA["no mobility aid"]
@@ -183,7 +183,11 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
         "Do not use commas inside <just>."
     )
 
-    gemini_client = _genai.Client(api_key=GEMINI_API_KEY)
+    gemini_client = _genai.Client(
+        api_key=GEMINI_API_KEY,
+        http_options={"timeout": 30},
+    )
+
     contents = [prompt] + [img for _, _, img in dataset]
     print(f"  Calling Gemini with {len(dataset)} images across {len(sample)} coordinates...")
 
@@ -193,8 +197,8 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
             contents=contents,
         )
     except Exception as e:
-        print(f"  Gemini call failed, skipping scores: {e}")
-        return {}, ""
+        print(f"  Gemini unavailable, skipping scores: {e}")
+        return {}, "", f"Gemini API call failed: {e}"
 
     # Parse response lines: image_number,score,justification
     # Split on first 2 commas only so any remaining commas stay in justification text.
@@ -228,7 +232,7 @@ def fetch_gemini_scores(points, mobility_aid="no mobility aid"):
         result[key] = {"score": avg_score, "comments": combined_comments}
 
     print(f"  Gemini scored {len(result)} coordinates.")
-    return result, response.text
+    return result, response.text, None
 
 # ── End Gemini / Mapillary functions ──────────────────────────────────────────
 
@@ -265,8 +269,8 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
                 added += 1
 
     # ── Gemini VLM scoring: 5 unique points per route, all different ────────
-    gemini_scores, gemini_raw = {}, ""
-   # gemini_scores, gemini_raw = fetch_gemini_scores(gemini_sample, disability_type)
+    gemini_scores, gemini_raw, gemini_error = {}, "", None
+    gemini_scores, gemini_raw, gemini_error = fetch_gemini_scores(gemini_sample, disability_type)
     # ───────────────────────────────────────────────────────────────────────
 
     blocks = []
@@ -314,14 +318,14 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
             f"Legs:\n{leg_text}\n\n"
             f"Walk segment data ({len(eligible)} eligible points{sampled_note}):\n{point_text}"
         )
-    return "\n\n".join(blocks), gemini_raw
+    return "\n\n".join(blocks), gemini_raw, gemini_error
 
 
 def get_recommendation(origin, destination, disability_type, date, routes_data):
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
         print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
-    route_context, gemini_raw = format_routes_for_llm(routes_data, disability_type)
+    route_context, gemini_raw, gemini_error = format_routes_for_llm(routes_data, disability_type)
 
     user_prompt = (
         f"User profile:\n"
@@ -338,8 +342,12 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
         f.write(SYSTEM_PROMPT)
         f.write("\n\n=== USER PROMPT ===\n")
         f.write(user_prompt)
-        if gemini_raw:
-            f.write("\n\n=== GEMINI VLM RAW RESPONSE ===\n")
+        if gemini_error:
+            f.write("\n\n=== GEMINI VLM STATUS: FAILED ===\n")
+            f.write(gemini_error)
+        elif gemini_raw:
+            f.write("\n\n=== GEMINI VLM STATUS: OK ===\n")
+            f.write("\n=== GEMINI VLM RAW RESPONSE ===\n")
             f.write(gemini_raw)
     print("Prompts written to prompt_debug.txt")
 
