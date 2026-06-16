@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: feedbackdb
+      POSTGRES_USER: feedbackuser
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  otp:
+    image: eclipse-temurin:21-jre
+    working_dir: /otp
+    volumes:
+      - ./otp-2.5.0-shaded.jar:/otp/otp.jar
+      - ./data:/otp/data
+    command: java -Xmx8g -jar otp.jar --build --serve /otp/data
+    ports:
+      - "8080:8080"
+
+  app:
+    image: humantea/urbanaccessv1-app:latest
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      HF_TOKEN: ${HF_TOKEN}
+      DATABASE_URL: postgresql://feedbackuser:password@db:5432/feedbackdb
+      OTP_URL: http://otp:8080/otp/routers/default/plan
+    depends_on:
+      - db
+      - otp
+
+volumes:
+  pgdata:
