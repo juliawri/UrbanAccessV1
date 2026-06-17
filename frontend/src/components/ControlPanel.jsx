@@ -22,15 +22,15 @@ const MOBILITY_AIDS = [
   { label: 'No Mobility Aid',     value: 'no mobility aid' },
 ]
 
-
 const aidCollection = createListCollection({ items: MOBILITY_AIDS })
 
-export default function ControlPanel({ onPlan, loading }) {
+export default function ControlPanel({
+  onPlan, loading,
+  origin, destination, onOriginChange, onDestinationChange,
+  inputMode, onInputModeChange, mapClickStep, onResetMapClick,
+}) {
   const [disabilityType, setDisabilityType] = useState(['manual wheelchair'])
-  const [date, setDate]           = useState('2026-04-15')
-  const [origin, setOrigin]       = useState(null)
-  const [destination, setDest]    = useState(null)
-  const [mode, setMode]           = useState('search') // 'search' | 'map'
+  const [date, setDate] = useState('2026-04-15')
 
   function handleSubmit() {
     if (!origin || !destination) return
@@ -49,21 +49,21 @@ export default function ControlPanel({ onPlan, loading }) {
       border="1px solid"
       borderColor="gray.200"
       borderRadius="lg"
-      bg="white"
+      bg="#C4D1DF"
     >
       {/* Mobility aid + date row */}
       <HStack align="flex-end" flexWrap="wrap" gap={3}>
-        <Box flex="1" minW="200px">
+        <Box flex="1" minW="200px" position="relative">
           <SelectRoot
             collection={aidCollection}
             value={disabilityType}
             onValueChange={({ value }) => setDisabilityType(value)}
           >
-            <SelectLabel fontSize="sm" fontWeight="medium">Mobility Aid</SelectLabel>
+            <SelectLabel fontSize="sm" fontWeight="medium" color="black">Mobility Aid</SelectLabel>
             <SelectTrigger>
-              <SelectValueText placeholder="Select…" />
+              <SelectValueText placeholder="Select…" color="black" />
             </SelectTrigger>
-            <SelectContent zIndex={9999}>
+            <SelectContent zIndex={9999} position="absolute" top="100%" left={0} right={0}>
               {MOBILITY_AIDS.map(a => (
                 <SelectItem key={a.value} item={a}>{a.label}</SelectItem>
               ))}
@@ -87,9 +87,9 @@ export default function ControlPanel({ onPlan, loading }) {
           <Button
             key={m}
             size="sm"
-            variant={mode === m ? 'solid' : 'outline'}
+            variant={inputMode === m ? 'solid' : 'outline'}
             colorPalette="blue"
-            onClick={() => setMode(m)}
+            onClick={() => onInputModeChange(m)}
           >
             {m === 'search' ? 'Search by address' : 'Click on map'}
           </Button>
@@ -97,23 +97,45 @@ export default function ControlPanel({ onPlan, loading }) {
       </HStack>
 
       {/* Search inputs */}
-      {mode === 'search' && (
+      {inputMode === 'search' && (
         <Stack gap={2}>
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1}>Origin</Text>
-            <Autocomplete label="Origin" onSelect={setOrigin} />
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="black">Origin</Text>
+            <Autocomplete label="Origin" onSelect={onOriginChange} />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1}>Destination</Text>
-            <Autocomplete label="Destination" onSelect={setDest} />
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="black">Destination</Text>
+            <Autocomplete label="Destination" onSelect={onDestinationChange} />
           </Box>
         </Stack>
       )}
 
-      {mode === 'map' && (
-        <Box fontSize="sm" color="gray.500" p={2} bg="gray.50" borderRadius="md">
-          Click-on-map mode: use the map below to set your origin and destination.
-        </Box>
+      {/* Map click status */}
+      {inputMode === 'map' && (
+        <Stack gap={2}>
+          <Box fontSize="sm" p={2} bg="white" borderRadius="md" border="1px solid" borderColor="gray.200">
+            {!origin && !destination && (
+              <Text color="black">Click on the map to set your <strong>origin</strong>.</Text>
+            )}
+            {origin && !destination && (
+              <Text color="black">Origin set. Now click to set your <strong>destination</strong>.</Text>
+            )}
+            {origin && destination && (
+              <Text color="black">Both points set. Ready to plan!</Text>
+            )}
+          </Box>
+          <HStack fontSize="sm" gap={4}>
+            <Text color={origin ? 'green.700' : 'gray.500'}>
+              {origin ? `Origin: ${origin.label}` : 'Origin: not set'}
+            </Text>
+            <Text color={destination ? 'green.700' : 'gray.500'}>
+              {destination ? `Destination: ${destination.label}` : 'Destination: not set'}
+            </Text>
+          </HStack>
+          <Button size="sm" variant="ghost" colorPalette="red" onClick={onResetMapClick} alignSelf="flex-start">
+            Reset points
+          </Button>
+        </Stack>
       )}
 
       <Button
@@ -121,7 +143,7 @@ export default function ControlPanel({ onPlan, loading }) {
         onClick={handleSubmit}
         loading={loading}
         loadingText="Planning route…"
-        disabled={mode === 'search' && (!origin || !destination)}
+        disabled={!origin || !destination}
       >
         Plan Route
       </Button>
