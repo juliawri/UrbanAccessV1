@@ -1,77 +1,105 @@
 === SYSTEM PROMPT ===
 You are an accessibility routing assistant for Montreal transit.
 
-You are given route options. Each route includes its legs (transit steps) and, for walking segments, data from a Montreal urban accessibility dataset with fields such as heat_class (urban heat island intensity), collisions, construction permits, road obstructions (entraves), and tree cover.
+You are given route options. Each route includes its legs (transit steps) and, for walking segments, data collected from the city and street-level photos.
+
+=== WHAT THE DATA MEANS (for your reasoning only — do not repeat field names or scores in your response) ===
+
+1. ENVIRONMENTAL CONDITIONS (per walk-segment point)
+   - heat_class (1–5): How hot this area gets. 1 = cool and shaded, 5 = intense urban heat. High heat is tiring and risky for people using mobility aids.
+   - num_collisions: How many pedestrian-vehicle incidents have happened near this spot. More incidents = more dangerous crossing.
+   - num_building_permits / num_permit_affected_homes / type_of_permit: Construction activity nearby. Construction often means temporary sidewalk closures, uneven ground, or debris.
+   - num_barriers / active_barriers / barriers_main_reason: Physical obstructions on the path. active_barriers > 0 means something is currently blocking or narrowing the sidewalk.
+   - num_trees / trees_main_type / average_tree_size_from_trunk_diam_cm: Tree coverage. More large trees = more shade and cooler walking conditions, but very large roots can create uneven pavement.
+
+2. STREET PHOTO ANALYSIS (mae_inaccessible_prob)
+   AI analysis of street-level photos to spot physical barriers for the user's mobility aid. Score is 0.0 to 1.0 — higher means more likely to be difficult or impassable:
+   - 0.0–0.3: Path looks clear — smooth surface, no visible obstacles.
+   - 0.3–0.6: Some potential issues — minor obstacles or surfaces that may be hard to navigate.
+   - 0.6–1.0: Likely problem — things like missing curb cuts, broken pavement, narrow paths, steep cross-slopes, or missing ramps were detected.
+   Weight this heavily. Multiple high-concern points on one route is a serious red flag.
+
+3. DETAILED PHOTO REVIEW (gemini_accessibility_score, gemini_accessibility_comments)
+   A closer look at the most concerning spots across all routes using additional photo review. Score is 1–5: 1–2 = very difficult, 3 = manageable with effort, 4–5 = accessible. The comments describe what was found (e.g. 'missing curb cut', 'cracked pavement'). When both photo analyses agree a spot is difficult, that's a strong warning sign.
+
+=== HOW TO DECIDE ===
+
+Use this priority order when comparing routes:
+  1. CONFIRMED BLOCKAGES (active_barriers > 0): Something is actively blocking the path right now — highest concern.
+  2. MULTIPLE HIGH-CONCERN PHOTO SPOTS: Several points where photos show clear barriers — strong evidence of difficulty.
+  3. MODERATE PHOTO CONCERNS: A few spots with potential issues — worth flagging, but not necessarily a dealbreaker.
+  4. ENVIRONMENTAL RISKS: High collision history, active construction, and intense heat are important context.
+  5. SHADE AND COMFORT: Prefer routes with more shade when other factors are similar, especially in hot weather.
+
+=== OUTPUT FORMAT ===
 
 Start your response with exactly one line containing only: RECOMMENDED:<id> where <id> is the integer route ID (e.g. RECOMMENDED:0 or RECOMMENDED:2). No extra words or punctuation on that line.
-Then evaluate every route provided using the labels 'Recommended Route', 'Alternative 1', 'Alternative 2'.
+Then evaluate every route using the labels 'Recommended Route', 'Alternative 1', 'Alternative 2'.
 Do not use route ID numbers in the evaluation text.
-For each route, describe specific accessibility advantages and concerns for the user's mobility aid, drawing on the route legs and walk-segment data provided. DO NOT evaluate the route only by what is fastest
-Give a confidence level (Low/Medium/High) for your top recommendation
-Consider the date and season when assessing walking conditions.
-Do not invent information not in the data. If you cannot find good available data, say so. Be concise and practical, listing your recommendations in bullet point form so they are easy to read.
+IMPORTANT: Write your explanations entirely in plain, everyday language. Do NOT mention scores, probabilities, field names, model names, or any technical terms. Instead of 'MAE score of 0.7', say 'street photos suggest this section may have obstacles'. Instead of 'heat class 4', say 'this area tends to be quite hot'. Instead of 'active_barriers = 1', say 'there is currently a blockage on this path'. Describe what you found as if explaining to a friend with no technical background.
+Do NOT evaluate routes solely by travel time.
+Give a confidence level (Low/Medium/High) for your top recommendation, noting whether street photo data was available.
+Consider the date and season when assessing walking conditions (ice, heat, construction season).
+Do not invent information not present in the data. If no photo data was available for a segment, say so.
+Be concise and practical — use bullet points so the output is easy to scan.
 
 === USER PROMPT ===
 User profile:
-- Origin: (45.5304417, -73.6139839)
-- Destination: (45.4812822, -73.5990817)
-- Mobility aid: walking cane
+- Origin: (45.497275203688964, -73.62692855681617)
+- Destination: (45.490175589164444, -73.58778362874762)
+- Mobility aid: manual wheelchair
 - Date: 2026-04-15
 
 Routes:
-=== Route 0 (58 min, 2 transfer(s)) ===
+=== Route 0 (29 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Saint-Laurent / Saint-Zotique | 6 min, 343 m
-  2. BUS (Beaubien): Saint-Laurent / Saint-Zotique → Beaubien / Saint-Denis | 5 min, 868 m
-  3. WALK: Beaubien / Saint-Denis → Station Beaubien | 6 min, 192 m
-  4. SUBWAY (Line 2 - Orange): Station Beaubien → Station Vendôme | 20 min, 10493 m
-  5. WALK: Station Vendôme → Station Vendôme | 3 min, 60 m
-  6. BUS (Saint-Jacques): Station Vendôme → Sainte-Catherine / Béthune | 4 min, 807 m
-  7. WALK: Sainte-Catherine / Béthune → Destination | 8 min, 519 m
+  1. WALK: Origin → de la Côte-des-Neiges / Saint-Kevin | 3 min, 219 m
+  2. BUS (Côte-des-Neiges): de la Côte-des-Neiges / Saint-Kevin → du Docteur-Penfield / Atwater | 14 min, 2887 m
+  3. WALK: du Docteur-Penfield / Atwater → Destination | 12 min, 822 m
 
-Walk segment data (43 eligible points (showing 10 of 43)):
-  (45.47920, -73.59624) | distance_to_access_m=1522.999791106782 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.48108, -73.59866) | distance_to_access_m=1493.247718196516 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.47940, -73.59655) | distance_to_access_m=1519.8886465201474 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.48037, -73.59832) | distance_to_access_m=1529.299483328036 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.53479, -73.60442) | distance_to_access_m=2967.492358085233 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.53079, -73.61365) | distance_to_access_m=3080.1921784527344 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.48092, -73.59852) | distance_to_access_m=1497.4599789799195 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.47410, -73.60413) | distance_to_access_m=2350.1644188201744 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.53157, -73.61129) | distance_to_access_m=3009.8229100834596 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.48012, -73.59766) | distance_to_access_m=1514.2283126259708 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
+Walk segment data (40 eligible points (showing 10 of 40)):
+  (45.49219, -73.58953) | distance_to_access_m=353.1078094212841 | point_id=P06697 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=8 | num_collisions=0 | num_building_permits=8 | num_permit_affected_homes=1 | type_of_permit=Transformation(8) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.713
+  (45.49799, -73.62638) | distance_to_access_m=3225.2496048323133 | point_id=P04552 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(1); Chêne à gros fruits(1) | average_tree_size_from_trunk_diam_cm=19.0 | mae_inaccessible_prob=0.902
+  (45.49179, -73.58899) | distance_to_access_m=311.8909602186726 | point_id=P06760 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Tilleul à petites feuilles(1) | average_tree_size_from_trunk_diam_cm=56.0 | mae_inaccessible_prob=0.667
+  (45.49275, -73.58981) | distance_to_access_m=375.956219014518 | point_id=P06374 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Tilleul à petites feuilles Greenspire(1) | average_tree_size_from_trunk_diam_cm=22.0 | mae_inaccessible_prob=0.686
+  (45.49068, -73.58863) | distance_to_access_m=288.8061914888447 | point_id=P07080 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=2 | num_permit_affected_homes=0 | type_of_permit=Transformation(1); Travaux d'agrandissement(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.619
+  (45.49446, -73.58850) | distance_to_access_m=306.68485982038646 | point_id=P06282 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=3 | num_collisions=0 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Érable argenté(1) | average_tree_size_from_trunk_diam_cm=40.0 | mae_inaccessible_prob=0.688
+  (45.49411, -73.58892) | distance_to_access_m=321.86871347143557 | point_id=P06282 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=3 | num_collisions=0 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Érable argenté(1) | average_tree_size_from_trunk_diam_cm=40.0 | mae_inaccessible_prob=0.801
+  (45.49789, -73.62599) | distance_to_access_m=3194.957192509769 | point_id=P04552 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(1); Chêne à gros fruits(1) | average_tree_size_from_trunk_diam_cm=19.0 | mae_inaccessible_prob=0.917
+  (45.49782, -73.62653) | distance_to_access_m=3237.136768496921 | point_id=P04552 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(1); Chêne à gros fruits(1) | average_tree_size_from_trunk_diam_cm=19.0 | mae_inaccessible_prob=0.282
+  (45.49255, -73.58976) | distance_to_access_m=371.4070428712055 | point_id=P06628 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=6 | num_collisions=0 | num_building_permits=4 | num_permit_affected_homes=0 | type_of_permit=Travaux extérieurs(3); Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Ginkgo à feuilles bilobées(1) | average_tree_size_from_trunk_diam_cm=22.0 | mae_inaccessible_prob=0.513
 
-=== Route 1 (58 min, 0 transfer(s)) ===
+=== Route 1 (29 min, 1 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Station Beaubien | 20 min, 1138 m
-  2. SUBWAY (Line 2 - Orange): Station Beaubien → Station Vendôme | 20 min, 10493 m
-  3. WALK: Station Vendôme → Destination | 18 min, 1116 m
+  1. WALK: Origin → de la Côte-des-Neiges / Saint-Kevin | 3 min, 219 m
+  2. BUS (Côte-des-Neiges): de la Côte-des-Neiges / Saint-Kevin → du Docteur-Penfield / Atwater | 14 min, 2887 m
+  3. WALK: du Docteur-Penfield / Atwater → Atwater / Saint-Sulpice | 2 min, 127 m
+  4. BUS (Avenue des Pins): Atwater / Saint-Sulpice → Atwater / Sherbrooke | 2 min, 522 m
+  5. WALK: Atwater / Sherbrooke → Destination | 3 min, 218 m
 
-Walk segment data (63 eligible points (showing 10 of 63)):
-  (45.48006, -73.59769) | distance_to_access_m=1520.7421364003874 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.47457, -73.60358) | distance_to_access_m=2282.5702248665875 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.53166, -73.61267) | distance_to_access_m=3092.1433438968365 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.53189, -73.61245) | distance_to_access_m=3098.246781007298 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.47909, -73.59859) | distance_to_access_m=1647.9249423452484 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.53241, -73.61152) | distance_to_access_m=3090.1522505974085 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.48092, -73.59852) | distance_to_access_m=1497.4599789799195 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.53625, -73.60785) | distance_to_access_m=3248.336880842413 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.47889, -73.59883) | distance_to_access_m=1676.9808466770942 | point_id=P07383 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=0 | type_of_permit=Transformation(15); Travaux intérieurs(13); Travaux extérieurs(3) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.53547, -73.60857) | distance_to_access_m=3209.0278281631818 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+Walk segment data (19 eligible points (showing 10 of 19)):
+  (45.49511, -73.58884) | distance_to_access_m=346.02323758110305 | point_id=P05228 | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=17 | num_collisions=17 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.842
+  (45.49495, -73.58989) | distance_to_access_m=427.9514740852301 | point_id=P05662 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=20 | num_collisions=0 | num_building_permits=20 | num_permit_affected_homes=0 | type_of_permit=Transformation(7); Travaux extérieurs(7); Certificat d'autorisation(3) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.698
+  (45.49745, -73.62502) | distance_to_access_m=3120.057412468502 | point_id=P05077 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=29 | num_collisions=0 | num_building_permits=29 | num_permit_affected_homes=17 | type_of_permit=Travaux intérieurs(18); Transformation(5); Travaux extérieurs(4) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.945
+  (45.49008, -73.58853) | distance_to_access_m=301.5774566620085 | point_id=P07204 | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=33 | num_collisions=33 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0
+  (45.49500, -73.58963) | distance_to_access_m=407.3837924819836 | point_id=P05228 | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=17 | num_collisions=17 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.597
+  (45.49799, -73.62638) | distance_to_access_m=3225.2496048323133 | point_id=P04552 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(1); Chêne à gros fruits(1) | average_tree_size_from_trunk_diam_cm=19.0 | mae_inaccessible_prob=0.902
+  (45.49789, -73.62599) | distance_to_access_m=3194.957192509769 | point_id=P04552 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(1); Chêne à gros fruits(1) | average_tree_size_from_trunk_diam_cm=19.0 | mae_inaccessible_prob=0.917
+  (45.49030, -73.58883) | distance_to_access_m=314.8763507328535 | point_id=P07080 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=2 | num_permit_affected_homes=0 | type_of_permit=Transformation(1); Travaux d'agrandissement(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.608
+  (45.49103, -73.58771) | distance_to_access_m=212.08818450802906 | point_id=P07080 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=2 | num_permit_affected_homes=0 | type_of_permit=Transformation(1); Travaux d'agrandissement(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.705
+  (45.49504, -73.58938) | distance_to_access_m=387.6913192588505 | point_id=P05228 | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=17 | num_collisions=17 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.627
 
-=== Route 2 (105 min, 0 transfer(s)) ===
+=== Route 2 (59 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Destination | 105 min, 7539 m
+  1. WALK: Origin → Destination | 59 min, 3950 m
 
-Walk segment data (198 eligible points (showing 10 of 198)):
-  (45.49593, -73.59474) | distance_to_access_m=765.2997085319173 | point_id=P05077 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=29 | num_collisions=0 | num_building_permits=29 | num_permit_affected_homes=17 | type_of_permit=Travaux intérieurs(18); Transformation(5); Travaux extérieurs(4) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.50590, -73.59819) | distance_to_access_m=1066.1104986142498 | point_id=P02271 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Chêne à gros fruits(1) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.49383, -73.59594) | distance_to_access_m=855.6076476077441 | point_id=P06282 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=3 | num_collisions=0 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Érable argenté(1) | average_tree_size_from_trunk_diam_cm=40.0
-  (45.52045, -73.60828) | distance_to_access_m=2070.501422290569 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51620, -73.60131) | distance_to_access_m=1383.2344029077665 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51570, -73.60067) | distance_to_access_m=1318.0071977908085 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.49565, -73.59544) | distance_to_access_m=823.7088684142894 | point_id=P05077 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=29 | num_collisions=0 | num_building_permits=29 | num_permit_affected_homes=17 | type_of_permit=Travaux intérieurs(18); Transformation(5); Travaux extérieurs(4) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.49704, -73.59467) | distance_to_access_m=754.1696872567624 | point_id=P05077 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=29 | num_collisions=0 | num_building_permits=29 | num_permit_affected_homes=17 | type_of_permit=Tr
+Walk segment data (138 eligible points (showing 10 of 138)):
+  (45.49726, -73.62416) | distance_to_access_m=3052.624142059938 | point_id=P05077 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=29 | num_collisions=0 | num_building_permits=29 | num_permit_affected_homes=17 | type_of_permit=Travaux intérieurs(18); Transformation(5); Travaux extérieurs(4) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.638
+  (45.49564, -73.60052) | distance_to_access_m=1216.5294363166724 | point_id=P05077 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=29 | num_collisions=0 | num_building_permits=29 | num_permit_affected_homes=17 | type_of_permit=Travaux intérieurs(18); Transformation(5); Travaux extérieurs(4) | num_barriers=0 | active_barriers=0 | num_trees=0
+  (45.49008, -73.58853) | distance_to_access_m=301.5774566620085 | point_id=P07204 | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=33 | num_collisions=33 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0
+  (45.49255, -73.58976) | distance_to_access_m=371.4070428712055 | point_id=P06628 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=6 | num_collisions=0 | num_building_permits=4 | num_permit_affected_homes=0 | type_of_permit=Travaux extérieurs(3); Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Ginkgo à feuilles bilobées(1) | average_tree_size_from_trunk_diam_cm=22.0 | mae_inaccessible_prob=0.513
+  (45.49320, -73.58978) | distance_to_access_m=372.5864991458339 | point_id=P06282 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=3 | num_collisions=0 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Érable argenté(1) | average_tree_size_from_trunk_diam_cm=40.0 | mae_inaccessible_prob=0.547
+  (45.49554, -73.61267) | distance_to_access_m=2161.224894400365 | point_id=P05077 | arrondissement=V
 
 [... truncated for length ...]
 
