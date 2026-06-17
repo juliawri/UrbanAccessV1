@@ -2,3 +2,4 @@
 *.jar filter=lfs diff=lfs merge=lfs -text
 data/quebec-260603.osm.pbf filter=lfs diff=lfs merge=lfs -text
 data/gtfs_stm.zip filter=lfs diff=lfs merge=lfs -text
+mae_finetuned_final.pth filter=lfs diff=lfs merge=lfs -text
