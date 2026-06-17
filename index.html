@@ -52,6 +52,7 @@
     .ac-badge.metro { background: #9C27B0; }
     .ac-badge.bus   { background: #FF9800; }
     .ac-badge.addr  { background: #607D8B; }
+    .ac-badge.place { background: #388E3C; }
 
     #planBtn { margin: 10px 5px 6px 5px; padding: 9px 24px; background: #1976D2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
     #planBtn:disabled { background: #aaa; cursor: not-allowed; }
@@ -265,7 +266,7 @@ async function searchLocations(q) {
     }
   } catch (_) {}
   try {
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&bbox=-74.1,45.2,-73.3,45.8&lang=fr`;
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=10&bbox=-74.1,45.2,-73.3,45.8&lang=en`;
     const r = await fetch(url);
     if (r.ok) {
       const data = await r.json();
@@ -273,11 +274,21 @@ async function searchLocations(q) {
         const p = f.properties;
         const coords = f.geometry.coordinates; // [lon, lat] in GeoJSON
         const num = p.housenumber ? p.housenumber + " " : "";
-        const label = (num + (p.street || "")).trim() || p.name || "";
-        if (!label) return;
+        const addrPart = (num + (p.street || "")).trim();
         const city = p.city || p.district || "";
-        const sub = [city, p.postcode].filter(Boolean).join(", ") || label;
-        results.push({ label, sub, badge: "addr", lat: coords[1], lng: coords[0] });
+        const hasName = p.name && p.name.trim() && p.name !== p.street;
+        let label, sub, badge;
+        if (hasName) {
+          label = p.name.trim();
+          sub = [addrPart, city, p.postcode].filter(Boolean).join(", ");
+          badge = "place";
+        } else {
+          label = addrPart || p.name || "";
+          sub = [city, p.postcode].filter(Boolean).join(", ") || label;
+          badge = "addr";
+        }
+        if (!label) return;
+        results.push({ label, sub, badge, lat: coords[1], lng: coords[0] });
       });
     }
   } catch (_) {}
@@ -285,7 +296,7 @@ async function searchLocations(q) {
 }
 
 function renderItem(r) {
-  const bl = r.badge === "metro" ? "METRO" : r.badge === "bus" ? "BUS" : "ADDR";
+  const bl = r.badge === "metro" ? "METRO" : r.badge === "bus" ? "BUS" : r.badge === "place" ? "PLACE" : "ADDR";
   return `<div class="ac-item" data-lat="${r.lat}" data-lng="${r.lng}" data-label="${r.label.replace(/"/g,'&quot;')}">
     <span class="ac-badge ${r.badge}">${bl}</span>${r.label}
     <div class="ac-item-sub">${r.sub}</div>
