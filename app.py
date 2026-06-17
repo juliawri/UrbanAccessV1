@@ -291,7 +291,7 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
             )
         leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
 
-        MAX_POINTS = 15
+        MAX_POINTS = 10
         display_points = random.sample(eligible, min(MAX_POINTS, len(eligible)))
 
         point_lines = []
@@ -327,6 +327,11 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
         print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
     route_context, gemini_raw, gemini_error = format_routes_for_llm(routes_data, disability_type)
 
+    # Qwen2.5-72B has a 32k context window; cap route_context to ~12k chars to stay safe.
+    MAX_CONTEXT_CHARS = 12_000
+    if len(route_context) > MAX_CONTEXT_CHARS:
+        route_context = route_context[:MAX_CONTEXT_CHARS] + "\n\n[... truncated for length ...]"
+
     user_prompt = (
         f"User profile:\n"
         f"- Origin: {origin}\n"
@@ -352,15 +357,19 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
     print("Prompts written to prompt_debug.txt")
 
 
-    response = client.chat_completion(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        max_tokens=1024,
-        temperature=0.2,
-    )
+    try:
+        response = client.chat_completion(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=1024,
+            temperature=0.2,
+        )
+    except Exception as e:
+        print(f"  HF inference error: {e}")
+        return {"text": f"Model unavailable: {e}", "ranked_ids": list(range(len(routes_data)))}
     if not response.choices:
         return {"text": "No response from model.", "ranked_ids": list(range(len(routes_data)))}
     text = response.choices[0].message.content.strip()

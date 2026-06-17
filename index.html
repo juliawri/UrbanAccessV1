@@ -204,7 +204,7 @@ async function submitRoute(originLatLng, destLatLng) {
   output.innerText = "";
   clearRoutes();
   try {
-    const res = await fetch("http://127.0.0.1:8000/process", {
+    const res = await fetch("/process", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -265,12 +265,19 @@ async function searchLocations(q) {
     }
   } catch (_) {}
   try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+" Montreal")}&format=json&limit=5&countrycodes=ca&viewbox=-74.1,45.2,-73.3,45.8&bounded=1`;
-    const r = await fetch(url, { headers: { "Accept-Language": "en" } });
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&bbox=-74.1,45.2,-73.3,45.8&lang=fr`;
+    const r = await fetch(url);
     if (r.ok) {
-      (await r.json()).forEach(p => {
-        const parts = p.display_name.split(",");
-        results.push({ label: parts.slice(0,2).join(",").trim(), sub: p.display_name, badge: "addr", lat: parseFloat(p.lat), lng: parseFloat(p.lon) });
+      const data = await r.json();
+      data.features.forEach(f => {
+        const p = f.properties;
+        const coords = f.geometry.coordinates; // [lon, lat] in GeoJSON
+        const num = p.housenumber ? p.housenumber + " " : "";
+        const label = (num + (p.street || "")).trim() || p.name || "";
+        if (!label) return;
+        const city = p.city || p.district || "";
+        const sub = [city, p.postcode].filter(Boolean).join(", ") || label;
+        results.push({ label, sub, badge: "addr", lat: coords[1], lng: coords[0] });
       });
     }
   } catch (_) {}
@@ -473,7 +480,7 @@ document.getElementById("feedbackForm").addEventListener("submit", async functio
     recommendation: fv("f_recommendation") || null,
   };
   try {
-    const response = await fetch("http://127.0.0.1:8000/submit", {
+    const response = await fetch("http://136.112.80.127:8000/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

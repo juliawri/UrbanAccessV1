@@ -2,6 +2,7 @@ import csv
 import html as _html
 import io
 import json as _json
+import unicodedata
 import zipfile
 from functools import lru_cache
 from pathlib import Path
@@ -62,6 +63,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def _normalize(s: str) -> str:
+    return unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode("ascii").lower()
+
+
 @lru_cache(maxsize=1)
 def _load_gtfs_stops() -> List[Dict]:
     stops = []
@@ -79,6 +84,7 @@ def _load_gtfs_stops() -> List[Dict]:
                 seen_names.add(name_lower)
                 stops.append({
                     "name": name,
+                    "name_norm": _normalize(name),
                     "lat": float(row["stop_lat"]),
                     "lon": float(row["stop_lon"]),
                     "type": "metro_station" if loc_type == "1" else "bus_stop",
@@ -90,11 +96,10 @@ def _load_gtfs_stops() -> List[Dict]:
 def search_stops(q: str = Query(default="", min_length=0)):
     if len(q) < 2:
         return []
-    q_lower = q.lower()
-    matches = [s for s in _load_gtfs_stops() if q_lower in s["name"].lower()]
-    # Exact prefix matches first
-    matches.sort(key=lambda s: (not s["name"].lower().startswith(q_lower), s["name"]))
-    return matches[:10]
+    q_norm = _normalize(q)
+    matches = [s for s in _load_gtfs_stops() if q_norm in s["name_norm"]]
+    matches.sort(key=lambda s: (not s["name_norm"].startswith(q_norm), s["name"]))
+    return matches[:20]
 
 
 # -------------------------
