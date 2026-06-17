@@ -10,6 +10,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
+
 const LEG_COLORS = {
   WALK:   '#2196F3',
   BUS:    '#FF9800',

@@ -13,6 +13,7 @@ export default function App() {
   const [lastPayload, setLastPayload] = useState(null)
   const [error, setError] = useState('')
 
+  
   async function handlePlan(payload) {
     setLoading(true)
     setError('')

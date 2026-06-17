@@ -8,6 +8,7 @@ export default function FeedbackForm({ payload, routes, result }) {
   const [status, setStatus]   = useState('')
   const [loading, setLoading] = useState(false)
 
+  
   async function handleSubmit() {
     if (!rating) return
     setLoading(true)
