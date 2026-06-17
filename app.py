@@ -47,7 +47,7 @@ SYSTEM_PROMPT = (
 
     "3. DETAILED PHOTO REVIEW (gemini_accessibility_score, gemini_accessibility_comments)\n"
     "   A closer look at the most concerning spots across all routes using additional photo review. "
-    "Score is 1–5: 1–2 = very difficult, 3 = manageable with effort, 4–5 = accessible. "
+    "Score is 0–4: 0–1 = very difficult, 3 = manageable with effort, 3–4 = accessible. "
     "The comments describe what was found (e.g. 'missing curb cut', 'cracked pavement'). "
     "When both photo analyses agree a spot is difficult, that's a strong warning sign.\n\n"
 
