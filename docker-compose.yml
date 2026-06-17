@@ -19,7 +19,8 @@ services:
     volumes:
       - ./otp-2.5.0-shaded.jar:/otp/otp.jar
       - ./data:/otp/data
-    command: java -Xmx8g -jar otp.jar --build --serve /otp/data
+    #command: java -Xmx8g -jar otp.jar --build --serve /otp/data
+    command: java -Xmx8g -jar otp.jar --load /otp/data
     ports:
       - "8080:8080"
 
