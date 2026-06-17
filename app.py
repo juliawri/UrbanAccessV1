@@ -328,7 +328,10 @@ def get_recommendation(origin, destination, disability_type, date, routes_data):
             f.write(gemini_raw)
     print("Prompts written to prompt_debug.txt")
 
-
+    #tk checker
+    tok = os.getenv("HF_TOKEN")  # use whatever name you actually set
+    print("HF token present:", bool(tok), "len:", len(tok) if tok else 0)
+    
     response = client.chat_completion(
         model=MODEL,
         messages=[

@@ -1,3 +1,5 @@
+<!-- TEST!!!! -->
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,33 +10,43 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; margin: 16px; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #E6FBFF;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      box-sizing: border-box;
+      background-color: #E6FBFF;
+    }
     #map { height: 500px; width: 100%; margin-top: 10px; }
     #panel { margin-bottom: 10px; }
     input[type="text"], input[type="date"], select { margin: 5px; padding: 5px; }
     #directions { margin-top: 14px; }
     #directions h4 { margin: 0 0 8px 0; }
-    .leg-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-left: 4px solid #ccc; margin-bottom: 6px; background: #fafafa; border-radius: 0 4px 4px 0; }
+    .leg-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-left: 4px solid #ccc; margin-bottom: 6px; background: #E6FBFF; border-radius: 0 4px 4px 0; }
     .leg-step.WALK  { border-color: #2196F3; }
     .leg-step.BUS   { border-color: #FF9800; }
     .leg-step.SUBWAY { border-color: #9C27B0; }
     .leg-step.TRAM  { border-color: #4CAF50; }
-    .leg-badge { font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 3px; color: white; white-space: nowrap; }
+    .leg-badge { font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 3px; color: #E6FBFF; white-space: nowrap; }
     .leg-badge.WALK   { background: #2196F3; }
     .leg-badge.BUS    { background: #FF9800; }
     .leg-badge.SUBWAY { background: #9C27B0; }
     .leg-badge.TRAM   { background: #4CAF50; }
     .leg-text { font-size: 13px; line-height: 1.5; }
     .leg-meta { font-size: 11px; color: #777; }
-    #output { white-space: pre-wrap; margin-top: 12px; background: #f4f4f4; padding: 12px; border-radius: 6px; font-size: 13px; }
-    #feedbackSection { display: none; margin-top: 24px; border-top: 2px solid #e0e0e0; padding-top: 16px; }
+    #output { white-space: pre-wrap; margin-top: 12px; background: #E6FBFF; padding: 12px; border-radius: 6px; font-size: 13px; }
+    #feedbackSection { display: none; margin-top: 24px; border-top: 2px solid #E6FBFF; padding-top: 16px; }
     #feedbackStatus { margin-top: 8px; color: #388E3C; font-size: 13px; }
 
     /* Mode toggle */
     .mode-toggle { display: flex; gap: 0; margin: 8px 5px 12px 5px; border: 1px solid #1976D2; border-radius: 6px; overflow: hidden; width: fit-content; }
-    .mode-btn { padding: 8px 20px; font-size: 13px; font-weight: bold; background: white; color: #1976D2; border: none; cursor: pointer; transition: background .15s, color .15s; }
+    .mode-btn { padding: 8px 20px; font-size: 13px; font-weight: bold; background: #E6FBFF; color: #1976D2; border: none; cursor: pointer; transition: background .15s, color .15s; }
     .mode-btn:first-child { border-right: 1px solid #1976D2; }
-    .mode-btn.active { background: #1976D2; color: white; }
+    .mode-btn.active { background: #1976D2; color: #E6FBFF; }
     .mode-btn:hover:not(.active) { background: #e3f0fd; }
 
     /* Search inputs */
@@ -43,17 +55,17 @@
     .ac-wrap { position: relative; flex: 1; min-width: 220px; }
     .ac-wrap input[type="text"] { width: 100%; box-sizing: border-box; padding: 7px 9px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; margin: 0; }
     .ac-wrap input[type="text"]:focus { outline: none; border-color: #1976D2; box-shadow: 0 0 0 2px rgba(25,118,210,.15); }
-    .ac-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-top: none; border-radius: 0 0 4px 4px; z-index: 9000; max-height: 260px; overflow-y: auto; display: none; box-shadow: 0 4px 8px rgba(0,0,0,.12); }
-    .ac-item { padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+    .ac-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #E6FBFF; border: 1px solid #ccc; border-top: none; border-radius: 0 0 4px 4px; z-index: 9000; max-height: 260px; overflow-y: auto; display: none; box-shadow: 0 4px 8px rgba(0,0,0,.12); }
+    .ac-item { padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid ##E6FBFF; }
     .ac-item:last-child { border-bottom: none; }
     .ac-item:hover, .ac-item.active { background: #e8f0fe; }
     .ac-item-sub { font-size: 11px; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ac-badge { display: inline-block; font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; margin-right: 5px; color: white; vertical-align: middle; }
+    .ac-badge { display: inline-block; font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; margin-right: 5px; color: #E6FBFF; vertical-align: middle; }
     .ac-badge.metro { background: #9C27B0; }
     .ac-badge.bus   { background: #FF9800; }
     .ac-badge.addr  { background: #607D8B; }
 
-    #planBtn { margin: 10px 5px 6px 5px; padding: 9px 24px; background: #1976D2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+    #planBtn { margin: 10px 5px 6px 5px; padding: 9px 24px; background: #1976D2; color: #E6FBFF; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
     #planBtn:disabled { background: #aaa; cursor: not-allowed; }
     #planBtn:hover:not(:disabled) { background: #1565C0; }
     #status { margin: 4px 5px; font-size: 13px; color: #555; min-height: 18px; }

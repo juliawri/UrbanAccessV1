@@ -28,6 +28,8 @@ services:
     build: .
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       HF_TOKEN: ${HF_TOKEN}
       DATABASE_URL: postgresql://feedbackuser:password@db:5432/feedbackdb
