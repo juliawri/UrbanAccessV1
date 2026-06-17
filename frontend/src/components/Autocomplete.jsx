@@ -11,11 +11,12 @@ function debounce(fn, ms) {
 }
 
 const BADGE_COLORS = {
-  METRO: '#9C27B0',
+  METRO: '#9C27B0', 
   BUS:   '#FF9800',
   ADDR:  '#607D8B',
   PLACE: '#388E3C',
 }
+
 
 export default function Autocomplete({ label, onSelect }) {
   const [query, setQuery] = useState('')
