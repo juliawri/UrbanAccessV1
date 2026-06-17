@@ -22,6 +22,7 @@ const MOBILITY_AIDS = [
   { label: 'No Mobility Aid',     value: 'no mobility aid' },
 ]
 
+
 const aidCollection = createListCollection({ items: MOBILITY_AIDS })
 
 export default function ControlPanel({ onPlan, loading }) {

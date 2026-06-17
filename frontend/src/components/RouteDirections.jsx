@@ -14,6 +14,7 @@ const BORDER_COLOR = {
   TRAM:   '#4CAF50',
 }
 
+
 function fmtDist(m) {
   return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`
 }
