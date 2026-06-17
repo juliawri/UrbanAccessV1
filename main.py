@@ -8,6 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 from fastapi import FastAPI, Depends, Query
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).parent
 from pydantic import BaseModel
@@ -137,6 +138,11 @@ class FeedbackSubmit(BaseModel):
 # -------------------------
 @app.get("/")
 def index():
+    # Dev fallback — serves the old index.html when the React build doesn't exist yet.
+    # Once you run `cd frontend && npm run build`, this is replaced by the SPA catch-all below.
+    react_index = BASE_DIR / "frontend" / "dist" / "index.html"
+    if react_index.exists():
+        return FileResponse(react_index)
     return FileResponse(BASE_DIR / "index.html")
 
 
@@ -332,3 +338,20 @@ if (layers.length > 0) map.fitBounds(L.featureGroup(layers).getBounds().pad(0.1)
 </body>
 </html>"""
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Production static file serving for the React build
+# Run `cd frontend && npm run build` first.
+# In development, use the Vite dev server on :5173 instead.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
+
+if _FRONTEND_DIST.exists():
+    # Serve JS/CSS/images from /assets/
+    app.mount("/assets", StaticFiles(directory=_FRONTEND_DIST / "assets"), name="static_assets")
+
+    # SPA catch-all — must be the very last route
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa_fallback(full_path: str):
+        return FileResponse(_FRONTEND_DIST / "index.html")
