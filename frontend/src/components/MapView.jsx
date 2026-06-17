@@ -1,15 +1,13 @@
-import { useEffect, useRef } from 'react'
-import { MapContainer, TileLayer, Polyline, useMap } from 'react-leaflet'
+import { useEffect } from 'react'
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 
-// Fix Leaflet default marker icons broken by bundlers
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
-
 
 const LEG_COLORS = {
   WALK:   '#2196F3',
@@ -18,7 +16,6 @@ const LEG_COLORS = {
   TRAM:   '#4CAF50',
 }
 
-// Fits the map to the drawn routes whenever routes change
 function FitBounds({ routes }) {
   const map = useMap()
   useEffect(() => {
@@ -35,20 +32,49 @@ function FitBounds({ routes }) {
   return null
 }
 
-export default function MapView({ routes }) {
+function ClickHandler({ onMapClick, inputMode }) {
+  useMapEvents({
+    click(e) {
+      if (inputMode === 'map') {
+        onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng })
+      }
+    },
+  })
+  return null
+}
+
+export default function MapView({ routes, onMapClick, inputMode, origin, destination }) {
   const legs = routes[0]?.legs ?? []
 
   return (
     <MapContainer
       center={[45.5017, -73.5673]}
       zoom={13}
-      style={{ height: 480, borderRadius: '8px', zIndex: 0 }}
+      style={{
+        height: 480,
+        borderRadius: '8px',
+        zIndex: 0,
+        cursor: inputMode === 'map' ? 'crosshair' : 'grab',
+      }}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="© OpenStreetMap contributors"
       />
+      <ClickHandler onMapClick={onMapClick} inputMode={inputMode} />
       <FitBounds routes={routes} />
+
+      {origin && (
+        <Marker position={[origin.lat, origin.lng]}>
+          <Popup>Origin</Popup>
+        </Marker>
+      )}
+      {destination && (
+        <Marker position={[destination.lat, destination.lng]}>
+          <Popup>Destination</Popup>
+        </Marker>
+      )}
+
       {legs.map((leg, i) => {
         const pts = leg.geometry_sampled_50m
         if (!pts || pts.length < 2) return null

@@ -62,8 +62,9 @@ export default function FeedbackForm({ payload, routes, result }) {
       borderColor="gray.200"
       borderRadius="lg"
       overflow="hidden"
+      bg="#C4D1DF"
     >
-      <Box px={4} py={3} bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
+      <Box px={4} py={3} bg="#C4D1DF" borderBottom="1px solid" borderColor="gray.200">
         <Text fontWeight="bold">How was this route?</Text>
       </Box>
       <Stack gap={3} p={4}>

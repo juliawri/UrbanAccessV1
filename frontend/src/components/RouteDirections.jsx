@@ -1,4 +1,5 @@
 import { Stack, HStack, Text, Badge, Box } from '@chakra-ui/react'
+import ReactMarkdown from 'react-markdown'
 
 const MODE_COLOR = {
   WALK:   'blue',
@@ -25,6 +26,13 @@ function fmtTime(sec) {
 
 const ROUTE_LABELS = ['Recommended Route', 'Alternative 1', 'Alternative 2']
 
+function normalizeRouteLabels(text) {
+  return text
+    .replace(/\bRoute\s*1\b/gi, 'Recommended Route')
+    .replace(/\bRoute\s*2\b/gi, 'Alternative 1')
+    .replace(/\bRoute\s*3\b/gi, 'Alternative 2')
+}
+
 export default function RouteDirections({ routes, result }) {
   return (
     <Stack gap={4}>
@@ -39,20 +47,21 @@ export default function RouteDirections({ routes, result }) {
             borderColor="gray.200"
             borderRadius="lg"
             overflow="hidden"
+            bg="#C4D1DF"
           >
             {/* Header */}
             <HStack
               justify="space-between"
               px={4}
               py={3}
-              bg="gray.50"
+              bg="#C4D1DF"
               borderBottom="1px solid"
               borderColor="gray.200"
             >
               <Text fontWeight="bold">
                 {ROUTE_LABELS[idx] ?? `Option ${idx + 1}`}
               </Text>
-              <Text color="gray.500" fontSize="sm">{totalMin} min total</Text>
+              <Text color="black" fontSize="sm">{totalMin} min total</Text>
             </HStack>
 
             {/* Legs */}
@@ -69,7 +78,7 @@ export default function RouteDirections({ routes, result }) {
                     p={2}
                     borderLeft="4px solid"
                     borderColor={BORDER_COLOR[leg.mode] ?? '#ccc'}
-                    bg="gray.50"
+                    bg="#C4D1DF"
                     borderRadius="0 4px 4px 0"
                     align="flex-start"
                     gap={3}
@@ -85,10 +94,10 @@ export default function RouteDirections({ routes, result }) {
                       <Text>
                         {leg.from ?? '?'} → {leg.to ?? '?'}
                         {leg.route && (
-                          <Text as="span" color="gray.500"> ({leg.route})</Text>
+                          <Text as="span" color="black"> ({leg.route})</Text>
                         )}
                       </Text>
-                      <Text color="gray.500" fontSize="xs">{meta}</Text>
+                      <Text color="black" fontSize="xs">{meta}</Text>
                     </Box>
                   </HStack>
                 )
@@ -102,15 +111,16 @@ export default function RouteDirections({ routes, result }) {
       {result && (
         <Box
           border="1px solid"
-          borderColor="blue.200"
+          borderColor="gray.200"
           borderRadius="lg"
           overflow="hidden"
+          bg="#C4D1DF"
         >
-          <Box px={4} py={3} bg="blue.50" borderBottom="1px solid" borderColor="blue.200">
-            <Text fontWeight="bold" color="blue.800">AI Recommendation</Text>
+          <Box px={4} py={3} bg="#C4D1DF" borderBottom="1px solid" borderColor="gray.200">
+            <Text fontWeight="bold" color="black">AI Recommendation</Text>
           </Box>
-          <Box px={4} py={3}>
-            <Text fontSize="sm" whiteSpace="pre-wrap" lineHeight={1.7}>{result}</Text>
+          <Box px={4} py={3} fontSize="sm" lineHeight={1.7} color="black" className="md-result">
+            <ReactMarkdown>{normalizeRouteLabels(result)}</ReactMarkdown>
           </Box>
         </Box>
       )}

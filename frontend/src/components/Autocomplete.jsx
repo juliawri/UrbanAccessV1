@@ -73,6 +73,7 @@ export default function Autocomplete({ label, onSelect }) {
       <Input
         placeholder={`${label} — address or transit stop in Montreal…`}
         value={query}
+        color="black"
         onChange={e => {
           setQuery(e.target.value)
           onSelect(null)
