@@ -64,6 +64,7 @@
     .ac-badge.metro { background: #9C27B0; }
     .ac-badge.bus   { background: #FF9800; }
     .ac-badge.addr  { background: #607D8B; }
+    .ac-badge.place { background: #388E3C; }
 
     #planBtn { margin: 10px 5px 6px 5px; padding: 9px 24px; background: #1976D2; color: #E6FBFF; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
     #planBtn:disabled { background: #aaa; cursor: not-allowed; }
@@ -216,7 +217,7 @@ async function submitRoute(originLatLng, destLatLng) {
   output.innerText = "";
   clearRoutes();
   try {
-    const res = await fetch("http://127.0.0.1:8000/process", {
+    const res = await fetch("/process", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -277,12 +278,29 @@ async function searchLocations(q) {
     }
   } catch (_) {}
   try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+" Montreal")}&format=json&limit=5&countrycodes=ca&viewbox=-74.1,45.2,-73.3,45.8&bounded=1`;
-    const r = await fetch(url, { headers: { "Accept-Language": "en" } });
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=10&bbox=-74.1,45.2,-73.3,45.8&lang=en`;
+    const r = await fetch(url);
     if (r.ok) {
-      (await r.json()).forEach(p => {
-        const parts = p.display_name.split(",");
-        results.push({ label: parts.slice(0,2).join(",").trim(), sub: p.display_name, badge: "addr", lat: parseFloat(p.lat), lng: parseFloat(p.lon) });
+      const data = await r.json();
+      data.features.forEach(f => {
+        const p = f.properties;
+        const coords = f.geometry.coordinates; // [lon, lat] in GeoJSON
+        const num = p.housenumber ? p.housenumber + " " : "";
+        const addrPart = (num + (p.street || "")).trim();
+        const city = p.city || p.district || "";
+        const hasName = p.name && p.name.trim() && p.name !== p.street;
+        let label, sub, badge;
+        if (hasName) {
+          label = p.name.trim();
+          sub = [addrPart, city, p.postcode].filter(Boolean).join(", ");
+          badge = "place";
+        } else {
+          label = addrPart || p.name || "";
+          sub = [city, p.postcode].filter(Boolean).join(", ") || label;
+          badge = "addr";
+        }
+        if (!label) return;
+        results.push({ label, sub, badge, lat: coords[1], lng: coords[0] });
       });
     }
   } catch (_) {}
@@ -290,7 +308,7 @@ async function searchLocations(q) {
 }
 
 function renderItem(r) {
-  const bl = r.badge === "metro" ? "METRO" : r.badge === "bus" ? "BUS" : "ADDR";
+  const bl = r.badge === "metro" ? "METRO" : r.badge === "bus" ? "BUS" : r.badge === "place" ? "PLACE" : "ADDR";
   return `<div class="ac-item" data-lat="${r.lat}" data-lng="${r.lng}" data-label="${r.label.replace(/"/g,'&quot;')}">
     <span class="ac-badge ${r.badge}">${bl}</span>${r.label}
     <div class="ac-item-sub">${r.sub}</div>
@@ -485,7 +503,7 @@ document.getElementById("feedbackForm").addEventListener("submit", async functio
     recommendation: fv("f_recommendation") || null,
   };
   try {
-    const response = await fetch("http://127.0.0.1:8000/submit", {
+    const response = await fetch("http://136.112.80.127:8000/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

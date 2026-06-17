@@ -9,4 +9,7 @@ scikit-learn
 requests
 polyline
 sqlalchemy
+torch
+python-dotenv
 
+Pillow

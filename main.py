@@ -2,11 +2,13 @@ import csv
 import html as _html
 import io
 import json as _json
+import unicodedata
 import zipfile
 from functools import lru_cache
 from pathlib import Path
 from fastapi import FastAPI, Depends, Query
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).parent
 from pydantic import BaseModel
@@ -62,6 +64,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def _normalize(s: str) -> str:
+    return unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode("ascii").lower()
+
+
 @lru_cache(maxsize=1)
 def _load_gtfs_stops() -> List[Dict]:
     stops = []
@@ -79,6 +85,7 @@ def _load_gtfs_stops() -> List[Dict]:
                 seen_names.add(name_lower)
                 stops.append({
                     "name": name,
+                    "name_norm": _normalize(name),
                     "lat": float(row["stop_lat"]),
                     "lon": float(row["stop_lon"]),
                     "type": "metro_station" if loc_type == "1" else "bus_stop",
@@ -90,11 +97,10 @@ def _load_gtfs_stops() -> List[Dict]:
 def search_stops(q: str = Query(default="", min_length=0)):
     if len(q) < 2:
         return []
-    q_lower = q.lower()
-    matches = [s for s in _load_gtfs_stops() if q_lower in s["name"].lower()]
-    # Exact prefix matches first
-    matches.sort(key=lambda s: (not s["name"].lower().startswith(q_lower), s["name"]))
-    return matches[:10]
+    q_norm = _normalize(q)
+    matches = [s for s in _load_gtfs_stops() if q_norm in s["name_norm"]]
+    matches.sort(key=lambda s: (not s["name_norm"].startswith(q_norm), s["name"]))
+    return matches[:20]
 
 
 # -------------------------
@@ -132,6 +138,11 @@ class FeedbackSubmit(BaseModel):
 # -------------------------
 @app.get("/")
 def index():
+    # Dev fallback — serves the old index.html when the React build doesn't exist yet.
+    # Once you run `cd frontend && npm run build`, this is replaced by the SPA catch-all below.
+    react_index = BASE_DIR / "frontend" / "dist" / "index.html"
+    if react_index.exists():
+        return FileResponse(react_index)
     return FileResponse(BASE_DIR / "index.html")
 
 
@@ -327,3 +338,20 @@ if (layers.length > 0) map.fitBounds(L.featureGroup(layers).getBounds().pad(0.1)
 </body>
 </html>"""
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Production static file serving for the React build
+# Run `cd frontend && npm run build` first.
+# In development, use the Vite dev server on :5173 instead.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
+
+if _FRONTEND_DIST.exists():
+    # Serve JS/CSS/images from /assets/
+    app.mount("/assets", StaticFiles(directory=_FRONTEND_DIST / "assets"), name="static_assets")
+
+    # SPA catch-all — must be the very last route
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa_fallback(full_path: str):
+        return FileResponse(_FRONTEND_DIST / "index.html")
