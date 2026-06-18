@@ -4,6 +4,7 @@ import { submitFeedback } from '../api'
 
 export default function FeedbackForm({ payload, routes, result }) {
   const [rating, setRating]   = useState(0)
+  const [hover, setHover]     = useState(0)
   const [comment, setComment] = useState('')
   const [status, setStatus]   = useState('')
   const [loading, setLoading] = useState(false)
@@ -58,34 +59,44 @@ export default function FeedbackForm({ payload, routes, result }) {
 
   return (
     <Box
-      border="1px solid"
-      borderColor="#2f5f5f"
       borderRadius="lg"
       overflow="hidden"
-      bg="#1e3d3d"
+      width="100%"
+      style={{ background: '#ffffff', border: '1px solid #d1d5db' }}
     >
-      <Box px={4} py={3} bg="#2f5f5f" borderBottom="1px solid" borderColor="#2f5f5f">
-        <Text fontWeight="bold" color="#ffffff">How was this route?</Text>
+      <Box px={4} py={3} style={{ background: '#ffffff', borderBottom: '1px solid #d1d5db' }}>
+        <Text fontWeight="bold" color="#1f2937">How was this route?</Text>
       </Box>
-      <Stack gap={3} p={4}>
+      <Stack gap={3} p={4} style={{ background: '#ffffff' }}>
         {/* Star rating */}
-        <HStack>
-          {[1, 2, 3, 4, 5].map(n => (
-            <Button
-              key={n}
-              size="sm"
-              variant={rating >= n ? 'solid' : 'outline'}
-              colorPalette="yellow"
-              onClick={() => setRating(n)}
-              fontSize="lg"
-              minW={10}
-              style={rating >= n ? { background: '#FFD700', color: '#1e3d3d', borderColor: '#FFD700' } : { borderColor: '#FFD700', color: '#FFD700' }}
-            >
-              ★
-            </Button>
-          ))}
+        <HStack onMouseLeave={() => setHover(0)}>
+          {[1, 2, 3, 4, 5].map(n => {
+            const filled = rating >= n
+            const hovered = hover >= n
+            return (
+              <Button
+                key={n}
+                size="sm"
+                variant={filled ? 'solid' : 'outline'}
+                colorPalette="yellow"
+                onClick={() => setRating(n)}
+                onMouseEnter={() => setHover(n)}
+                fontSize="lg"
+                minW={10}
+                style={
+                  filled
+                    ? { background: '#f59e0b', color: '#1f2937', borderColor: '#f59e0b' }
+                    : hovered
+                    ? { borderColor: '#d1d5db', background: 'transparent', color: '#f59e0b' }
+                    : { borderColor: '#d1d5db', color: '#4b5563' }
+                }
+              >
+                ★
+              </Button>
+            )
+          })}
           {rating > 0 && (
-            <Text fontSize="sm" color="#ffffff">{rating} / 5</Text>
+            <Text fontSize="sm" color="#374151">{rating} / 5</Text>
           )}
         </HStack>
 
@@ -94,8 +105,8 @@ export default function FeedbackForm({ payload, routes, result }) {
           value={comment}
           onChange={e => setComment(e.target.value)}
           rows={3}
-          style={{ background: '#2f5f5f', color: '#ffffff', borderColor: '#3d7a7a' }}
-          _placeholder={{ color: '#ffffff' }}
+          style={{ background: '#ffffff', color: '#1f2937', borderColor: '#d1d5db' }}
+          _placeholder={{ color: '#9ca3af' }}
         />
 
         <Button
@@ -112,7 +123,7 @@ export default function FeedbackForm({ payload, routes, result }) {
         {status && (
           <Text
             fontSize="sm"
-            color={status.startsWith('Error') ? '#fca5a5' : '#6ee7b7'}
+            color={status.startsWith('Error') ? '#dc2626' : '#16a34a'}
           >
             {status}
           </Text>
