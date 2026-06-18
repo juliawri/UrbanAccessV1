@@ -1,19 +1,28 @@
 import { useState } from 'react'
 import {
-  Stack, HStack, Button, Select, Input, Field
+  Stack, HStack, Button, Select, Input, Field, createListCollection, Text
 } from '@chakra-ui/react'
 import Autocomplete from './Autocomplete'
 
 const MOBILITY_AIDS = [
-  'Manual Wheelchair', 'Electric Wheelchair', 'Walker',
-  'Walking Cane', 'Mobility Scooter', 'No Mobility Aid',
+  'manual wheelchair', 'electric wheelchair', 'walker',
+  'walking cane', 'mobility scooter', 'no mobility aid',
 ]
 
-export default function ControlPanel({ onPlan, loading }) {
+const mobilityAidCollection = createListCollection({
+  items: MOBILITY_AIDS.map((aid) => ({
+    label: aid,
+    value: aid.toLowerCase(),
+  })),
+})
+
+export default function ControlPanel({
+  onPlan, loading,
+  origin, destination, setOrigin, setDestination,
+  mapClickMode, onToggleMapClick,
+}) {
   const [disabilityType, setDisabilityType] = useState('manual wheelchair')
   const [date, setDate] = useState('2026-04-15')
-  const [origin, setOrigin] = useState(null)
-  const [destination, setDestination] = useState(null)
 
   function handleSubmit() {
     if (!origin || !destination) return
@@ -25,25 +34,88 @@ export default function ControlPanel({ onPlan, loading }) {
     })
   }
 
+  function toggleMode(mode) {
+    onToggleMapClick(mapClickMode === mode ? null : mode)
+  }
+
   return (
     <Stack gap={3}>
       <HStack>
-        <Field.Root label="Mobility Aid">
+        <Field.Root>
+          <Field.Label>Mobility Aid</Field.Label>
           <Select.Root
-            value={disabilityType}
+            collection={mobilityAidCollection}
+            value={[disabilityType]}
             onValueChange={({ value }) => setDisabilityType(value[0])}
-            collection={/* use createListCollection */ null}
           >
-            {/* see Chakra Select docs for collection setup */}
+            <Select.HiddenSelect />
+            <Select.Control>
+              <Select.Trigger>
+                <Select.ValueText placeholder="Select mobility aid" />
+              </Select.Trigger>
+              <Select.IndicatorGroup>
+                <Select.Indicator />
+              </Select.IndicatorGroup>
+            </Select.Control>
+            <Select.Positioner>
+              <Select.Content>
+                {mobilityAidCollection.items.map((item) => (
+                  <Select.Item item={item} key={item.value}>
+                    {item.label}
+                    <Select.ItemIndicator />
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Positioner>
           </Select.Root>
         </Field.Root>
-        <Field.Root label="Date">
+        <Field.Root>
+          <Field.Label>Date</Field.Label>
           <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
         </Field.Root>
       </HStack>
 
-      <Autocomplete label="Origin"      onSelect={setOrigin} />
-      <Autocomplete label="Destination" onSelect={setDestination} />
+      <HStack align="flex-end">
+        <Autocomplete
+          label="Origin"
+          onSelect={setOrigin}
+          externalValue={origin}
+        />
+        <Button
+          size="sm"
+          variant={mapClickMode === 'origin' ? 'solid' : 'outline'}
+          colorPalette={mapClickMode === 'origin' ? 'orange' : 'gray'}
+          onClick={() => toggleMode('origin')}
+          flexShrink={0}
+          title="Click the map to set origin"
+        >
+          📍 Map
+        </Button>
+      </HStack>
+
+      <HStack align="flex-end">
+        <Autocomplete
+          label="Destination"
+          onSelect={setDestination}
+          externalValue={destination}
+        />
+        <Button
+          size="sm"
+          variant={mapClickMode === 'destination' ? 'solid' : 'outline'}
+          colorPalette={mapClickMode === 'destination' ? 'orange' : 'gray'}
+          onClick={() => toggleMode('destination')}
+          flexShrink={0}
+          title="Click the map to set destination"
+        >
+          📍 Map
+        </Button>
+      </HStack>
+
+      {mapClickMode && (
+        <Text fontSize="sm" color="orange.600">
+          Click anywhere on the map to set your {mapClickMode}.
+        </Text>
+      )}
 
       <Button
         colorPalette="blue"

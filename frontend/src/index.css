@@ -1,9 +1,9 @@
 :root {
   --text: #6b6375;
   --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
+  --bg: #E6FBFF;
+  --border: #E6FBFF;
+  --code-bg: #E6FBFF;
   --accent: #aa3bff;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
@@ -52,6 +52,8 @@
 
 body {
   margin: 0;
+  background: var(--bg);
+  color: var(--text);
 }
 
 #root {
@@ -108,4 +110,10 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.map-pick-mode.leaflet-container,
+.map-pick-mode .leaflet-grab,
+.map-pick-mode .leaflet-crosshair {
+  cursor: crosshair !important;
 }

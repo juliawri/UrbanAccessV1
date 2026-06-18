@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Box, Input, List } from '@chakra-ui/react'
 import { searchStops } from '../api'
 
@@ -6,10 +6,20 @@ function debounce(fn, ms) {
   let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms) }
 }
 
-export default function Autocomplete({ label, onSelect }) {
+export default function Autocomplete({ label, onSelect, externalValue }) {
   const [query, setQuery]     = useState('')
   const [items, setItems]     = useState([])
   const [open, setOpen]       = useState(false)
+
+  useEffect(() => {
+    if (externalValue) {
+      setQuery(externalValue.label)
+      setItems([])
+      setOpen(false)
+    } else {
+      setQuery('')
+    }
+  }, [externalValue])
 
   const search = useCallback(debounce(async (q) => {
     if (q.length < 2) { setItems([]); return }
@@ -53,7 +63,7 @@ export default function Autocomplete({ label, onSelect }) {
       />
       {open && items.length > 0 && (
         <List.Root
-          position="absolute" zIndex={9000} bg="white"
+          position="absolute" zIndex={9000} bg="E6FBFF"
           border="1px solid" borderColor="gray.200" borderRadius="md"
           boxShadow="md" w="100%" maxH="240px" overflowY="auto"
         >
@@ -64,7 +74,7 @@ export default function Autocomplete({ label, onSelect }) {
               onMouseDown={() => handleSelect(item)}
             >
               <Box as="span" fontWeight="bold" fontSize="xs" mr={2}
-                bg="blue.500" color="white" px={1} borderRadius="sm">
+                bg="blue.500" color="E6FBFF" px={1} borderRadius="sm">
                 {item.badge}
               </Box>
               {item.label}
