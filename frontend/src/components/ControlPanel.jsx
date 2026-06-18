@@ -35,11 +35,13 @@ export default function ControlPanel({
 
   function handleSubmit() {
     if (!origin || !destination) return
+    const fast_mode = localStorage.getItem('fast_mode') === 'true'
     onPlan({
       source:          { lat: origin.lat, lng: origin.lng },
       destination:     { lat: destination.lat, lng: destination.lng },
       disability_type: disabilityType[0],
       date,
+      fast_mode,
     })
   }
 

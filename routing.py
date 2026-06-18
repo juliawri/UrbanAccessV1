@@ -84,6 +84,10 @@ def _parse_itinerary(idx, itin):
     return route
 
 
+def _total_distance_m(itin):
+    return sum(leg.get("distance", 0) for leg in itin.get("legs", []))
+
+
 def _route_signature(itin):
     """Key based on transit lines and their boarding/alighting stops — used for deduplication."""
     parts = []
@@ -102,22 +106,24 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
 
     # Single broad request — OTP returns its best options first
     transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date)
-    walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 5, eff_date)
+    walk_raw    = [it for it in _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 5, eff_date)
+                   if _total_distance_m(it) <= 5000]
 
     # Keep only itineraries that actually use a non-walk mode
     transit_itins = [it for it in transit_raw
                      if any(l.get("mode") != "WALK" for l in it.get("legs", []))]
 
-    print(f"OTP ({eff_date}): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only")
+    print(f"OTP ({eff_date}): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only (≤5 km)")
 
     # If the requested date falls outside OTP's GTFS feed, retry with the known-good fallback date
     if not transit_itins and eff_date != "2026-06-04":
         print("No transit for requested date — retrying with fallback date 2026-06-04")
         transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, "2026-06-04")
-        walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 3, "2026-06-04")
+        walk_raw    = [it for it in _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 3, "2026-06-04")
+                       if _total_distance_m(it) <= 5000]
         transit_itins = [it for it in transit_raw
                          if any(l.get("mode") != "WALK" for l in it.get("legs", []))]
-        print(f"OTP (fallback): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only")
+        print(f"OTP (fallback): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only (≤5 km)")
 
     # Deduplicate by which lines are used (keeps best/fastest per combination)
     seen_sigs, unique = set(), []

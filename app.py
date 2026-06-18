@@ -408,7 +408,7 @@ def run_image_pipeline(all_points, disability_type):
 # LLM context formatting
 # ─────────────────────────────────────────────────────────────────────────────
 
-def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
+def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_mode=False):
     # Collect unique eligible points across all routes (capped at MAX_IMAGE_COORDS)
     all_points = []
     seen_coords = set()
@@ -424,10 +424,14 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
                 seen_coords.add(key)
                 all_points.append(p)
 
-    # Run the full image pipeline: Mapillary → MAE → top-15 → Gemini
-    mae_coord_scores, gemini_scores, gemini_raw, gemini_error = run_image_pipeline(
-        all_points, disability_type
-    )
+    if fast_mode:
+        # Skip Mapillary image fetching, MAE inference, and Gemini VLM
+        mae_coord_scores, gemini_scores, gemini_raw, gemini_error = {}, {}, "", None
+    else:
+        # Run the full image pipeline: Mapillary → MAE → top-15 → Gemini
+        mae_coord_scores, gemini_scores, gemini_raw, gemini_error = run_image_pipeline(
+            all_points, disability_type
+        )
 
     # Build per-route text blocks
     blocks = []
@@ -496,12 +500,12 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid"):
 # HuggingFace LLM recommendation
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_recommendation(origin, destination, disability_type, date, routes_data):
+def get_recommendation(origin, destination, disability_type, date, routes_data, fast_mode=False):
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
         print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
 
-    route_context, gemini_raw, gemini_error = format_routes_for_llm(routes_data, disability_type)
+    route_context, gemini_raw, gemini_error = format_routes_for_llm(routes_data, disability_type, fast_mode=fast_mode)
 
     # Qwen2.5-72B has a 32k context window; cap route_context to ~12k chars to stay safe.
     MAX_CONTEXT_CHARS = 12_000

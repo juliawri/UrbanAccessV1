@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import ControlPanel from './components/ControlPanel'
 import MapView from './components/MapView'
 import RouteMap from './components/RouteMap'
@@ -73,6 +74,7 @@ export default function App() {
         <a href="#map">Map</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
+        <Link to="/settings" style={{ color: '#fff', textDecoration: 'underline' }}>Settings</Link>
       </nav>
 
       {/* Hero */}

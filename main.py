@@ -115,6 +115,7 @@ class Request(BaseModel):
     destination: Location
     disability_type: str
     date: str
+    fast_mode: bool = False
 
 class FeedbackSubmit(BaseModel):
     rating: int
@@ -161,7 +162,8 @@ def process(req: Request):
         destination=(req.destination.lat, req.destination.lng),
         disability_type=req.disability_type,
         date=req.date,
-        routes_data=routes_data
+        routes_data=routes_data,
+        fast_mode=req.fast_mode,
     )
 
     ranked_ids = result.get("ranked_ids", list(range(len(routes))))

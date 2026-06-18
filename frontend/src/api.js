@@ -6,11 +6,11 @@ export async function searchStops(q) {
   return res.json()
 }
 
-export async function planRoute({ source, destination, disability_type, date }) {
+export async function planRoute({ source, destination, disability_type, date, fast_mode }) {
   const res = await fetch(`${BASE}/process`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ source, destination, disability_type, date }),
+    body: JSON.stringify({ source, destination, disability_type, date, fast_mode: !!fast_mode }),
   })
   if (!res.ok) throw new Error(await res.text())
   return res.json() // { routes, result }
