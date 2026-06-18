@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  Box, Stack, HStack, Button, Input, Text,
+  Box, Stack, HStack, Input, Text,
   createListCollection,
 } from '@chakra-ui/react'
 import {
@@ -10,6 +10,7 @@ import {
   SelectRoot,
   SelectTrigger,
   SelectValueText,
+  SelectIndicator,
 } from '@chakra-ui/react/select'
 import Autocomplete from './Autocomplete'
 
@@ -30,7 +31,7 @@ export default function ControlPanel({
   inputMode, onInputModeChange, mapClickStep, onResetMapClick,
 }) {
   const [disabilityType, setDisabilityType] = useState(['manual wheelchair'])
-  const [date, setDate] = useState('2026-04-15')
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
 
   function handleSubmit() {
     if (!origin || !destination) return
@@ -47,9 +48,10 @@ export default function ControlPanel({
       gap={3}
       p={4}
       border="1px solid"
-      borderColor="gray.200"
+      borderColor="rgba(255,255,255,0.15)"
       borderRadius="lg"
-      bg="#C4D1DF"
+      bg="#1e3d3d"
+      style={{ background: '#1e3d3d', borderRadius: '8px' }}
     >
       {/* Mobility aid + date row */}
       <HStack align="flex-end" flexWrap="wrap" gap={3}>
@@ -59,9 +61,10 @@ export default function ControlPanel({
             value={disabilityType}
             onValueChange={({ value }) => setDisabilityType(value)}
           >
-            <SelectLabel fontSize="sm" fontWeight="medium" color="black">Mobility Aid</SelectLabel>
+            <SelectLabel fontSize="sm" fontWeight="medium" color="white">Mobility Aid</SelectLabel>
             <SelectTrigger>
-              <SelectValueText placeholder="Select…" color="black" />
+              <SelectValueText placeholder="Select…" color="white" flex="1" style={{ color: 'white' }} />
+              <SelectIndicator />
             </SelectTrigger>
             <SelectContent zIndex={9999} position="absolute" top="100%" left={0} right={0}>
               {MOBILITY_AIDS.map(a => (
@@ -72,11 +75,13 @@ export default function ControlPanel({
         </Box>
 
         <Box minW="160px">
-          <Text fontSize="sm" fontWeight="medium" mb={1}>Date</Text>
+          <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Date</Text>
           <Input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
+            color="white"
+            style={{ color: 'white' }}
           />
         </Box>
       </HStack>
@@ -84,15 +89,22 @@ export default function ControlPanel({
       {/* Mode toggle */}
       <HStack>
         {['search', 'map'].map(m => (
-          <Button
+          <button
             key={m}
-            size="sm"
-            variant={inputMode === m ? 'solid' : 'outline'}
-            colorPalette="blue"
             onClick={() => onInputModeChange(m)}
+            style={{
+              fontSize: '14px',
+              padding: '4px 12px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255,255,255,0.7)',
+              background: inputMode === m ? '#d4722a' : 'transparent',
+              color: '#fff',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
           >
             {m === 'search' ? 'Search by address' : 'Click on map'}
-          </Button>
+          </button>
         ))}
       </HStack>
 
@@ -100,11 +112,11 @@ export default function ControlPanel({
       {inputMode === 'search' && (
         <Stack gap={2}>
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="black">Origin</Text>
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Origin</Text>
             <Autocomplete label="Origin" onSelect={onOriginChange} />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="black">Destination</Text>
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Destination</Text>
             <Autocomplete label="Destination" onSelect={onDestinationChange} />
           </Box>
         </Stack>
@@ -113,40 +125,59 @@ export default function ControlPanel({
       {/* Map click status */}
       {inputMode === 'map' && (
         <Stack gap={2}>
-          <Box fontSize="sm" p={2} bg="white" borderRadius="md" border="1px solid" borderColor="gray.200">
+          <Box fontSize="sm" p={2} bg="rgba(0,0,0,0.15)" borderRadius="md" border="1px solid" borderColor="rgba(255,255,255,0.3)">
             {!origin && !destination && (
-              <Text color="black">Click on the map to set your <strong>origin</strong>.</Text>
+              <Text color="white">Click on the map to set your <strong>origin</strong>.</Text>
             )}
             {origin && !destination && (
-              <Text color="black">Origin set. Now click to set your <strong>destination</strong>.</Text>
+              <Text color="white">Origin set. Now click to set your <strong>destination</strong>.</Text>
             )}
             {origin && destination && (
-              <Text color="black">Both points set. Ready to plan!</Text>
+              <Text color="white">Both points set. Ready to plan!</Text>
             )}
           </Box>
           <HStack fontSize="sm" gap={4}>
-            <Text color={origin ? 'green.700' : 'gray.500'}>
+            <Text color={origin ? '#a8f0b8' : 'rgba(255,255,255,0.55)'}>
               {origin ? `Origin: ${origin.label}` : 'Origin: not set'}
             </Text>
-            <Text color={destination ? 'green.700' : 'gray.500'}>
+            <Text color={destination ? '#a8f0b8' : 'rgba(255,255,255,0.55)'}>
               {destination ? `Destination: ${destination.label}` : 'Destination: not set'}
             </Text>
           </HStack>
-          <Button size="sm" variant="ghost" colorPalette="red" onClick={onResetMapClick} alignSelf="flex-start">
+          <button
+            onClick={onResetMapClick}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '14px',
+              padding: '4px 0',
+              fontWeight: 500,
+            }}
+          >
             Reset points
-          </Button>
+          </button>
         </Stack>
       )}
 
-      <Button
-        colorPalette="blue"
+      <button
         onClick={handleSubmit}
-        loading={loading}
-        loadingText="Planning route…"
-        disabled={!origin || !destination}
+        disabled={!origin || !destination || loading}
+        style={{
+          background: !origin || !destination ? 'rgba(209,203,151,0.55)' : '#D1CB97',
+          color: '#1e3d3d',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '10px 16px',
+          fontSize: '16px',
+          fontWeight: 600,
+          cursor: !origin || !destination ? 'not-allowed' : 'pointer',
+          width: '100%',
+        }}
       >
-        Plan Route
-      </Button>
+        {loading ? 'Planning route…' : 'Plan Route'}
+      </button>
     </Stack>
   )
 }

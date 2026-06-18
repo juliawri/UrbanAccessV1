@@ -1,185 +1,301 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+/* Landing page shell — component-level styles are in index.css / Chakra */
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
-
-
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
+.page {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
+  background: #cce8f4;
+  min-height: 100vh;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-#next-steps {
+/* ── Navbar ─────────────────────────────────────────── */
+.navbar {
   display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
+  justify-content: center;
+  gap: 48px;
+  background: #1e3d3d;
+  padding: 14px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.navbar a {
+  color: #fff;
+  text-decoration: underline;
+  font-size: 16px;
+  font-weight: 500;
+}
+.navbar a:hover {
+  color: #d4e8f4;
 }
 
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
+/* ── Hero ───────────────────────────────────────────── */
+.hero {
   display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 48px 24px 40px;
+  text-align: center;
+}
+.brand-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+.brand-title {
+  font-size: clamp(42px, 6vw, 72px);
+  font-weight: 800;
+  color: #d4722a;
+  letter-spacing: 6px;
+  margin: 0;
+  line-height: 1;
+}
+.brand-subtitle {
+  font-size: 18px;
+  color: #1e3d3d;
+  margin: 0;
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+/* ── Full-page Map ──────────────────────────────────── */
+.map-section {
+  position: relative;
+  width: 80%;
+  margin: 0 auto;
+  /* overflow visible so the panel can spill outside the map edge */
+  overflow: visible;
 }
-
-.ticks {
+.map-inner {
   position: relative;
   width: 100%;
+}
+.map-panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 500;
+  width: 310px;
+  max-width: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(125vh - 100px);
+  overflow-y: auto;
+}
+.error-box {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  color: #b91c1c;
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
+/* ── Route Results ──────────────────────────────────── */
+.results-section {
+  padding: 32px 80px;
+}
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
+/* ── Plan New Route ─────────────────────────────────── */
+.new-route-row {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 8px;
+}
+.new-route-btn {
+  background: #1e3d3d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 52px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.new-route-btn:hover {
+  background: #2f5f5f;
+}
+
+/* ── Feedback Section ───────────────────────────────── */
+.feedback-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  padding: 64px 80px;
+  align-items: center;
+}
+.feedback-placeholder {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 280px;
+}
+.feedback-placeholder-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0;
+  color: #1e3d3d;
+}
+.feedback-label {
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #444;
+}
+.feedback-label input {
+  padding: 5px 8px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 14px;
+}
+.feedback-submit {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border: 1px solid #888;
+  border-radius: 4px;
+  background: #e8e8e8;
+  font-size: 13px;
+  cursor: default;
+  color: #555;
+}
+.section-heading {
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 700;
+  color: #d4722a;
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* ── CTA ────────────────────────────────────────────── */
+.cta-row {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+.cta-btn {
+  background: #111;
+  color: #fff;
+  border-radius: 8px;
+  padding: 14px 52px;
+  font-size: 17px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s;
+}
+.cta-btn:hover {
+  background: #333;
+}
+
+/* ── Partners ───────────────────────────────────────── */
+.partners {
+  display: flex;
+  align-items: center;
+  gap: 64px;
+  padding: 36px 80px;
+}
+.partner-img {
+  object-fit: contain;
+  display: block;
+}
+.partner-img--square {
+  height: 84px;
+  width: 84px;
+  border-radius: 10px;
+}
+.partner-img--wide {
+  height: 60px;
+  width: auto;
+}
+
+/* ── Footer columns ─────────────────────────────────── */
+.footer-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  padding: 48px 80px;
+  border-top: 1px solid #a8d4e8;
+}
+.footer-cols h4 {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 10px;
+  color: #1a2a2a;
+}
+.footer-cols p {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+}
+
+/* ── Bottom bar ─────────────────────────────────────── */
+.bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 80px;
+  border-top: 1px solid #a8d4e8;
+}
+.bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.namedly-logo {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1e3d3d;
+}
+.bottom-left a,
+.bottom-right a {
+  color: #555;
+  text-decoration: none;
+  font-size: 14px;
+}
+.bottom-left a:hover,
+.bottom-right a:hover {
+  color: #1e3d3d;
+}
+.bottom-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #555;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .feedback-section {
+    grid-template-columns: 1fr;
+    padding: 40px 24px;
+    gap: 32px;
   }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
+  .footer-cols {
+    grid-template-columns: 1fr;
+    padding: 32px 24px;
+  }
+  .partners {
+    padding: 32px 24px;
+    gap: 40px;
+  }
+  .bottom-bar {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .bottom-left {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .map-panel {
+    width: calc(100vw - 32px);
   }
 }

@@ -43,7 +43,7 @@ function ClickHandler({ onMapClick, inputMode }) {
   return null
 }
 
-export default function MapView({ routes, onMapClick, inputMode, origin, destination }) {
+export default function MapView({ routes, onMapClick, inputMode, origin, destination, mapHeight = 480, borderRadius = '8px' }) {
   const legs = routes[0]?.legs ?? []
 
   return (
@@ -51,8 +51,8 @@ export default function MapView({ routes, onMapClick, inputMode, origin, destina
       center={[45.5017, -73.5673]}
       zoom={13}
       style={{
-        height: 480,
-        borderRadius: '8px',
+        height: mapHeight,
+        borderRadius,
         zIndex: 0,
         cursor: inputMode === 'map' ? 'crosshair' : 'grab',
       }}

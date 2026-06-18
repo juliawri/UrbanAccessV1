@@ -15,7 +15,6 @@ const BORDER_COLOR = {
   TRAM:   '#4CAF50',
 }
 
-
 function fmtDist(m) {
   return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`
 }
@@ -47,25 +46,23 @@ export default function RouteDirections({ routes, result }) {
             borderColor="gray.200"
             borderRadius="lg"
             overflow="hidden"
-            bg="#C4D1DF"
+            bg="white"
           >
-            {/* Header */}
             <HStack
               justify="space-between"
               px={4}
               py={3}
-              bg="#C4D1DF"
+              bg="white"
               borderBottom="1px solid"
               borderColor="gray.200"
             >
-              <Text fontWeight="bold">
+              <Text fontWeight="bold" color="#1a1a1a">
                 {ROUTE_LABELS[idx] ?? `Option ${idx + 1}`}
               </Text>
-              <Text color="black" fontSize="sm">{totalMin} min total</Text>
+              <Text color="#1a1a1a" fontSize="sm">{totalMin} min total</Text>
             </HStack>
 
-            {/* Legs */}
-            <Stack gap={2} p={3}>
+            <Stack gap={2} p={3} bg="white">
               {route.legs.map((leg, li) => {
                 const meta = [
                   leg.distance_m != null ? fmtDist(leg.distance_m) : null,
@@ -78,7 +75,7 @@ export default function RouteDirections({ routes, result }) {
                     p={2}
                     borderLeft="4px solid"
                     borderColor={BORDER_COLOR[leg.mode] ?? '#ccc'}
-                    bg="#C4D1DF"
+                    bg="gray.50"
                     borderRadius="0 4px 4px 0"
                     align="flex-start"
                     gap={3}
@@ -91,13 +88,13 @@ export default function RouteDirections({ routes, result }) {
                       {leg.mode}
                     </Badge>
                     <Box fontSize="sm">
-                      <Text>
+                      <Text color="#1a1a1a">
                         {leg.from ?? '?'} → {leg.to ?? '?'}
                         {leg.route && (
-                          <Text as="span" color="black"> ({leg.route})</Text>
+                          <Text as="span" color="#333"> ({leg.route})</Text>
                         )}
                       </Text>
-                      <Text color="black" fontSize="xs">{meta}</Text>
+                      <Text color="#444" fontSize="xs">{meta}</Text>
                     </Box>
                   </HStack>
                 )
@@ -107,19 +104,18 @@ export default function RouteDirections({ routes, result }) {
         )
       })}
 
-      {/* AI recommendation text */}
       {result && (
         <Box
           border="1px solid"
           borderColor="gray.200"
           borderRadius="lg"
           overflow="hidden"
-          bg="#C4D1DF"
+          bg="white"
         >
-          <Box px={4} py={3} bg="#C4D1DF" borderBottom="1px solid" borderColor="gray.200">
-            <Text fontWeight="bold" color="black">AI Recommendation</Text>
+          <Box px={4} py={3} bg="white" borderBottom="1px solid" borderColor="gray.200">
+            <Text fontWeight="bold" color="#1a1a1a">AI Recommendation</Text>
           </Box>
-          <Box px={4} py={3} fontSize="sm" lineHeight={1.7} color="black" className="md-result">
+          <Box px={4} py={3} fontSize="sm" lineHeight={1.7} color="#1a1a1a" className="md-result">
             <ReactMarkdown>{normalizeRouteLabels(result)}</ReactMarkdown>
           </Box>
         </Box>
