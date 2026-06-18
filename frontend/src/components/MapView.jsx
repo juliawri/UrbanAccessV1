@@ -1,80 +1,16 @@
-import { useEffect } from 'react'
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
-import L from 'leaflet'
+import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 
-delete L.Icon.Default.prototype._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-})
+const LEG_COLORS = { WALK: '#2196F3', BUS: '#FF9800', SUBWAY: '#9C27B0', TRAM: '#4CAF50' }
 
-const LEG_COLORS = {
-  WALK:   '#2196F3',
-  BUS:    '#FF9800',
-  SUBWAY: '#9C27B0',
-  TRAM:   '#4CAF50',
-}
-
-function FitBounds({ routes }) {
-  const map = useMap()
-  useEffect(() => {
-    if (!routes.length) return
-    const allPts = routes[0].legs.flatMap(leg => {
-      const pts = leg.geometry_sampled_50m
-      if (!pts || pts.length < 2) return []
-      return pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
-    })
-    if (allPts.length > 1) {
-      map.fitBounds(L.latLngBounds(allPts).pad(0.1))
-    }
-  }, [routes, map])
-  return null
-}
-
-function ClickHandler({ onMapClick, inputMode }) {
-  useMapEvents({
-    click(e) {
-      if (inputMode === 'map') {
-        onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng })
-      }
-    },
-  })
-  return null
-}
-
-export default function MapView({ routes, onMapClick, inputMode, origin, destination, mapHeight = 480, borderRadius = '8px' }) {
+export default function MapView({ routes }) {
   const legs = routes[0]?.legs ?? []
 
   return (
-    <MapContainer
-      center={[45.5017, -73.5673]}
-      zoom={13}
-      style={{
-        height: mapHeight,
-        borderRadius,
-        zIndex: 0,
-        cursor: inputMode === 'map' ? 'crosshair' : 'grab',
-      }}
-    >
+    <MapContainer center={[45.5017, -73.5673]} zoom={13} style={{ height: 480 }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="© OpenStreetMap contributors"
+        attribution="© OpenStreetMap"
       />
-      <ClickHandler onMapClick={onMapClick} inputMode={inputMode} />
-      <FitBounds routes={routes} />
-
-      {origin && (
-        <Marker position={[origin.lat, origin.lng]}>
-          <Popup>Origin</Popup>
-        </Marker>
-      )}
-      {destination && (
-        <Marker position={[destination.lat, destination.lng]}>
-          <Popup>Destination</Popup>
-        </Marker>
-      )}
-
       {legs.map((leg, i) => {
         const pts = leg.geometry_sampled_50m
         if (!pts || pts.length < 2) return null
@@ -83,11 +19,7 @@ export default function MapView({ routes, onMapClick, inputMode, origin, destina
           <Polyline
             key={i}
             positions={positions}
-            pathOptions={{
-              color:   LEG_COLORS[leg.mode] ?? '#888',
-              weight:  5,
-              opacity: 0.85,
-            }}
+            pathOptions={{ color: LEG_COLORS[leg.mode] ?? '#888', weight: 5, opacity: 0.8 }}
           />
         )
       })}

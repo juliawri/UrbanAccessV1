@@ -1,4 +1,4 @@
-const BASE = '' // proxy handles routing in dev; same origin in prod
+const BASE = ''   // empty = same origin (proxy handles it in dev)
 
 export async function searchStops(q) {
   const res = await fetch(`${BASE}/stops?q=${encodeURIComponent(q)}`)
@@ -13,9 +13,8 @@ export async function planRoute({ source, destination, disability_type, date }) 
     body: JSON.stringify({ source, destination, disability_type, date }),
   })
   if (!res.ok) throw new Error(await res.text())
-  return res.json() // { routes, result }
+  return res.json()   // { routes, result }
 }
-
 
 export async function submitFeedback(payload) {
   const res = await fetch(`${BASE}/submit`, {
@@ -24,5 +23,5 @@ export async function submitFeedback(payload) {
     body: JSON.stringify(payload),
   })
   if (!res.ok) throw new Error(await res.text())
-  return res.json() // { id }
+  return res.json()   // { id }
 }
