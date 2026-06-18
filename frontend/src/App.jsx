@@ -128,24 +128,17 @@ export default function App() {
         </section>
       )}
 
-      {/* Feedback Section */}
-      <section className="feedback-section" id="contact">
-        <div className="feedback-left">
-          {routes.length > 0 && lastPayload ? (
+      {/* Feedback Section — only shown after routes are generated */}
+      {routes.length > 0 && lastPayload && (
+        <section className="feedback-section" id="contact">
+          <div className="feedback-left">
             <FeedbackForm payload={lastPayload} routes={routes} result={result} />
-          ) : (
-            <div className="feedback-placeholder">
-              <p className="feedback-placeholder-title">How was this route?</p>
-              <label className="feedback-label">Rating (1–5): <input type="number" min="1" max="5" disabled /></label>
-              <label className="feedback-label">Comment <input type="text" disabled /></label>
-              <button className="feedback-submit" disabled>Submit Feedback</button>
-            </div>
-          )}
-        </div>
-        <div className="feedback-right">
-          <h2 className="section-heading">Rank your route based off how accessible it was</h2>
-        </div>
-      </section>
+          </div>
+          <div className="feedback-right">
+            <h2 className="section-heading">Rank your route based off how accessible it was</h2>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <div className="cta-row">

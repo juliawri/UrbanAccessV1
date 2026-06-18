@@ -59,13 +59,13 @@ export default function FeedbackForm({ payload, routes, result }) {
   return (
     <Box
       border="1px solid"
-      borderColor="gray.200"
+      borderColor="#2f5f5f"
       borderRadius="lg"
       overflow="hidden"
-      bg="#C4D1DF"
+      bg="#1e3d3d"
     >
-      <Box px={4} py={3} bg="#C4D1DF" borderBottom="1px solid" borderColor="gray.200">
-        <Text fontWeight="bold">How was this route?</Text>
+      <Box px={4} py={3} bg="#2f5f5f" borderBottom="1px solid" borderColor="#2f5f5f">
+        <Text fontWeight="bold" color="#ffffff">How was this route?</Text>
       </Box>
       <Stack gap={3} p={4}>
         {/* Star rating */}
@@ -79,12 +79,13 @@ export default function FeedbackForm({ payload, routes, result }) {
               onClick={() => setRating(n)}
               fontSize="lg"
               minW={10}
+              style={rating >= n ? { background: '#FFD700', color: '#1e3d3d', borderColor: '#FFD700' } : { borderColor: '#FFD700', color: '#FFD700' }}
             >
               ★
             </Button>
           ))}
           {rating > 0 && (
-            <Text fontSize="sm" color="gray.500">{rating} / 5</Text>
+            <Text fontSize="sm" color="#ffffff">{rating} / 5</Text>
           )}
         </HStack>
 
@@ -93,6 +94,8 @@ export default function FeedbackForm({ payload, routes, result }) {
           value={comment}
           onChange={e => setComment(e.target.value)}
           rows={3}
+          style={{ background: '#2f5f5f', color: '#ffffff', borderColor: '#3d7a7a' }}
+          _placeholder={{ color: '#ffffff' }}
         />
 
         <Button
@@ -101,6 +104,7 @@ export default function FeedbackForm({ payload, routes, result }) {
           loading={loading}
           loadingText="Submitting…"
           disabled={!rating}
+          style={{ opacity: 0.80 }}
         >
           Submit Feedback
         </Button>
@@ -108,7 +112,7 @@ export default function FeedbackForm({ payload, routes, result }) {
         {status && (
           <Text
             fontSize="sm"
-            color={status.startsWith('Error') ? 'red.600' : 'green.600'}
+            color={status.startsWith('Error') ? '#fca5a5' : '#6ee7b7'}
           >
             {status}
           </Text>
