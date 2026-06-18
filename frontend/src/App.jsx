@@ -54,7 +54,7 @@ export default function App() {
           <Box
             w="340px"
             flexShrink={0}
-            bg="white"
+            bg="#F0FDFF"
             borderRadius="xl"
             p={4}
             boxShadow="sm"
@@ -74,7 +74,7 @@ export default function App() {
           </Box>
 
           {/* Map */}
-          <Box flex={1} borderRadius="xl" overflow="hidden" minH="640px">
+          <Box flex={1} borderRadius="xl" overflow="hidden" minH="640px" boxShadow="sm">
             <MapView
               routes={routes}
               origin={origin}

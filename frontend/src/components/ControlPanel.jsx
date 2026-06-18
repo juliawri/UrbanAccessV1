@@ -50,7 +50,7 @@ export default function ControlPanel({
           >
             <Select.HiddenSelect />
             <Select.Control>
-              <Select.Trigger>
+              <Select.Trigger bg="white">
                 <Select.ValueText placeholder="Select mobility aid" />
               </Select.Trigger>
               <Select.IndicatorGroup>
@@ -71,7 +71,7 @@ export default function ControlPanel({
         </Field.Root>
         <Field.Root>
           <Field.Label>Date</Field.Label>
-          <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+          <Input type="date" value={date} onChange={e => setDate(e.target.value)} bg="white" />
         </Field.Root>
       </HStack>
 
@@ -83,13 +83,15 @@ export default function ControlPanel({
         />
         <Button
           size="sm"
+          px={2}
           variant={mapClickMode === 'origin' ? 'solid' : 'outline'}
           colorPalette={mapClickMode === 'origin' ? 'orange' : 'gray'}
+          bg={mapClickMode === 'origin' ? undefined : 'white'}
           onClick={() => toggleMode('origin')}
           flexShrink={0}
           title="Click the map to set origin"
         >
-          📍 Map
+          📍
         </Button>
       </HStack>
 
@@ -101,13 +103,15 @@ export default function ControlPanel({
         />
         <Button
           size="sm"
+          px={2}
           variant={mapClickMode === 'destination' ? 'solid' : 'outline'}
           colorPalette={mapClickMode === 'destination' ? 'orange' : 'gray'}
+          bg={mapClickMode === 'destination' ? undefined : 'white'}
           onClick={() => toggleMode('destination')}
           flexShrink={0}
           title="Click the map to set destination"
         >
-          📍 Map
+          📍
         </Button>
       </HStack>
 

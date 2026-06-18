@@ -54,10 +54,11 @@ export default function Autocomplete({ label, onSelect, externalValue }) {
   }
 
   return (
-    <Box position="relative">
+    <Box position="relative" flex={1} minW={0}>
       <Input
-        placeholder={`${label} — address or transit stop…`}
+        placeholder={`${label} — address or transit stop`}
         value={query}
+        bg="white"
         onChange={e => { setQuery(e.target.value); search(e.target.value); onSelect(null) }}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
       />

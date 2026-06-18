@@ -13,7 +13,7 @@ export default function RouteDirections({ routes, result }) {
       {routes.map((route, idx) => {
         const totalMin = Math.round(route.legs.reduce((s, l) => s + (l.duration_sec ?? 0), 0) / 60)
         return (
-          <Card.Root key={idx}>
+          <Card.Root key={idx} bg="#F0FDFF" boxShadow="sm">
             <Card.Header>
               <HStack justify="space-between">
                 <Text fontWeight="bold">{labels[idx] ?? `Option ${idx+1}`}</Text>
@@ -25,7 +25,7 @@ export default function RouteDirections({ routes, result }) {
                 {route.legs.map((leg, li) => (
                   <HStack key={li} p={2} borderLeft="4px solid"
                     borderColor={`${MODE_COLOR[leg.mode] ?? 'gray'}.400`}
-                    bg="gray.50" borderRadius="sm" align="start">
+                    bg="white" borderRadius="sm" align="start">
                     <Badge colorPalette={MODE_COLOR[leg.mode] ?? 'gray'}>{leg.mode}</Badge>
                     <Box fontSize="sm">
                       <Text>{leg.from} → {leg.to}{leg.route ? ` (${leg.route})` : ''}</Text>
@@ -44,7 +44,7 @@ export default function RouteDirections({ routes, result }) {
       })}
 
       {result && (
-        <Card.Root>
+        <Card.Root bg="#F0FDFF" boxShadow="sm">
           <Card.Header><Text fontWeight="bold">AI Recommendation</Text></Card.Header>
           <Card.Body>
             <Text fontSize="sm" whiteSpace="pre-wrap">{result}</Text>

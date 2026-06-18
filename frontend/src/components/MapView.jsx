@@ -46,13 +46,27 @@ export default function MapView({ routes, origin, destination, mapClickMode, onM
       )}
       {legs.map((leg, i) => {
         const pts = leg.geometry_sampled_50m
-        if (!pts || pts.length < 2) return null
-        const positions = pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
+        const isTransit = leg.mode === 'BUS' || leg.mode === 'SUBWAY'
+
+        let positions
+        if (pts && pts.length >= 2) {
+          positions = pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
+        } else if (isTransit && leg.from_lat != null && leg.to_lat != null) {
+          positions = [[leg.from_lat, leg.from_lon], [leg.to_lat, leg.to_lon]]
+        } else {
+          return null
+        }
+
         return (
           <Polyline
             key={i}
             positions={positions}
-            pathOptions={{ color: LEG_COLORS[leg.mode] ?? '#888', weight: 5, opacity: 0.8 }}
+            pathOptions={{
+              color: isTransit ? '#E87010' : (LEG_COLORS[leg.mode] ?? '#888'),
+              weight: 5,
+              opacity: 0.8,
+              dashArray: isTransit ? '10 6' : undefined,
+            }}
           />
         )
       })}

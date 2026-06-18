@@ -32,14 +32,14 @@ export default function FeedbackForm({ payload, routes, result }) {
   }
 
   return (
-    <Card.Root>
+    <Card.Root bg="#F0FDFF" boxShadow="sm">
       <Card.Header><Text fontWeight="bold">How was this route?</Text></Card.Header>
       <Card.Body>
         <Stack gap={3}>
           <HStack>
             {[1,2,3,4,5].map(n => (
               <Button key={n} size="sm" variant={rating === n ? 'solid' : 'outline'}
-                colorPalette="yellow" onClick={() => setRating(n)}>
+                colorPalette="yellow" bg={rating === n ? undefined : 'white'} onClick={() => setRating(n)}>
                 {'★'.repeat(n)}
               </Button>
             ))}
