@@ -1,27 +1,28 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { ROUTE_COLORS, ROUTE_LABELS } from './routeColors'
 
-function FitAllRoutes({ routes }) {
+function FitRoute({ route }) {
   const map = useMap()
   useEffect(() => {
-    if (!routes.length) return
-    const allPts = routes.flatMap(route =>
-      route.legs.flatMap(leg => {
-        const pts = leg.geometry_sampled_50m
-        if (!pts || pts.length < 2) return []
-        return pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
-      })
-    )
+    if (!route) return
+    const allPts = route.legs.flatMap(leg => {
+      const pts = leg.geometry_sampled_50m
+      if (!pts || pts.length < 2) return []
+      return pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
+    })
     if (allPts.length > 1) {
       map.fitBounds(L.latLngBounds(allPts).pad(0.12))
     }
-  }, [routes, map])
+  }, [route, map])
   return null
 }
 
 export default function RouteMap({ routes, origin, destination }) {
+  const [selectedRouteIdx, setSelectedRouteIdx] = useState(0)
+  const activeColor = ROUTE_COLORS[selectedRouteIdx] ?? '#888'
+
   return (
     <div style={{ position: 'relative', height: '83vh', borderRadius: '12px', overflow: 'hidden', marginTop: '32px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
       <MapContainer
@@ -35,7 +36,7 @@ export default function RouteMap({ routes, origin, destination }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="© OpenStreetMap contributors"
         />
-        <FitAllRoutes routes={routes} />
+        <FitRoute route={routes[selectedRouteIdx]} />
 
         {origin && (
           <Marker position={[origin.lat, origin.lng]}>
@@ -48,53 +49,74 @@ export default function RouteMap({ routes, origin, destination }) {
           </Marker>
         )}
 
-        {routes.map((route, routeIdx) =>
-          route.legs.map((leg, legIdx) => {
-            const pts = leg.geometry_sampled_50m
-            if (!pts || pts.length < 2) return null
-            const positions = pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
-            return (
-              <Polyline
-                key={`${routeIdx}-${legIdx}`}
-                positions={positions}
-                pathOptions={{
-                  color: ROUTE_COLORS[routeIdx] ?? '#888',
-                  weight: routeIdx === 0 ? 5 : 4,
-                  opacity: routeIdx === 0 ? 0.95 : 0.72,
-                  dashArray: routeIdx === 1 ? '10,5' : routeIdx === 2 ? '4,6' : null,
-                }}
-              />
-            )
-          })
-        )}
+        {(routes[selectedRouteIdx]?.legs ?? []).map((leg, legIdx) => {
+          const pts = leg.geometry_sampled_50m
+          if (!pts || pts.length < 2) return null
+          const positions = pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
+          return (
+            <Polyline
+              key={legIdx}
+              positions={positions}
+              pathOptions={{ color: activeColor, weight: 5, opacity: 0.95 }}
+            />
+          )
+        })}
       </MapContainer>
 
+      {/* Route selector dropdown */}
       <div style={{
         position: 'absolute',
-        top: 8,
-        right: 8,
-        background: 'rgba(255,255,255,0.95)',
-        borderRadius: '6px',
-        padding: '6px 10px',
+        top: 12,
+        left: 12,
         zIndex: 1000,
-        fontSize: '12px',
-        lineHeight: '1.5',
-        boxShadow: '0 1px 5px rgba(0,0,0,0.25)',
-        pointerEvents: 'none',
+        background: 'rgba(255,255,255,0.97)',
+        borderRadius: '10px',
+        padding: '10px 14px 12px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
+        minWidth: '230px',
       }}>
-        {ROUTE_LABELS.slice(0, routes.length).map((label, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: i < routes.length - 1 ? 4 : 0 }}>
-            <svg width="22" height="6" style={{ flexShrink: 0 }}>
-              <line
-                x1="0" y1="3" x2="22" y2="3"
-                stroke={ROUTE_COLORS[i]}
-                strokeWidth={i === 0 ? 3 : 2.5}
-                strokeDasharray={i === 1 ? '6,3' : i === 2 ? '2.5,3.5' : null}
-              />
-            </svg>
-            <span style={{ color: ROUTE_COLORS[i], fontWeight: 600 }}>{label}</span>
-          </div>
-        ))}
+        <div style={{
+          fontSize: '11px',
+          fontWeight: 700,
+          color: '#1e3d3d',
+          marginBottom: '7px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          What Route Do You Want to Display?
+        </div>
+        <div style={{ position: 'relative' }}>
+          <select
+            value={selectedRouteIdx}
+            onChange={e => setSelectedRouteIdx(Number(e.target.value))}
+            style={{
+              width: '100%',
+              padding: '7px 32px 7px 10px',
+              border: `2px solid ${activeColor}`,
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: activeColor,
+              background: 'white',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              cursor: 'pointer',
+              outline: 'none',
+            }}
+          >
+            {routes.map((_, i) => (
+              <option key={i} value={i} style={{ color: ROUTE_COLORS[i] ?? '#1a1a1a' }}>
+                {ROUTE_LABELS[i] ?? `Option ${i + 1}`}
+              </option>
+            ))}
+          </select>
+          <svg
+            width="12" height="8" viewBox="0 0 12 8"
+            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+          >
+            <path d="M1 1l5 5 5-5" stroke={activeColor} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       </div>
     </div>
   )

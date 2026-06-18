@@ -76,11 +76,10 @@ def _parse_itinerary(idx, itin):
             "route": leg.get("route"),
             "geometry_sampled_50m": None,
         }
-        if leg.get("mode") == "WALK":
-            geom = leg.get("legGeometry", {}).get("points")
-            if geom:
-                coords = polyline.decode(geom)
-                leg_data["geometry_sampled_50m"] = sample_along_line(coords, step=20)
+        geom = leg.get("legGeometry", {}).get("points")
+        if geom:
+            coords = polyline.decode(geom)
+            leg_data["geometry_sampled_50m"] = sample_along_line(coords, step=20)
         route["legs"].append(leg_data)
     return route
 
