@@ -64,11 +64,11 @@ export default function ControlPanel({
             <SelectLabel fontSize="sm" fontWeight="medium" color="white">Mobility Aid</SelectLabel>
             <SelectTrigger>
               <SelectValueText placeholder="Select…" color="white" flex="1" style={{ color: 'white' }} />
-              <SelectIndicator />
+              <SelectIndicator color="white" />
             </SelectTrigger>
             <SelectContent zIndex={9999} position="absolute" top="100%" left={0} right={0}>
               {MOBILITY_AIDS.map(a => (
-                <SelectItem key={a.value} item={a}>{a.label}</SelectItem>
+                <SelectItem key={a.value} item={a} color="black">{a.label}</SelectItem>
               ))}
             </SelectContent>
           </SelectRoot>

@@ -202,6 +202,28 @@ def submit_feedback(payload: FeedbackSubmit, db: Session = Depends(get_db)):
     return {"message": "saved", "id": feedback.id}
 
 
+@app.get("/api/feedback")
+def get_feedback_json(db: Session = Depends(get_db)):
+    rows = db.query(Feedback).order_by(Feedback.id.desc()).all()
+    return [
+        {
+            "id": r.id,
+            "rating": r.rating,
+            "comment": r.comment,
+            "origin_lat": r.origin_lat,
+            "origin_lng": r.origin_lng,
+            "dest_lat": r.dest_lat,
+            "dest_lng": r.dest_lng,
+            "disability_type": r.disability_type,
+            "route_date": r.route_date,
+            "route_total_min": r.route_total_min,
+            "route_num_transfers": r.route_num_transfers,
+            "route_modes": r.route_modes,
+        }
+        for r in rows
+    ]
+
+
 @app.get("/feedback", response_class=HTMLResponse)
 def get_feedback(db: Session = Depends(get_db)):
     rows = db.query(Feedback).order_by(Feedback.id.desc()).all()

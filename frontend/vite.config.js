@@ -5,10 +5,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: 5173,
     proxy: {
-      '/process': 'http://localhost:8000',
-      '/stops':   'http://localhost:8000',
-      '/submit':  'http://localhost:8000',
+      '/process':      'http://localhost:8000',
+      '/stops':        'http://localhost:8000',
+      '/submit':       'http://localhost:8000',
+      '/api/feedback': 'http://localhost:8000',
     },
   },
 })

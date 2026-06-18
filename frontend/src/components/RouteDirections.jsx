@@ -34,6 +34,7 @@ function normalizeRouteLabels(text) {
 export default function RouteDirections({ routes, result }) {
   return (
     <Stack gap={4}>
+      <HStack gap={3} align="stretch">
       {routes.map((route, idx) => {
         const totalMin = Math.round(
           route.legs.reduce((s, l) => s + (l.duration_sec ?? 0), 0) / 60
@@ -41,6 +42,8 @@ export default function RouteDirections({ routes, result }) {
         return (
           <Box
             key={idx}
+            flex="1"
+            minW="0"
             border="1px solid"
             borderColor="gray.200"
             borderRadius="lg"
@@ -102,6 +105,7 @@ export default function RouteDirections({ routes, result }) {
           </Box>
         )
       })}
+      </HStack>
 
       {result && (
         <Box

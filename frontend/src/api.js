@@ -17,6 +17,12 @@ export async function planRoute({ source, destination, disability_type, date }) 
 }
 
 
+export async function getFeedback() {
+  const res = await fetch(`${BASE}/api/feedback`)
+  if (!res.ok) throw new Error(await res.text())
+  return res.json()
+}
+
 export async function submitFeedback(payload) {
   const res = await fetch(`${BASE}/submit`, {
     method: 'POST',
