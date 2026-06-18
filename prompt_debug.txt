@@ -33,83 +33,96 @@ Use this priority order when comparing routes:
 
 === OUTPUT FORMAT ===
 
-Start your response with exactly one line containing only: RECOMMENDED:<id> where <id> is the integer route ID (e.g. RECOMMENDED:0 or RECOMMENDED:2). No extra words or punctuation on that line.
-Then evaluate every route using the labels 'Recommended Route', 'Alternative 1', 'Alternative 2'.
-Do not use route ID numbers in the evaluation text.
-IMPORTANT: Write your explanations entirely in plain, everyday language. Do NOT mention scores, probabilities, field names, model names, or any technical terms. Instead of 'MAE score of 0.7', say 'street photos suggest this section may have obstacles'. Instead of 'heat class 4', say 'this area tends to be quite hot'. Instead of 'active_barriers = 1', say 'there is currently a blockage on this path'. Describe what you found as if explaining to a friend with no technical background.
-Do NOT evaluate routes solely by travel time.
-Give a confidence level (Low/Medium/High) for your top recommendation, noting whether street photo data was available.
-Consider the date and season when assessing walking conditions (ice, heat, construction season).
-Do not invent information not present in the data. If no photo data was available for a segment, say so.
-Be concise and practical — use bullet points so the output is easy to scan.
+Your response MUST follow this exact structure. Every section header must appear verbatim for all three routes so that automated tools can parse the output reliably.
+
+Line 1 — recommendation tag (required, nothing else on this line):
+RECOMMENDED:<id>
+(where <id> is the integer route ID, e.g. RECOMMENDED:2)
+
+Then repeat the following block EXACTLY three times — once for each route — using the labels 'Recommended Route', 'Alternative 1', 'Alternative 2' in that order (the recommended route always appears first, regardless of its original position):
+
+## <label>
+**Active Blockages:** <one sentence — state whether anything is currently blocking or narrowing the path, or 'None detected.'>
+**Street Photos:** <one sentence — describe what street-level photos suggest about path condition, or 'No photo data available.'>
+**Detailed Photo Review:** <one sentence — describe what the closer photo review found, or 'No detailed photo data available.'>
+**Traffic Safety:** <one sentence — describe collision history near this route.>
+**Construction:** <one sentence — describe any nearby building permits or construction activity, or 'No construction activity detected.'>
+**Heat & Shade:** <one sentence — describe how hot this route tends to get and how much tree cover there is.>
+**Summary:** <one or two sentences — overall accessibility verdict for this route.>
+
+After all three route blocks, add:
+**Confidence:** <High / Medium / Low> — <one sentence explaining why, noting whether photo data was available>
+
+STRICT RULES:
+- Every header (**Active Blockages:**, **Street Photos:**, etc.) must appear for every route.
+- Do NOT use route ID numbers (0, 1, 2) anywhere in the evaluation text.
+- Do NOT mention scores, probabilities, field names, or model names. Use plain language a non-technical reader would understand.
+- Do NOT evaluate routes solely by travel time.
+- Do not invent information not in the data. If a factor has no data, write exactly 'No data available.' for that field.
+- Consider the date and season when assessing walking conditions.
+- No extra sections, headers, or freeform paragraphs outside this structure.
 
 === USER PROMPT ===
 User profile:
-- Origin: (45.60352681086355, -73.58921064527176)
-- Destination: (45.513163065591876, -73.64828199178206)
-- Mobility aid: walker
+- Origin: (45.52914089138213, -73.6444252167817)
+- Destination: (45.51875532845215, -73.6437402864685)
+- Mobility aid: walking cane
 - Date: 2026-06-18
 
 Routes:
-=== Route 0 (94 min, 3 transfer(s)) ===
+=== Route 0 (16 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Couture / Pascal-Gagnon | 8 min, 649 m
-  2. BUS (Des Grandes-Prairies): Couture / Pascal-Gagnon → Pie-IX / Forest | 15 min, 4834 m
-  3. WALK: Pie-IX / Forest → Forest / Hébert | 2 min, 93 m
-  4. BUS (Express Charleroi): Forest / Hébert → Station Sauvé (Édicule Nord) | 19 min, 5246 m
-  5. WALK: Station Sauvé (Édicule Nord) → Station Sauvé | 3 min, 31 m
-  6. SUBWAY (Line 2 - Orange): Station Sauvé → Station Crémazie | 2 min, 1451 m
-  7. WALK: Station Crémazie → Station Crémazie Nord (Crémazie / Berri) | 2 min, 31 m
-  8. BUS (Crémazie): Station Crémazie Nord (Crémazie / Berri) → Côte-de-Liesse / Montpellier | 10 min, 3711 m
-  9. WALK: Côte-de-Liesse / Montpellier → Destination | 20 min, 1443 m
+  1. WALK: Origin → Rockland / Revere | 5 min, 390 m
+  2. BUS (Rockland): Rockland / Revere → Laird / Jasper | 8 min, 2521 m
+  3. WALK: Laird / Jasper → Destination | 3 min, 202 m
 
-Walk segment data (59 eligible points (showing 10 of 59)):
-  (45.60387, -73.59002) | distance_to_access_m=10224.190018860618 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51337, -73.64880) | distance_to_access_m=5004.782427475737 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.54599, -73.63885) | distance_to_access_m=5669.502343323275 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51763, -73.65496) | distance_to_access_m=5517.870906944526 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51444, -73.65129) | distance_to_access_m=5203.512946514478 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51737, -73.65714) | distance_to_access_m=5683.568890124437 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.58742, -73.63343) | distance_to_access_m=9208.044619496868 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60322, -73.59060) | distance_to_access_m=10153.952754047015 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51794, -73.65600) | distance_to_access_m=5602.333037284898 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51325, -73.64864) | distance_to_access_m=4991.936991449879 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+Walk segment data (10 eligible points):
+  (45.52882, -73.64485) | distance_to_access_m=5052.918125080871 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52608, -73.64645) | distance_to_access_m=5066.762592979914 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.009
+  (45.52790, -73.64538) | distance_to_access_m=5054.652247276163 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52919, -73.64463) | distance_to_access_m=5052.406193760114 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51872, -73.64423) | distance_to_access_m=4705.852319760734 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51866, -73.64480) | distance_to_access_m=4748.663810903076 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51906, -73.64504) | distance_to_access_m=4774.231001878753 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51967, -73.64539) | distance_to_access_m=4812.663221890597 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51883, -73.64399) | distance_to_access_m=4689.351532645923 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51863, -73.64455) | distance_to_access_m=4728.904068255777 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
 
-=== Route 1 (80 min, 1 transfer(s)) ===
+=== Route 1 (19 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Jarry / des Galeries-d'Anjou | 19 min, 1463 m
-  2. BUS (Express Métropolitaine): Jarry / des Galeries-d'Anjou → Côte-de-Liesse / Sainte-Croix | 47 min, 13925 m
-  3. WALK: Côte-de-Liesse / Sainte-Croix → Sainte-Croix / Saint-Philippe | 2 min, 109 m
-  4. BUS (Graham): Sainte-Croix / Saint-Philippe → Graham / Kenaston | 6 min, 1374 m
-  5. WALK: Graham / Kenaston → Destination | 3 min, 192 m
+  1. WALK: Origin → Destination | 19 min, 1395 m
 
-Walk segment data (41 eligible points (showing 10 of 41)):
-  (45.60233, -73.57645) | distance_to_access_m=10044.244513428699 | point_id=P00010 | arrondissement=Le Plateau-Mont-Royal | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Ginkgo à feuilles bilobées(1) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60387, -73.59002) | distance_to_access_m=10224.190018860618 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60327, -73.57865) | distance_to_access_m=10148.767674435194 | point_id=P00006 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Févier Shademaster(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60463, -73.58184) | distance_to_access_m=10300.043022977981 | point_id=P00003 | arrondissement=Ville-Marie | heat_class=2.0 | heat_label=Température plus froide que la moyenne | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(2) | average_tree_size_from_trunk_diam_cm=31.0
-  (45.60530, -73.58872) | distance_to_access_m=10379.444370432635 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51301, -73.64965) | distance_to_access_m=5069.9556835353405 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60570, -73.58435) | distance_to_access_m=10418.965353821812 | point_id=P00002 | arrondissement=Ville-Marie | heat_class=2.0 | heat_label=Température plus froide que la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Ostryer de Virginie(1) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60494, -73.58908) | distance_to_access_m=10340.34092047565 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60661, -73.58645) | distance_to_access_m=10521.137945126504 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60649, -73.58619) | distance_to_access_m=10507.537835339004 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+Walk segment data (31 eligible points (showing 10 of 31)):
+  (45.52434, -73.64805) | distance_to_access_m=5130.437220615556 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51872, -73.64423) | distance_to_access_m=4705.852319760734 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52465, -73.64719) | distance_to_access_m=5075.337341946336 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52155, -73.64628) | distance_to_access_m=4921.681083277478 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52444, -73.64777) | distance_to_access_m=5112.412965950926 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52790, -73.64538) | distance_to_access_m=5054.652247276163 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51941, -73.64501) | distance_to_access_m=4778.467622773903 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52010, -73.64544) | distance_to_access_m=4825.175545086092 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52198, -73.64652) | distance_to_access_m=4950.422263907535 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52030, -73.64555) | distance_to_access_m=4837.780865767501 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
 
-=== Route 2 (83 min, 0 transfer(s)) ===
+=== Route 2 (20 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Jarry / des Galeries-d'Anjou | 19 min, 1463 m
-  2. BUS (Express Métropolitaine): Jarry / des Galeries-d'Anjou → Côte-de-Liesse / Montpellier | 44 min, 12887 m
-  3. WALK: Côte-de-Liesse / Montpellier → Destination | 20 min, 1443 m
+  1. WALK: Origin → Destination | 20 min, 1528 m
 
-Walk segment data (69 eligible points (showing 10 of 69)):
-  (45.60185, -73.57584) | distance_to_access_m=9990.988421013994 | point_id=P00011 | arrondissement=Le Plateau-Mont-Royal | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Érable argenté(1) | average_tree_size_from_trunk_diam_cm=28.0
-  (45.60661, -73.58645) | distance_to_access_m=10521.137945126504 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60606, -73.58757) | distance_to_access_m=10461.550568411076 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.60425, -73.58091) | distance_to_access_m=10257.756832005243 | point_id=P00004 | arrondissement=Ville-Marie | heat_class=2.0 | heat_label=Température plus froide que la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Micocoulier occidental(1) | average_tree_size_from_trunk_diam_cm=31.0
-  (45.60463, -73.58184) | distance_to_access_m=10300.043022977981 | point_id=P00003 | arrondissement=Ville-Marie | heat_class=2.0 | heat_label=Température plus froide que la moyenne | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(2) | average_tree_size_from_trunk_diam_cm=31.0
-  (45.60346, -73.57909) | distance_to_access_m=10169.913054945733 | point_id=P00006 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Févier Shademaster(2) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.51
+Walk segment data (24 eligible points (showing 10 of 24)):
+  (45.52063, -73.64574) | distance_to_access_m=4859.412846205097 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52563, -73.64556) | distance_to_access_m=4985.440159351984 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.008
+  (45.52937, -73.64453) | distance_to_access_m=5052.805256759179 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.616
+  (45.51872, -73.64423) | distance_to_access_m=4705.852319760734 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52813, -73.64417) | distance_to_access_m=4975.598408054962 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51869, -73.64459) | distance_to_access_m=4733.02418894657 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52405, -73.64438) | distance_to_access_m=4846.5149508073555 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52190, -73.64562) | distance_to_access_m=4880.098500805722 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.52512, -73.64392) | distance_to_access_m=4846.516675987444 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.019
+  (45.52174, -73.64574) | distance_to_access_m=4885.239247057628 | point_id=P0
 
 [... truncated for length ...]
 
 Analyse the routes above and identify which is most accessible for this user.
+
+=== GEMINI VLM STATUS: FAILED ===
+Gemini API call failed: The write operation timed out

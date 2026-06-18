@@ -135,16 +135,15 @@ export default function App() {
       {/* Route Results — replaces the map */}
       {result && (
         <section className="results-section">
-          <RouteDirections routes={routes} result={result} showResult={false} />
+          <RouteDirections routes={routes} result={result} />
           <RouteMap routes={routes} origin={origin} destination={destination} />
-          <RouteDirections routes={routes} result={result} showCards={false} />
         </section>
       )}
 
       {/* Feedback Section — only shown after routes are generated */}
       {routes.length > 0 && lastPayload && (
         <section className="feedback-section" id="contact">
-          <h2 className="section-heading feedback-heading">Rank your route based off how accessible it was</h2>
+          <h2 className="section-heading feedback-heading">Rank Your Route Based On How Accessible It Was</h2>
           <FeedbackForm payload={lastPayload} routes={routes} result={result} />
           <button className="new-route-btn new-route-btn--lg" onClick={handleNewRoute}>Plan New Route</button>
         </section>

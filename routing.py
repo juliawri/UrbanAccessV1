@@ -51,6 +51,99 @@ def _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, mode, num, date):
     return resp.json().get("plan", {}).get("itineraries", [])
 
 
+def _merge_walk_legs(legs):
+    """Collapse a list of consecutive walk legs into a single walk leg."""
+    if not legs:
+        return []
+    all_coords = []
+    for leg in legs:
+        pts = leg.get("legGeometry", {}).get("points")
+        if pts:
+            coords = polyline.decode(pts)
+            # Skip the first point of each subsequent segment — it duplicates the last
+            all_coords.extend(coords if not all_coords else coords[1:])
+    return [{
+        "mode":     "WALK",
+        "from":     legs[0].get("from"),
+        "to":       legs[-1].get("to"),
+        "startTime": legs[0].get("startTime"),
+        "endTime":   legs[-1].get("endTime"),
+        "duration":  sum(l.get("duration", 0) for l in legs),
+        "distance":  sum(l.get("distance", 0) for l in legs),
+        "legGeometry": {
+            "points": polyline.encode(all_coords) if all_coords else "",
+            "length": len(all_coords),
+        },
+        "route": None,
+        "routeLongName": None,
+        "routeShortName": "",
+    }]
+
+
+def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date):
+    """
+    Fetch diverse walk routes by chaining two OTP requests through mandatory waypoints.
+    OTP1 ignores intermediatePlaces for walk-only mode, so chaining is the only reliable
+    way to force different corridors: origin→waypoint and waypoint→destination are each
+    independent optimal-path queries, so OTP cannot route around the waypoint.
+    """
+    eff_date = date or "2026-06-04"
+    direct_dist = haversine(from_lat, from_lon, to_lat, to_lon)
+    offset_m = max(400, min(800, direct_dist * 0.4))
+    max_walk = max(8000, int(direct_dist * 4))
+
+    mid_lat = (from_lat + to_lat) / 2
+    mid_lon = (from_lon + to_lon) / 2
+
+    def _waypoint(angle_deg):
+        rad = math.radians(angle_deg)
+        dlat = offset_m / 111_000 * math.cos(rad)
+        dlon = offset_m / (111_000 * math.cos(math.radians(mid_lat))) * math.sin(rad)
+        return mid_lat + dlat, mid_lon + dlon
+
+    def _walk_segment(a_lat, a_lon, b_lat, b_lon):
+        url = (
+            f"{OTP_BASE_URL}?fromPlace={a_lat},{a_lon}&toPlace={b_lat},{b_lon}"
+            f"&mode=WALK&numItineraries=1&maxWalkDistance={max_walk}"
+            f"&arriveBy=false&date={eff_date}&time=08:00am"
+        )
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+            itins = resp.json().get("plan", {}).get("itineraries", [])
+            return itins[0] if itins else None
+        except Exception as e:
+            print(f"Walk segment ({a_lat},{a_lon})→({b_lat},{b_lon}) failed: {e}")
+            return None
+
+    itins = []
+
+    # Direct route
+    direct = _walk_segment(from_lat, from_lon, to_lat, to_lon)
+    if direct:
+        itins.append(direct)
+        print(f"Walk direct: dist={round(_total_distance_m(direct))}m")
+
+    # Chained routes: origin→waypoint + waypoint→destination
+    for angle in (0, 90, 180, 270):
+        wp_lat, wp_lon = _waypoint(angle)
+        seg1 = _walk_segment(from_lat, from_lon, wp_lat, wp_lon)
+        seg2 = _walk_segment(wp_lat, wp_lon, to_lat, to_lon)
+        if seg1 and seg2:
+            merged = {
+                "duration":  seg1.get("duration", 0) + seg2.get("duration", 0),
+                "transfers": 0,
+                "legs":      _merge_walk_legs(seg1.get("legs", []) + seg2.get("legs", [])),
+            }
+            print(f"Walk angle={angle}: dist={round(_total_distance_m(merged))}m")
+            itins.append(merged)
+        else:
+            print(f"Walk angle={angle}: segment failed (seg1={seg1 is not None}, seg2={seg2 is not None})")
+
+    print(f"Walk candidates before dedup: {len(itins)}")
+    return itins
+
+
 def _parse_itinerary(idx, itin):
     route = {
         "route_id": idx,
@@ -73,7 +166,8 @@ def _parse_itinerary(idx, itin):
             "end_time": leg.get("endTime"),
             "duration_sec": leg.get("duration", 0),
             "distance_m": leg.get("distance", 0),
-            "route": leg.get("route"),
+            "route": leg.get("routeLongName") or leg.get("route"),
+            "route_short_name": leg.get("routeShortName") or "",
             "geometry_sampled_50m": None,
         }
         geom = leg.get("legGeometry", {}).get("points")
@@ -86,6 +180,25 @@ def _parse_itinerary(idx, itin):
 
 def _total_distance_m(itin):
     return sum(leg.get("distance", 0) for leg in itin.get("legs", []))
+
+
+def _walk_signature(itin):
+    """
+    Deduplicate walk routes by the geographic midpoint of their geometry (~11 m precision).
+    Distance-based dedup falsely collapses routes with different paths but similar lengths.
+    """
+    all_coords = []
+    for leg in itin.get("legs", []):
+        geom = leg.get("legGeometry", {}).get("points")
+        if geom:
+            try:
+                all_coords.extend(polyline.decode(geom))
+            except Exception:
+                pass
+    if not all_coords:
+        return f"walk:dist:{round(_total_distance_m(itin) / 50) * 50}"
+    mid = all_coords[len(all_coords) // 2]
+    return f"walk:{round(mid[0], 4)}:{round(mid[1], 4)}"
 
 
 def _route_signature(itin):
@@ -106,8 +219,16 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
 
     # Single broad request — OTP returns its best options first
     transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date)
-    walk_raw    = [it for it in _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 5, eff_date)
-                   if _total_distance_m(it) <= 5000]
+
+    # Walk variants: four optimize modes → deduplicated by distance+duration
+    _walk_seen, walk_raw = set(), []
+    for it in _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, eff_date):
+        if _total_distance_m(it) > 5000:
+            continue
+        sig = _walk_signature(it)
+        if sig not in _walk_seen:
+            _walk_seen.add(sig)
+            walk_raw.append(it)
 
     # Keep only itineraries that actually use a non-walk mode
     transit_itins = [it for it in transit_raw
@@ -119,8 +240,14 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
     if not transit_itins and eff_date != "2026-06-04":
         print("No transit for requested date — retrying with fallback date 2026-06-04")
         transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, "2026-06-04")
-        walk_raw    = [it for it in _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 3, "2026-06-04")
-                       if _total_distance_m(it) <= 5000]
+        _walk_seen, walk_raw = set(), []
+        for it in _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, "2026-06-04"):
+            if _total_distance_m(it) > 5000:
+                continue
+            sig = _walk_signature(it)
+            if sig not in _walk_seen:
+                _walk_seen.add(sig)
+                walk_raw.append(it)
         transit_itins = [it for it in transit_raw
                          if any(l.get("mode") != "WALK" for l in it.get("legs", []))]
         print(f"OTP (fallback): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only (≤5 km)")

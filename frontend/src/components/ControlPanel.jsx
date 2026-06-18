@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box, Stack, HStack, Input, Text,
   createListCollection,
@@ -34,6 +34,25 @@ export default function ControlPanel({
     () => [localStorage.getItem('default_mobility_aid') || 'manual wheelchair']
   )
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+
+  const LOADING_STEPS = [
+    'Finding Accessible Routes…',
+    'Checking Elevation & Terrain…',
+    'Evaluating Transit Stops…',
+    'Reviewing Sidewalk Conditions…',
+    'Checking for Ramps & Curb Cuts…',
+    'Calculating Travel Times…',
+    'Analyzing Accessibility Features…',
+    'Comparing Route Options…',
+    'Ranking Routes for You…',
+  ]
+  const [stepIndex, setStepIndex] = useState(0)
+
+  useEffect(() => {
+    if (!loading) { setStepIndex(0); return }
+    const id = setInterval(() => setStepIndex(i => (i + 1) % LOADING_STEPS.length), 8000)
+    return () => clearInterval(id)
+  }, [loading])
 
   function handleSubmit() {
     if (!origin || !destination) return
@@ -186,13 +205,13 @@ export default function ControlPanel({
           border: 'none',
           borderRadius: '8px',
           padding: '10px 16px',
-          fontSize: '16px',
+          fontSize: loading ? '13px' : '16px',
           fontWeight: 600,
           cursor: !origin || !destination ? 'not-allowed' : 'pointer',
           width: '100%',
         }}
       >
-        {loading ? 'Planning route…' : 'Plan Route'}
+        {loading ? LOADING_STEPS[stepIndex] : 'Plan Route'}
       </button>
     </Stack>
   )
