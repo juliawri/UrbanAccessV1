@@ -1,14 +1,47 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+const MOBILITY_AID_OPTIONS = [
+  { label: 'No Mobility Aid',     value: 'no mobility aid' },
+  { label: 'Manual Wheelchair',   value: 'manual wheelchair' },
+  { label: 'Electric Wheelchair', value: 'electric wheelchair' },
+  { label: 'Walker',              value: 'walker' },
+  { label: 'Walking Cane',        value: 'walking cane' },
+  { label: 'Mobility Scooter',    value: 'mobility scooter' },
+]
+
 export default function SettingsPage() {
   const [fastMode, setFastMode] = useState(
     () => localStorage.getItem('fast_mode') === 'true'
+  )
+  const [defaultMobilityAid, setDefaultMobilityAid] = useState(
+    () => localStorage.getItem('default_mobility_aid') || 'manual wheelchair'
+  )
+  const [defaultZoom, setDefaultZoom] = useState(
+    () => localStorage.getItem('default_zoom') || '13'
+  )
+  const [showStopNames, setShowStopNames] = useState(
+    () => localStorage.getItem('show_stop_names') === 'true'
   )
 
   function handleFastModeChange(val) {
     setFastMode(val)
     localStorage.setItem('fast_mode', val)
+  }
+
+  function handleMobilityAidChange(e) {
+    setDefaultMobilityAid(e.target.value)
+    localStorage.setItem('default_mobility_aid', e.target.value)
+  }
+
+  function handleZoomChange(e) {
+    setDefaultZoom(e.target.value)
+    localStorage.setItem('default_zoom', e.target.value)
+  }
+
+  function handleShowStopNamesChange(val) {
+    setShowStopNames(val)
+    localStorage.setItem('show_stop_names', val)
   }
 
   return (
@@ -47,7 +80,7 @@ export default function SettingsPage() {
         <SettingsSection title="Performance">
           <SettingsRow
             label="Find Routes Faster"
-            description="Skips street-level photo analysis (Mapillary, MAE, Gemini). Routes are ranked using accessibility data only."
+            description="Skip street-level photo analysis. Routes are ranked using accessibility data only."
           >
             <Toggle checked={fastMode} onChange={handleFastModeChange} />
           </SettingsRow>
@@ -56,13 +89,10 @@ export default function SettingsPage() {
         {/* Accessibility */}
         <SettingsSection title="Accessibility">
           <SettingsRow label="Default Mobility Aid">
-            <select style={selectStyle}>
-              <option>No Mobility Aid</option>
-              <option>Manual Wheelchair</option>
-              <option>Electric Wheelchair</option>
-              <option>Walker</option>
-              <option>Walking Cane</option>
-              <option>Mobility Scooter</option>
+            <select style={selectStyle} value={defaultMobilityAid} onChange={handleMobilityAidChange}>
+              {MOBILITY_AID_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </SettingsRow>
           <SettingsRow label="Prefer elevator routes">
@@ -76,14 +106,14 @@ export default function SettingsPage() {
         {/* Map */}
         <SettingsSection title="Map">
           <SettingsRow label="Default zoom level">
-            <select style={selectStyle}>
+            <select style={selectStyle} value={defaultZoom} onChange={handleZoomChange}>
               <option value="11">11 — City</option>
               <option value="13">13 — Neighbourhood</option>
               <option value="15">15 — Street</option>
             </select>
           </SettingsRow>
           <SettingsRow label="Show stop names on map">
-            <Toggle />
+            <Toggle checked={showStopNames} onChange={handleShowStopNamesChange} />
           </SettingsRow>
         </SettingsSection>
       </div>
@@ -129,7 +159,7 @@ function SettingsRow({ label, description, children }) {
       <div>
         <div style={{ fontSize: '14px', color: '#2c4a4a', fontWeight: 500 }}>{label}</div>
         {description && (
-          <div style={{ fontSize: '12px', color: '#7a9a9a', marginTop: '2px' }}>{description}</div>
+          <div style={{ fontSize: '12px', color: '#3a5a5a', marginTop: '2px' }}>{description}</div>
         )}
       </div>
       {children}

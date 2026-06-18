@@ -213,6 +213,7 @@
 .partner-img--wide {
   height: 60px;
   width: auto;
+  border-radius: 10px;
 }
 
 /* ── Footer columns ─────────────────────────────────── */

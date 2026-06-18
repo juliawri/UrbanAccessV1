@@ -49,14 +49,30 @@ export default function App() {
     setMapClickStep('origin')
   }
 
-  function handleMapClick({ lat, lng }) {
+  async function handleMapClick({ lat, lng }) {
     if (inputMode !== 'map') return
-    const label = `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+    const fallbackLabel = `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+    let label = fallbackLabel
+    try {
+      const res = await fetch(
+        `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&limit=1`
+      )
+      const data = await res.json()
+      const props = data.features?.[0]?.properties
+      if (props) {
+        const streetPart = [props.housenumber, props.street].filter(Boolean).join(' ')
+        const parts = [props.name, streetPart, props.city, props.country].filter(Boolean)
+        if (parts.length) label = parts.join(', ')
+      }
+    } catch {
+      // keep fallback label
+    }
     if (mapClickStep === 'origin') {
       setOrigin({ lat, lng, label })
       setMapClickStep('destination')
     } else {
       setDestination({ lat, lng, label })
+      setMapClickStep('origin')
     }
   }
 
@@ -139,11 +155,6 @@ export default function App() {
           </div>
         </section>
       )}
-
-      {/* CTA */}
-      <div className="cta-row">
-        <a href="#map" className="cta-btn">Try It Out</a>
-      </div>
 
       {/* Partners */}
       <section className="partners">

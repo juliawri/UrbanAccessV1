@@ -43,13 +43,17 @@ function ClickHandler({ onMapClick, inputMode }) {
   return null
 }
 
+const TRANSIT_MODES = new Set(['BUS', 'SUBWAY', 'TRAM'])
+
 export default function MapView({ routes, onMapClick, inputMode, origin, destination, mapHeight = 480, borderRadius = '8px' }) {
   const legs = routes[0]?.legs ?? []
+  const zoom = parseInt(localStorage.getItem('default_zoom') || '13', 10)
+  const showStopNames = localStorage.getItem('show_stop_names') === 'true'
 
   return (
     <MapContainer
       center={[45.5017, -73.5673]}
-      zoom={13}
+      zoom={zoom}
       style={{
         height: mapHeight,
         borderRadius,
@@ -90,6 +94,17 @@ export default function MapView({ routes, onMapClick, inputMode, origin, destina
             }}
           />
         )
+      })}
+
+      {showStopNames && legs.filter(leg => TRANSIT_MODES.has(leg.mode)).map((leg, i) => {
+        const pts = leg.geometry_sampled_50m
+        if (!pts || pts.length < 1) return null
+        const first = Array.isArray(pts[0]) ? pts[0] : [pts[0].lat, pts[0].lon]
+        const last  = Array.isArray(pts[pts.length - 1]) ? pts[pts.length - 1] : [pts[pts.length - 1].lat, pts[pts.length - 1].lon]
+        return [
+          leg.from && <Marker key={`stop-from-${i}`} position={first}><Popup>{leg.from}</Popup></Marker>,
+          leg.to   && <Marker key={`stop-to-${i}`}   position={last}><Popup>{leg.to}</Popup></Marker>,
+        ]
       })}
     </MapContainer>
   )

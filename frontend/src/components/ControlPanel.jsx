@@ -30,7 +30,9 @@ export default function ControlPanel({
   origin, destination, onOriginChange, onDestinationChange,
   inputMode, onInputModeChange, mapClickStep, onResetMapClick,
 }) {
-  const [disabilityType, setDisabilityType] = useState(['manual wheelchair'])
+  const [disabilityType, setDisabilityType] = useState(
+    () => [localStorage.getItem('default_mobility_aid') || 'manual wheelchair']
+  )
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
 
   function handleSubmit() {
@@ -68,9 +70,9 @@ export default function ControlPanel({
               <SelectValueText placeholder="Select…" color="white" flex="1" style={{ color: 'white' }} />
               <SelectIndicator color="white" />
             </SelectTrigger>
-            <SelectContent zIndex={9999} position="absolute" top="100%" left={0} right={0}>
+            <SelectContent zIndex={9999} position="absolute" top="100%" left={0} right={0} bg="white" borderColor="gray.200">
               {MOBILITY_AIDS.map(a => (
-                <SelectItem key={a.value} item={a} color="black">{a.label}</SelectItem>
+                <SelectItem key={a.value} item={a} color="black" _highlighted={{ bg: '#cce8f4', color: 'black' }}>{a.label}</SelectItem>
               ))}
             </SelectContent>
           </SelectRoot>
@@ -127,24 +129,36 @@ export default function ControlPanel({
       {/* Map click status */}
       {inputMode === 'map' && (
         <Stack gap={2}>
-          <Box fontSize="sm" p={2} bg="rgba(0,0,0,0.15)" borderRadius="md" border="1px solid" borderColor="rgba(255,255,255,0.3)">
+          <Box fontSize="14px" p={2} bg="rgba(0,0,0,0.15)" borderRadius="md" border="1px solid" borderColor="rgba(255,255,255,0.3)" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
             {!origin && !destination && (
-              <Text color="white">Click on the map to set your <strong>origin</strong>.</Text>
+              <Text color="white" fontSize="14px">Click on the map to set your <strong>origin</strong>.</Text>
             )}
             {origin && !destination && (
-              <Text color="white">Origin set. Now click to set your <strong>destination</strong>.</Text>
+              <Text color="white" fontSize="14px">Now click to set your <strong>destination</strong>.</Text>
             )}
             {origin && destination && (
-              <Text color="white">Both points set. Ready to plan!</Text>
+              <Text color="white" fontSize="14px">Both points set. Ready to plan!</Text>
             )}
           </Box>
-          <HStack fontSize="sm" gap={4}>
-            <Text color={origin ? '#a8f0b8' : 'rgba(255,255,255,0.55)'}>
-              {origin ? `Origin: ${origin.label}` : 'Origin: not set'}
-            </Text>
-            <Text color={destination ? '#a8f0b8' : 'rgba(255,255,255,0.55)'}>
-              {destination ? `Destination: ${destination.label}` : 'Destination: not set'}
-            </Text>
+          <HStack gap={2} align="stretch">
+            {[{ key: 'origin', val: origin }, { key: 'destination', val: destination }].map(({ key, val }) => (
+              <Box
+                key={key}
+                flex="1"
+                p={2}
+                bg="rgba(0,0,0,0.18)"
+                borderRadius="md"
+                border="1px solid"
+                borderColor={val ? 'rgba(168,240,184,0.5)' : 'rgba(255,255,255,0.15)'}
+              >
+                <Text fontSize="14px" fontWeight="semibold" color={val ? '#a8f0b8' : 'rgba(255,255,255,0.5)'} textTransform="capitalize" mb="1px">
+                  {key}
+                </Text>
+                <Text fontSize="14px" color={val ? 'white' : 'rgba(255,255,255,0.4)'} lineHeight="1.3">
+                  {val ? val.label : 'not set'}
+                </Text>
+              </Box>
+            ))}
           </HStack>
           <button
             onClick={onResetMapClick}
