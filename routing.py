@@ -103,7 +103,7 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
 
     # Single broad request — OTP returns its best options first
     transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date)
-    walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 1, eff_date)
+    walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 5, eff_date)
 
     # Keep only itineraries that actually use a non-walk mode
     transit_itins = [it for it in transit_raw
@@ -115,7 +115,7 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
     if not transit_itins and eff_date != "2026-06-04":
         print("No transit for requested date — retrying with fallback date 2026-06-04")
         transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, "2026-06-04")
-        walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 1, "2026-06-04")
+        walk_raw    = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK", 3, "2026-06-04")
         transit_itins = [it for it in transit_raw
                          if any(l.get("mode") != "WALK" for l in it.get("legs", []))]
         print(f"OTP (fallback): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only")
@@ -134,10 +134,10 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
     # Take up to 2 distinct transit routes + 1 walk-only
     chosen = unique[:2] + walk_raw[:1]
 
-    # Backfill to 3 with same-line transit if needed (different departure time = useful)
+    # Backfill to 3: first try same-line transit at different times, then extra walk routes
     if len(chosen) < 3:
         ids_used = {id(it) for it in chosen}
-        for it in transit_itins:
+        for it in list(transit_itins) + list(walk_raw[1:]):
             if id(it) not in ids_used:
                 chosen.append(it)
                 ids_used.add(id(it))
