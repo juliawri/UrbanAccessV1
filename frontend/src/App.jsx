@@ -117,8 +117,9 @@ export default function App() {
       {/* Route Results — replaces the map */}
       {result && (
         <section className="results-section">
+          <RouteDirections routes={routes} result={result} showResult={false} />
           <RouteMap routes={routes} origin={origin} destination={destination} />
-          <RouteDirections routes={routes} result={result} />
+          <RouteDirections routes={routes} result={result} showCards={false} />
           <div className="new-route-row">
             <button className="new-route-btn" onClick={handleNewRoute}>Plan New Route</button>
           </div>

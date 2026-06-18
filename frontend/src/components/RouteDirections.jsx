@@ -31,9 +31,10 @@ function normalizeRouteLabels(text) {
     .replace(/\bRoute\s*3\b/gi, 'Alternative 2')
 }
 
-export default function RouteDirections({ routes, result }) {
+export default function RouteDirections({ routes, result, showCards = true, showResult = true }) {
   return (
     <Stack gap={4}>
+      {showCards && (
       <HStack gap={3} align="stretch">
       {routes.map((route, idx) => {
         const totalMin = Math.round(
@@ -106,8 +107,9 @@ export default function RouteDirections({ routes, result }) {
         )
       })}
       </HStack>
+      )}
 
-      {result && (
+      {showResult && result && (
         <Box
           border="1px solid"
           borderColor="gray.200"

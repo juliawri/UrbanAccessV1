@@ -23,11 +23,11 @@ function FitAllRoutes({ routes }) {
 
 export default function RouteMap({ routes, origin, destination }) {
   return (
-    <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+    <div style={{ position: 'relative', height: '83vh', borderRadius: '12px', overflow: 'hidden', marginTop: '32px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
       <MapContainer
         center={[45.5017, -73.5673]}
         zoom={13}
-        style={{ height: 240, borderRadius: '12px', zIndex: 0 }}
+        style={{ height: '100%', borderRadius: '12px', zIndex: 0 }}
         scrollWheelZoom={false}
         attributionControl={true}
       >
