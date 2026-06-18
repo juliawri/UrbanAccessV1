@@ -10,13 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3",
-    "@emotion/react": "^11",
+    "@chakra-ui/react": "^3.36.0",
+    "@emotion/react": "^11.14.0",
     "leaflet": "^1.9.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-leaflet": "^5",
-    "react-markdown": "^10.1.0"
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
