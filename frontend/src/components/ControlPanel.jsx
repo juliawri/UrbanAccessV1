@@ -16,10 +16,13 @@ const mobilityAidCollection = createListCollection({
   })),
 })
 
+const ROUTE_LABELS = ['Recommended Route', 'Alternative 1', 'Alternative 2']
+
 export default function ControlPanel({
   onPlan, loading,
   origin, destination, setOrigin, setDestination,
   mapClickMode, onToggleMapClick,
+  routes, selectedRouteIdx, onRouteSelect,
 }) {
   const [disabilityType, setDisabilityType] = useState('manual wheelchair')
   const [date, setDate] = useState('2026-04-15')
@@ -119,6 +122,42 @@ export default function ControlPanel({
         <Text fontSize="sm" color="orange.600">
           Click anywhere on the map to set your {mapClickMode}.
         </Text>
+      )}
+
+      {routes?.length > 0 && (
+        <Field.Root>
+          <Field.Label>Viewing Route</Field.Label>
+          <Select.Root
+            collection={createListCollection({
+              items: routes.map((_, i) => ({
+                label: ROUTE_LABELS[i] ?? `Option ${i + 1}`,
+                value: String(i),
+              })),
+            })}
+            value={[String(selectedRouteIdx)]}
+            onValueChange={({ value }) => onRouteSelect(Number(value[0]))}
+          >
+            <Select.HiddenSelect />
+            <Select.Control>
+              <Select.Trigger bg="white">
+                <Select.ValueText />
+              </Select.Trigger>
+              <Select.IndicatorGroup>
+                <Select.Indicator />
+              </Select.IndicatorGroup>
+            </Select.Control>
+            <Select.Positioner>
+              <Select.Content>
+                {routes.map((_, i) => (
+                  <Select.Item item={{ label: ROUTE_LABELS[i] ?? `Option ${i + 1}`, value: String(i) }} key={i}>
+                    {ROUTE_LABELS[i] ?? `Option ${i + 1}`}
+                    <Select.ItemIndicator />
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Positioner>
+          </Select.Root>
+        </Field.Root>
       )}
 
       <Button

@@ -19,9 +19,7 @@ function MapClickHandler({ onMapClick }) {
   return null
 }
 
-export default function MapView({ routes, origin, destination, mapClickMode, onMapClick }) {
-  const legs = routes[0]?.legs ?? []
-
+export default function MapView({ routes, origin, destination, mapClickMode, onMapClick, selectedRouteIdx, onRouteSelect }) {
   return (
     <MapContainer
       center={[45.5017, -73.5673]}
@@ -44,31 +42,60 @@ export default function MapView({ routes, origin, destination, mapClickMode, onM
           <Popup>Destination: {destination.label}</Popup>
         </Marker>
       )}
-      {legs.map((leg, i) => {
-        const pts = leg.geometry_sampled_50m
-        const isTransit = leg.mode === 'BUS' || leg.mode === 'SUBWAY'
+      {/* Render unselected routes first, selected last so it paints on top */}
+      {[...routes.map((r, i) => ({ route: r, idx: i }))].sort((a, b) =>
+        a.idx === selectedRouteIdx ? 1 : b.idx === selectedRouteIdx ? -1 : 0
+      ).map(({ route, idx }) => {
+        const isSelected = idx === selectedRouteIdx
+        const opacity    = isSelected ? 0.85 : 0.55
+        const weight     = isSelected ? 5 : 3
+        const outlineColor = (!isSelected && idx === 0) ? 'white' : null
 
-        let positions
-        if (pts && pts.length >= 2) {
-          positions = pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
-        } else if (isTransit && leg.from_lat != null && leg.to_lat != null) {
-          positions = [[leg.from_lat, leg.from_lon], [leg.to_lat, leg.to_lon]]
-        } else {
-          return null
-        }
+        return route.legs.flatMap((leg, i) => {
+          const pts = leg.geometry_sampled_50m
+          const isTransit = leg.mode === 'BUS' || leg.mode === 'SUBWAY'
 
-        return (
-          <Polyline
-            key={i}
-            positions={positions}
-            pathOptions={{
-              color: isTransit ? '#E87010' : (LEG_COLORS[leg.mode] ?? '#888'),
-              weight: 5,
-              opacity: 0.8,
-              dashArray: isTransit ? '10 6' : undefined,
-            }}
-          />
-        )
+          let positions
+          if (pts && pts.length >= 2) {
+            positions = pts.map(p => Array.isArray(p) ? p : [p.lat, p.lon])
+          } else if (isTransit && leg.from_lat != null && leg.to_lat != null) {
+            positions = [[leg.from_lat, leg.from_lon], [leg.to_lat, leg.to_lon]]
+          } else {
+            return []
+          }
+
+          const sharedClick = { click: () => onRouteSelect(idx) }
+          const fillLine = (
+            <Polyline
+              key={`${idx}-${i}-fill`}
+              positions={positions}
+              eventHandlers={sharedClick}
+              pathOptions={{
+                color: isTransit ? '#E87010' : (LEG_COLORS[leg.mode] ?? '#888'),
+                weight,
+                opacity,
+                dashArray: isTransit ? '10 6' : undefined,
+              }}
+            />
+          )
+
+          if (!outlineColor) return [fillLine]
+
+          return [
+            <Polyline
+              key={`${idx}-${i}-outline`}
+              positions={positions}
+              eventHandlers={sharedClick}
+              pathOptions={{
+                color: outlineColor,
+                weight: weight + 2,
+                opacity,
+                dashArray: isTransit ? '10 6' : undefined,
+              }}
+            />,
+            fillLine,
+          ]
+        })
       })}
     </MapContainer>
   )

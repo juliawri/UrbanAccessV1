@@ -14,6 +14,7 @@ export default function App() {
   const [origin, setOrigin] = useState(null)
   const [destination, setDestination] = useState(null)
   const [mapClickMode, setMapClickMode] = useState(null) // 'origin' | 'destination' | null
+  const [selectedRouteIdx, setSelectedRouteIdx] = useState(0)
 
   async function handlePlan(payload) {
     setLoading(true)
@@ -22,6 +23,7 @@ export default function App() {
       setRoutes(data.routes)
       setResult(data.result)
       setLastPayload(payload)
+      setSelectedRouteIdx(0)
     } finally {
       setLoading(false)
     }
@@ -70,6 +72,9 @@ export default function App() {
               setDestination={setDestination}
               mapClickMode={mapClickMode}
               onToggleMapClick={setMapClickMode}
+              routes={routes}
+              selectedRouteIdx={selectedRouteIdx}
+              onRouteSelect={setSelectedRouteIdx}
             />
           </Box>
 
@@ -81,11 +86,19 @@ export default function App() {
               destination={destination}
               mapClickMode={mapClickMode}
               onMapClick={handleMapClick}
+              selectedRouteIdx={selectedRouteIdx}
+              onRouteSelect={setSelectedRouteIdx}
             />
           </Box>
         </Flex>
 
-        {result && <RouteDirections routes={routes} result={result} />}
+        {result && (
+          <RouteDirections
+            routes={routes}
+            result={result}
+            selectedIdx={selectedRouteIdx}
+          />
+        )}
         {routes.length > 0 && (
           <FeedbackForm payload={lastPayload} routes={routes} result={result} />
         )}
