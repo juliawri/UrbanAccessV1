@@ -1,5 +1,6 @@
 import { Stack, HStack, Text, Badge, Box } from '@chakra-ui/react'
 import ReactMarkdown from 'react-markdown'
+import { ROUTE_COLORS, ROUTE_LABELS } from './routeColors'
 
 const MODE_COLOR = {
   WALK:   'blue',
@@ -22,8 +23,6 @@ function fmtTime(sec) {
   const m = Math.round(sec / 60)
   return m < 1 ? '<1 min' : `${m} min`
 }
-
-const ROUTE_LABELS = ['Recommended Route', 'Alternative 1', 'Alternative 2']
 
 function normalizeRouteLabels(text) {
   return text
@@ -53,13 +52,13 @@ export default function RouteDirections({ routes, result }) {
               px={4}
               py={3}
               bg="white"
-              borderBottom="1px solid"
-              borderColor="gray.200"
+              borderBottom="2px solid"
+              borderColor={ROUTE_COLORS[idx] ?? 'gray.200'}
             >
-              <Text fontWeight="bold" color="#1a1a1a">
+              <Text fontWeight="bold" color={ROUTE_COLORS[idx] ?? '#1a1a1a'}>
                 {ROUTE_LABELS[idx] ?? `Option ${idx + 1}`}
               </Text>
-              <Text color="#1a1a1a" fontSize="sm">{totalMin} min total</Text>
+              <Text color="#555" fontSize="sm">{totalMin} min total</Text>
             </HStack>
 
             <Stack gap={2} p={3} bg="white">

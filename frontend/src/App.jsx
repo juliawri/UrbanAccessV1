@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ControlPanel from './components/ControlPanel'
 import MapView from './components/MapView'
+import RouteMap from './components/RouteMap'
 import RouteDirections from './components/RouteDirections'
 import FeedbackForm from './components/FeedbackForm'
 import { planRoute } from './api'
@@ -116,6 +117,7 @@ export default function App() {
       {/* Route Results — replaces the map */}
       {result && (
         <section className="results-section">
+          <RouteMap routes={routes} origin={origin} destination={destination} />
           <RouteDirections routes={routes} result={result} />
           <div className="new-route-row">
             <button className="new-route-btn" onClick={handleNewRoute}>Plan New Route</button>
