@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Box, Stack, HStack, Button, Textarea, Text } from '@chakra-ui/react'
 import { submitFeedback } from '../api'
+import { supabase } from '../supabaseClient'
 
-export default function FeedbackForm({ payload, routes, result }) {
+export default function FeedbackForm({ payload, routes, result, user }) {
   const [rating, setRating]   = useState(0)
   const [hover, setHover]     = useState(0)
   const [comment, setComment] = useState('')
@@ -32,6 +33,12 @@ export default function FeedbackForm({ payload, routes, result }) {
       .join('\n')
 
     try {
+      let token = null
+      if (user && supabase) {
+        const { data: sessionData } = await supabase.auth.getSession()
+        token = sessionData?.session?.access_token ?? null
+      }
+
       const data = await submitFeedback({
         rating,
         comment,
@@ -46,7 +53,7 @@ export default function FeedbackForm({ payload, routes, result }) {
         route_modes:         modes,
         route_legs_summary:  legsSummary,
         recommendation:      result,
-      })
+      }, token)
       setStatus(`Thanks! Feedback saved (ID: ${data.id})`)
       setRating(0)
       setComment('')
@@ -68,6 +75,13 @@ export default function FeedbackForm({ payload, routes, result }) {
         <Text fontWeight="bold" color="#1f2937">How was this route?</Text>
       </Box>
       <Stack gap={3} p={4} style={{ background: '#ffffff' }}>
+        {/* Auth context */}
+        {user ? (
+          <Text fontSize="sm" color="#6b7280">Submitting as <strong style={{ color: '#1f2937' }}>{user.email}</strong></Text>
+        ) : (
+          <Text fontSize="sm" color="#9ca3af">Submitting anonymously — <a href="#" onClick={e => { e.preventDefault(); document.querySelector('.navbar-auth-btn')?.click() }} style={{ color: '#1e3d3d', textDecoration: 'underline' }}>sign in</a> to associate feedback with your account.</Text>
+        )}
+
         {/* Star rating */}
         <HStack onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map(n => {

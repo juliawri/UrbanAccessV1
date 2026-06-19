@@ -23,4 +23,6 @@ class Feedback(Base):
     route_walk_waypoints = Column(Text, nullable=True) # "lat,lon;lat,lon;..."
     route_transit_stops = Column(Text, nullable=True)  # "name|lat|lon|mode;..."
     recommendation = Column(Text, nullable=True)
+    user_id = Column(String, nullable=True)
+    user_email = Column(String, nullable=True)
 

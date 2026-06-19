@@ -1,6 +1,9 @@
 import sys
 sys.stdout.reconfigure(line_buffering=True)
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import csv
 import html as _html
 import io
@@ -9,9 +12,12 @@ import unicodedata
 import zipfile
 from functools import lru_cache
 from pathlib import Path
-from fastapi import FastAPI, Depends, Query
+import os
+from fastapi import FastAPI, Depends, Query, Header, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from jose import jwt
+from jose.exceptions import JWTError
 
 BASE_DIR = Path(__file__).parent
 from pydantic import BaseModel
@@ -27,6 +33,66 @@ from sql.models import Feedback
 from sqlalchemy import text
 
 app = FastAPI()
+
+_SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "")
+_SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+_ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
+_jwks_cache = None
+
+def _load_jwks():
+    global _jwks_cache
+    if _jwks_cache is not None:
+        return _jwks_cache
+    if not _SUPABASE_URL:
+        print("[auth] SUPABASE_URL not set — cannot load JWKS")
+        return None
+    import urllib.request as _ur
+    try:
+        with _ur.urlopen(f"{_SUPABASE_URL}/auth/v1/.well-known/jwks.json", timeout=5) as r:
+            _jwks_cache = _json.loads(r.read())
+        print(f"[auth] JWKS loaded ({len(_jwks_cache.get('keys', []))} keys)")
+    except Exception as e:
+        print(f"[auth] JWKS fetch failed: {e}")
+    return _jwks_cache
+
+def require_admin(authorization: Optional[str] = Header(default=None)):
+    if not _ADMIN_TOKEN or authorization != f"Bearer {_ADMIN_TOKEN}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+def optional_auth(authorization: Optional[str] = Header(default=None)):
+    """Extract Supabase user from Bearer token; tries ES256 via JWKS then HS256 via secret."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None, None
+    token = authorization[7:]
+
+    # ES256 path — Supabase projects that use asymmetric keys
+    jwks = _load_jwks()
+    if jwks:
+        try:
+            kid = jwt.get_unverified_header(token).get("kid")
+            keys = jwks.get("keys", [])
+            candidates = [k for k in keys if not kid or k.get("kid") == kid] or keys
+            for key_data in candidates:
+                try:
+                    payload = jwt.decode(token, key_data, algorithms=["ES256"], audience="authenticated")
+                    print(f"[auth] JWT ok (ES256) — sub={payload.get('sub')}")
+                    return payload.get("sub"), payload.get("email")
+                except JWTError:
+                    continue
+        except Exception as e:
+            print(f"[auth] ES256 path error: {e}")
+
+    # HS256 fallback — older Supabase projects that use the JWT secret
+    if _SUPABASE_JWT_SECRET:
+        try:
+            payload = jwt.decode(token, _SUPABASE_JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+            print(f"[auth] JWT ok (HS256) — sub={payload.get('sub')}")
+            return payload.get("sub"), payload.get("email")
+        except JWTError as e:
+            print(f"[auth] HS256 failed: {e}")
+
+    print("[auth] all verification methods failed")
+    return None, None
 
 @app.on_event("startup")
 def migrate_db():
@@ -44,6 +110,8 @@ def migrate_db():
         ("route_walk_waypoints", "TEXT"),
         ("route_transit_stops", "TEXT"),
         ("recommendation", "TEXT"),
+        ("user_id", "VARCHAR"),
+        ("user_email", "VARCHAR"),
     ]
     with engine.connect() as conn:
         for col, col_type in new_cols:
@@ -183,7 +251,12 @@ def process(req: Request):
 
 
 @app.post("/submit")
-def submit_feedback(payload: FeedbackSubmit, db: Session = Depends(get_db)):
+def submit_feedback(
+    payload: FeedbackSubmit,
+    db: Session = Depends(get_db),
+    auth=Depends(optional_auth),
+):
+    jwt_user_id, _ = auth
     feedback = Feedback(
         rating=payload.rating,
         comment=payload.comment,
@@ -200,6 +273,8 @@ def submit_feedback(payload: FeedbackSubmit, db: Session = Depends(get_db)):
         route_walk_waypoints=payload.route_walk_waypoints,
         route_transit_stops=payload.route_transit_stops,
         recommendation=payload.recommendation,
+        user_id=jwt_user_id,
+        user_email=None,
     )
     db.add(feedback)
     db.commit()
@@ -208,7 +283,7 @@ def submit_feedback(payload: FeedbackSubmit, db: Session = Depends(get_db)):
 
 
 @app.get("/api/feedback")
-def get_feedback_json(db: Session = Depends(get_db)):
+def get_feedback_json(db: Session = Depends(get_db), _=Depends(require_admin)):
     rows = db.query(Feedback).order_by(Feedback.id.desc()).all()
     return [
         {
@@ -224,6 +299,7 @@ def get_feedback_json(db: Session = Depends(get_db)):
             "route_total_min": r.route_total_min,
             "route_num_transfers": r.route_num_transfers,
             "route_modes": r.route_modes,
+            "user_id": r.user_id,
         }
         for r in rows
     ]
@@ -240,6 +316,7 @@ def get_feedback(db: Session = Depends(get_db)):
         transfers = str(r.route_num_transfers) if r.route_num_transfers is not None else "—"
         modes = _html.escape(r.route_modes or "—")
         rec_text = _html.escape(r.recommendation or "—")
+        user_cell = _html.escape(r.user_email or "anonymous")
         rows_html += f"""
         <tr>
           <td>{r.id}</td>
@@ -252,6 +329,7 @@ def get_feedback(db: Session = Depends(get_db)):
           <td>{duration}</td>
           <td>{transfers}</td>
           <td>{modes}</td>
+          <td>{user_cell}</td>
           <td class="rec-cell">{rec_text}</td>
         </tr>"""
     return f"""<!DOCTYPE html>
@@ -277,7 +355,7 @@ def get_feedback(db: Session = Depends(get_db)):
         <th>Origin (lat, lng)</th><th>Destination (lat, lng)</th>
         <th>Mobility Aid</th><th>Date</th>
         <th>Duration</th><th>Transfers</th><th>Modes</th>
-        <th>Recommendation</th>
+        <th>User</th><th>Recommendation</th>
       </tr>
     </thead>
     <tbody>{rows_html}</tbody>

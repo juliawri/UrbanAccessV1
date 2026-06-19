@@ -18,15 +18,19 @@ export async function planRoute({ source, destination, disability_type, date, fa
 
 
 export async function getFeedback() {
-  const res = await fetch(`${BASE}/api/feedback`)
+  const token = import.meta.env.VITE_ADMIN_TOKEN
+  const headers = token ? { Authorization: `Bearer ${token}` } : {}
+  const res = await fetch(`${BASE}/api/feedback`, { headers })
   if (!res.ok) throw new Error(await res.text())
   return res.json()
 }
 
-export async function submitFeedback(payload) {
+export async function submitFeedback(payload, token = null) {
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
   const res = await fetch(`${BASE}/submit`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload),
   })
   if (!res.ok) throw new Error(await res.text())

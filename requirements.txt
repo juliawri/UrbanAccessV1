@@ -10,5 +10,6 @@ polyline
 sqlalchemy
 torch
 python-dotenv
+python-jose[cryptography]
 
 Pillow

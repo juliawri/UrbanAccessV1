@@ -5,7 +5,9 @@ import MapView from './components/MapView'
 import RouteMap from './components/RouteMap'
 import RouteDirections from './components/RouteDirections'
 import FeedbackForm from './components/FeedbackForm'
+import AuthModal from './components/AuthModal'
 import { planRoute } from './api'
+import { supabase } from './supabaseClient'
 import urbanAccessLogo from './assets/UrbanAccessLogo.png'
 import ai4goodLogo from './assets/ai4good.jpeg'
 import milaLogo from './assets/mila_logo.png'
@@ -22,11 +24,22 @@ export default function App() {
   const [inputMode, setInputMode] = useState('search')
   const [mapClickStep, setMapClickStep] = useState('origin')
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  const [user, setUser] = useState(null)
+  const [showAuth, setShowAuth] = useState(false)
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 768)
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) return
+    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   async function handlePlan(payload) {
@@ -94,11 +107,24 @@ export default function App() {
     <div className="page">
       {/* Navbar */}
       <nav className="navbar">
-        <a href="#map">Map</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-        <Link to="/settings" style={{ color: '#fff', textDecoration: 'underline' }}>Settings</Link>
+        <div className="navbar-links">
+          <a href="#map">Map</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+          <Link to="/settings" style={{ color: '#fff', textDecoration: 'underline' }}>Settings</Link>
+        </div>
+        <div className="navbar-auth">
+          {user ? (
+            <>
+              <span className="navbar-user">{user.email}</span>
+              <button className="navbar-auth-btn" onClick={() => supabase.auth.signOut()}>Sign Out</button>
+            </>
+          ) : (
+            <button className="navbar-auth-btn" onClick={() => setShowAuth(true)}>Sign In</button>
+          )}
+        </div>
       </nav>
+      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
 
       {/* Hero */}
       <section className="hero">
@@ -151,7 +177,7 @@ export default function App() {
       {routes.length > 0 && lastPayload && (
         <section className="feedback-section" id="contact">
           <h2 className="section-heading feedback-heading">Rank Your Route Based On How Accessible It Was</h2>
-          <FeedbackForm payload={lastPayload} routes={routes} result={result} />
+          <FeedbackForm payload={lastPayload} routes={routes} result={result} user={user} />
           <button className="new-route-btn new-route-btn--lg" onClick={handleNewRoute}>Plan New Route</button>
         </section>
       )}
