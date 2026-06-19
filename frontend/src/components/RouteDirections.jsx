@@ -63,7 +63,7 @@ export default function RouteDirections({ routes, result }) {
 
   return (
     <Stack gap={4}>
-      <HStack gap={3} align="flex-start">
+      <HStack gap={3} align="flex-start" flexWrap="wrap">
         {routes.map((route, idx) => {
           const totalMin = Math.round(
             route.legs.reduce((s, l) => s + (l.duration_sec ?? 0), 0) / 60
@@ -74,7 +74,7 @@ export default function RouteDirections({ routes, result }) {
             <Box
               key={idx}
               flex="1"
-              minW="0"
+              minW="280px"
               border="1px solid"
               borderColor="gray.200"
               borderRadius="lg"

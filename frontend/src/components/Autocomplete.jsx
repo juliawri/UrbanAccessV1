@@ -1,5 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useCallback, useRef } from 'react'
 import { Box, Input } from '@chakra-ui/react'
 import { searchStops } from '../api'
 
@@ -23,15 +22,7 @@ export default function Autocomplete({ label, onSelect }) {
   const [query, setQuery] = useState('')
   const [items, setItems] = useState([])
   const [open, setOpen]   = useState(false)
-  const [dropdownRect, setDropdownRect] = useState(null)
   const wrapperRef = useRef(null)
-
-  useEffect(() => {
-    if (open && wrapperRef.current) {
-      const r = wrapperRef.current.getBoundingClientRect()
-      setDropdownRect({ top: r.bottom, left: r.left, width: r.width })
-    }
-  }, [open, items])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const search = useCallback(debounce(async (q) => {
@@ -103,60 +94,8 @@ export default function Autocomplete({ label, onSelect }) {
     }
   }
 
-  const dropdown = open && items.length > 0 && dropdownRect && createPortal(
-    <Box
-      position="fixed"
-      top={`${dropdownRect.top}px`}
-      left={`${dropdownRect.left}px`}
-      width={`${dropdownRect.width}px`}
-      zIndex={9999}
-      bg="white"
-      border="1px solid"
-      borderColor="gray.200"
-      borderRadius="md"
-      boxShadow="md"
-      maxH="260px"
-      overflowY="auto"
-    >
-      {items.map((item, i) => (
-        <Box
-          key={i}
-          px={2}
-          py={1}
-          cursor="pointer"
-          fontSize="xs"
-          color="gray.900"
-          borderBottom="1px solid"
-          borderColor="gray.100"
-          _hover={{ bg: 'blue.50' }}
-          onMouseDown={() => handleSelect(item)}
-        >
-          <Box
-            as="span"
-            display="inline-block"
-            fontSize="9px"
-            fontWeight="bold"
-            px={1}
-            mr={1}
-            borderRadius="sm"
-            color="white"
-            bg={BADGE_COLORS[item.badge] ?? '#888'}
-            verticalAlign="middle"
-          >
-            {item.badge}
-          </Box>
-          {item.label}
-          {item.sub && (
-            <Box fontSize="10px" color="gray.600" mt="0px">{item.sub}</Box>
-          )}
-        </Box>
-      ))}
-    </Box>,
-    document.body
-  )
-
   return (
-    <Box ref={wrapperRef}>
+    <Box ref={wrapperRef} position="relative">
       <Input
         placeholder="Address or Transit Stop"
         value={query}
@@ -172,7 +111,57 @@ export default function Autocomplete({ label, onSelect }) {
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onFocus={() => { if (query.length >= 2) search(query) }}
       />
-      {dropdown}
+      {open && items.length > 0 && (
+        <Box
+          position="absolute"
+          top="100%"
+          left={0}
+          width="100%"
+          zIndex={9999}
+          bg="white"
+          border="1px solid"
+          borderColor="gray.200"
+          borderRadius="md"
+          boxShadow="md"
+          maxH="260px"
+          overflowY="auto"
+          mt="2px"
+        >
+          {items.map((item, i) => (
+            <Box
+              key={i}
+              px={2}
+              py={1}
+              cursor="pointer"
+              fontSize="xs"
+              color="gray.900"
+              borderBottom="1px solid"
+              borderColor="gray.100"
+              _hover={{ bg: 'blue.50' }}
+              onMouseDown={() => handleSelect(item)}
+            >
+              <Box
+                as="span"
+                display="inline-block"
+                fontSize="9px"
+                fontWeight="bold"
+                px={1}
+                mr={1}
+                borderRadius="sm"
+                color="white"
+                bg={BADGE_COLORS[item.badge] ?? '#888'}
+                verticalAlign="middle"
+              >
+                {item.badge}
+              </Box>
+              {item.label}
+              {item.sub && (
+                <Box fontSize="10px" color="gray.600" mt="0px">{item.sub}</Box>
+              )}
+            </Box>
+          ))}
+        </Box>
+      )}
     </Box>
   )
 }

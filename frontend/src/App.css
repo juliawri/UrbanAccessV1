@@ -81,8 +81,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: calc(125vh - 100px);
-  overflow-y: auto;
+  overflow: visible;
 }
 .error-box {
   background: #fee2e2;
@@ -362,10 +361,50 @@
 
 /* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 768px) {
+  .navbar {
+    gap: 20px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .navbar a {
+    font-size: 14px;
+  }
+
+  /* 80% width centered for map, results, and feedback on mobile */
+  .map-section {
+    width: 80%;
+  }
+
+  /* Stack panel above map instead of overlaying it */
+  .map-inner {
+    display: flex;
+    flex-direction: column;
+  }
+  .map-panel {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    overflow-y: visible;
+    padding: 12px;
+    box-sizing: border-box;
+    order: -1;
+  }
+
+  .results-section {
+    width: 80%;
+    margin: 0 auto;
+    padding: 16px 0;
+    box-sizing: border-box;
+    align-self: center;
+  }
+
   .feedback-section {
-    grid-template-columns: 1fr;
-    padding: 40px 24px;
-    gap: 32px;
+    padding: 32px 0 48px;
+    width: 80%;
+    align-self: center;
   }
   .footer-cols {
     grid-template-columns: 1fr;
@@ -373,7 +412,8 @@
   }
   .partners {
     padding: 32px 24px;
-    gap: 40px;
+    gap: 32px;
+    flex-wrap: wrap;
   }
   .bottom-bar {
     flex-direction: column;
@@ -385,7 +425,12 @@
     flex-wrap: wrap;
     justify-content: center;
   }
-  .map-panel {
-    width: calc(100vw - 32px);
+
+  /* Route detail modal — match 80% width of other elements */
+  .route-modal-backdrop {
+    padding: 10% 10%;
+  }
+  .route-modal {
+    max-width: 100%;
   }
 }

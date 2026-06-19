@@ -7,10 +7,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/process':      'http://localhost:8000',
-      '/stops':        'http://localhost:8000',
-      '/submit':       'http://localhost:8000',
-      '/api/feedback': 'http://localhost:8000',
+    '/process':      'http://localhost:8000',
+    '/stops':        'http://localhost:8000',
+    '/submit':       'http://localhost:8000',
+    '/api/feedback': 'http://localhost:8000',
     },
   },
 })

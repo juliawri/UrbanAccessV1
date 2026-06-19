@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import ControlPanel from './components/ControlPanel'
 import MapView from './components/MapView'
@@ -21,6 +21,13 @@ export default function App() {
   const [destination, setDestination] = useState(null)
   const [inputMode, setInputMode] = useState('search')
   const [mapClickStep, setMapClickStep] = useState('origin')
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
 
   async function handlePlan(payload) {
     setLoading(true)
@@ -110,7 +117,7 @@ export default function App() {
               inputMode={inputMode}
               origin={origin}
               destination={destination}
-              mapHeight="125vh"
+              mapHeight={isMobile ? '60vh' : '125vh'}
               borderRadius="16px"
             />
             <div className="map-panel">

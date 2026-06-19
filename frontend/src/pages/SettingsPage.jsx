@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import './SettingsPage.css'
 
 const MOBILITY_AID_OPTIONS = [
   { label: 'No Mobility Aid',     value: 'no mobility aid' },
@@ -47,12 +48,7 @@ export default function SettingsPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f4f8fb' }}>
       {/* Navbar */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 1000,
-        background: '#1e3d3d',
-        display: 'flex', gap: '48px',
-        padding: '16px 40px',
-      }}>
+      <nav className="settings-nav">
         <Link to="/" style={{ color: '#fff', fontSize: '16px', fontWeight: 500, textDecoration: 'underline' }}>
           ← Back to Map
         </Link>
@@ -62,14 +58,8 @@ export default function SettingsPage() {
       </nav>
 
       {/* Page content */}
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '48px 24px' }}>
-        <h1 style={{
-          fontFamily: "'Exo 2', sans-serif",
-          fontSize: '48px',
-          color: '#1e3d3d',
-          fontWeight: 600,
-          marginBottom: '8px',
-        }}>
+      <div className="settings-content">
+        <h1 className="settings-title" style={{ fontFamily: "'Exo 2', sans-serif" }}>
           Settings
         </h1>
         <p style={{ color: '#5a7a7a', marginBottom: '40px', fontSize: '16px' }}>
@@ -148,14 +138,7 @@ function SettingsSection({ title, children }) {
 
 function SettingsRow({ label, description, children }) {
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '14px 20px',
-      borderBottom: '1px solid #eef3f6',
-      gap: '16px',
-    }}>
+    <div className="settings-row">
       <div>
         <div style={{ fontSize: '14px', color: '#2c4a4a', fontWeight: 500 }}>{label}</div>
         {description && (

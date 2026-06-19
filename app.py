@@ -430,6 +430,7 @@ def run_image_pipeline(all_points, disability_type):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_mode=False):
+    print(f"  fast_mode={fast_mode}, disability_type={disability_type!r}")
     # Collect unique eligible points across all routes (capped at MAX_IMAGE_COORDS)
     all_points = []
     seen_coords = set()
@@ -437,6 +438,7 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_m
     for route in routes_data[:3]:
         eligible = _eligible_points(route)
         route_eligible.append(eligible)
+        print(f"  route {route.get('route_id')}: {len(eligible)} eligible walk points")
         for p in eligible:
             if p.get("lat") is None or p.get("lon") is None:
                 continue
@@ -445,8 +447,10 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_m
                 seen_coords.add(key)
                 all_points.append(p)
 
+    print(f"  {len(all_points)} unique coords queued for image pipeline")
+
     if fast_mode:
-        # Skip Mapillary image fetching, MAE inference, and Gemini VLM
+        print("  fast_mode is ON — skipping image pipeline")
         mae_coord_scores, gemini_scores, gemini_raw, gemini_error = {}, {}, "", None
     else:
         # Run the full image pipeline: Mapillary → MAE → top-15 → Gemini
