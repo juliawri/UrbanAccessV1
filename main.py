@@ -262,6 +262,7 @@ class Request(BaseModel):
     destination: Location
     disability_type: str
     date: str
+    time: str = "08:00am"
     fast_mode: bool = False
 
 class FeedbackSubmit(BaseModel):
@@ -307,7 +308,8 @@ def process(
         req.source.lng,
         req.destination.lat,
         req.destination.lng,
-        date=req.date
+        date=req.date,
+        time=req.time,
     )
 
     similar_route_context = None

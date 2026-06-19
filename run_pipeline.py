@@ -3,9 +3,9 @@ from routing import save_routes_to_json
 import add_accessibility
 
 
-def run_pipeline(src_lat, src_lon, dst_lat, dst_lon, date=None):
+def run_pipeline(src_lat, src_lon, dst_lat, dst_lon, date=None, time=None):
 
-    routes = get_routes(src_lat, src_lon, dst_lat, dst_lon, date=date)
+    routes = get_routes(src_lat, src_lon, dst_lat, dst_lon, date=date, time=time)
 
     # Sort so transit routes come before walk-only (more useful options first)
     routes.sort(key=lambda r: 0 if any(l["mode"] != "WALK" for l in r["legs"]) else 1)

@@ -35,7 +35,7 @@ def sample_along_line(coords, step=50):
 
     return sampled
 
-def _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, mode, num, date):
+def _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, mode, num, date, time=None):
     params = {
         "fromPlace": f"{from_lat},{from_lon}",
         "toPlace": f"{to_lat},{to_lon}",
@@ -44,7 +44,7 @@ def _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, mode, num, date):
         "maxWalkDistance": 2000,
         "arriveBy": "false",
         "date": date or "2026-06-04",
-        "time": "08:00am",
+        "time": time or "08:00am",
     }
     resp = requests.get(OTP_BASE_URL, params=params)
     resp.raise_for_status()
@@ -56,12 +56,14 @@ def _merge_walk_legs(legs):
     if not legs:
         return []
     all_coords = []
+    all_steps = []
     for leg in legs:
         pts = leg.get("legGeometry", {}).get("points")
         if pts:
             coords = polyline.decode(pts)
             # Skip the first point of each subsequent segment — it duplicates the last
             all_coords.extend(coords if not all_coords else coords[1:])
+        all_steps.extend(leg.get("steps", []))
     return [{
         "mode":     "WALK",
         "from":     legs[0].get("from"),
@@ -74,13 +76,14 @@ def _merge_walk_legs(legs):
             "points": polyline.encode(all_coords) if all_coords else "",
             "length": len(all_coords),
         },
+        "steps": all_steps,
         "route": None,
         "routeLongName": None,
         "routeShortName": "",
     }]
 
 
-def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date):
+def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date, time=None):
     """
     Fetch diverse walk routes by chaining two OTP requests through mandatory waypoints.
     OTP1 ignores intermediatePlaces for walk-only mode, so chaining is the only reliable
@@ -88,6 +91,7 @@ def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date):
     independent optimal-path queries, so OTP cannot route around the waypoint.
     """
     eff_date = date or "2026-06-04"
+    eff_time = time or "08:00am"
     direct_dist = haversine(from_lat, from_lon, to_lat, to_lon)
     offset_m = max(400, min(800, direct_dist * 0.4))
     max_walk = max(8000, int(direct_dist * 4))
@@ -105,7 +109,7 @@ def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date):
         url = (
             f"{OTP_BASE_URL}?fromPlace={a_lat},{a_lon}&toPlace={b_lat},{b_lon}"
             f"&mode=WALK&numItineraries=1&maxWalkDistance={max_walk}"
-            f"&arriveBy=false&date={eff_date}&time=08:00am"
+            f"&arriveBy=false&date={eff_date}&time={eff_time}"
         )
         try:
             resp = requests.get(url)
@@ -154,6 +158,19 @@ def _parse_itinerary(idx, itin):
     for leg in itin.get("legs", []):
         from_stop = leg.get("from", {})
         to_stop = leg.get("to", {})
+        walk_steps = None
+        if leg.get("mode") == "WALK":
+            raw_steps = leg.get("steps", [])
+            walk_steps = [
+                {
+                    "direction": s.get("relativeDirection", ""),
+                    "street": s.get("streetName", ""),
+                    "distance_m": round(s.get("distance", 0)),
+                    "bogus_name": s.get("bogusName", False),
+                }
+                for s in raw_steps
+            ] or None
+
         leg_data = {
             "mode": leg.get("mode"),
             "from": from_stop.get("name"),
@@ -168,6 +185,7 @@ def _parse_itinerary(idx, itin):
             "distance_m": leg.get("distance", 0),
             "route": leg.get("routeLongName") or leg.get("route"),
             "route_short_name": leg.get("routeShortName") or "",
+            "walk_steps": walk_steps,
             "geometry_sampled_50m": None,
         }
         geom = leg.get("legGeometry", {}).get("points")
@@ -214,15 +232,16 @@ def _route_signature(itin):
     return "|".join(parts) or "WALK"
 
 
-def get_routes(from_lat, from_lon, to_lat, to_lon, date=None):
+def get_routes(from_lat, from_lon, to_lat, to_lon, date=None, time=None):
     eff_date = date or "2026-06-04"
+    eff_time = time or "08:00am"
 
     # Single broad request — OTP returns its best options first
-    transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date)
+    transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date, eff_time)
 
     # Walk variants: four optimize modes → deduplicated by distance+duration
     _walk_seen, walk_raw = set(), []
-    for it in _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, eff_date):
+    for it in _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, eff_date, eff_time):
         if _total_distance_m(it) > 5000:
             continue
         sig = _walk_signature(it)
