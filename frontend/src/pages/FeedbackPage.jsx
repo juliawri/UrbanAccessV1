@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Box, Heading, Text, Spinner } from '@chakra-ui/react'
 import { getFeedback } from '../api'
 
-const COLUMNS = ['ID', 'User', 'Rating', 'Comment', 'Mobility Aid', 'Date', 'Duration', 'Transfers', 'Modes', 'Origin', 'Destination']
+const COLUMNS = ['ID', 'User', 'Rating', 'Comment', 'Mobility Aid', 'Date', 'Duration', 'Transfers', 'Route Vector', 'Origin', 'Destination']
 
 function Stars({ rating }) {
   return (
@@ -25,7 +25,9 @@ function FeedbackRow({ r, i }) {
       <td style={cell}>{r.route_date || '—'}</td>
       <td style={cell}>{r.route_total_min != null ? `${r.route_total_min} min` : '—'}</td>
       <td style={cell}>{r.route_num_transfers ?? '—'}</td>
-      <td style={cell}>{r.route_modes || '—'}</td>
+      <td style={{ ...cell, color: r.route_embedding ? '#16a34a' : '#9ca3af', fontSize: '11px' }}>
+        {r.route_embedding ? '✓ 384-dim' : '—'}
+      </td>
       <td style={cell}>
         {r.origin_lat != null ? `${r.origin_lat.toFixed(4)}, ${r.origin_lng.toFixed(4)}` : '—'}
       </td>

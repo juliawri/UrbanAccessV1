@@ -64,66 +64,67 @@ STRICT RULES:
 
 === USER PROMPT ===
 User profile:
-- Origin: (45.58420901871684, -73.56788104491122)
-- Destination: (45.56449842399823, -73.56650752312916)
-- Mobility aid: walking cane
+- Origin: (45.51896634083282, -73.60531358073048)
+- Destination: (45.50693455118484, -73.57561117219358)
+- Mobility aid: manual wheelchair
 - Date: 2026-06-19
 
 Routes:
-=== Route 0 (42 min, 1 transfer(s)) ===
+=== Route 0 (25 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Lacordaire / Saint-Zotique | 5 min, 352 m
-  2. BUS (Navette Services santé): Lacordaire / Saint-Zotique → Rosemont / Châtelain | 5 min, 1128 m
-  3. BUS (Rosemont): Rosemont / Châtelain → Rosemont / 31e Avenue | 5 min, 1236 m
-  4. WALK: Rosemont / 31e Avenue → Destination | 22 min, 1679 m
+  1. WALK: Origin → Côte-Sainte-Catherine / Outremont | 8 min, 528 m
+  2. BUS (Côte-Sainte-Catherine): Côte-Sainte-Catherine / Outremont → du Parc / Milton | 12 min, 2471 m
+  3. WALK: du Parc / Milton → Destination | 5 min, 327 m
 
-Walk segment data (73 eligible points (showing 10 of 73)):
-  (45.56215, -73.56168) | distance_to_access_m=5576.429052313541 | point_id=P00040 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=4 | num_collisions=0 | num_building_permits=4 | num_permit_affected_homes=32 | type_of_permit=Transformation(1); Démolition(1); Construction(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.358
-  (45.56405, -73.56626) | distance_to_access_m=5787.756511434111 | point_id=P00029 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=2 | num_permit_affected_homes=0 | type_of_permit=Transformation(2) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.445
-  (45.56593, -73.56914) | distance_to_access_m=5996.849412304598 | point_id=P00022 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=56 | num_collisions=53 | num_building_permits=3 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(2); Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.995
-  (45.56406, -73.56437) | distance_to_access_m=5788.82302315959 | point_id=P00031 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=1 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56603, -73.56927) | distance_to_access_m=6007.916861839494 | point_id=P00022 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=56 | num_collisions=53 | num_building_permits=3 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(2); Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.853
-  (45.58226, -73.56871) | distance_to_access_m=7812.560242043432 | point_id=P00023 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Orme Morton (Accolade TM)(1) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.896
-  (45.56401, -73.56407) | distance_to_access_m=5783.250704593494 | point_id=P00032 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Orme d'Amérique(1) | average_tree_size_from_trunk_diam_cm=62.0
-  (45.56264, -73.56058) | distance_to_access_m=5630.937156000509 | point_id=P00043 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=7 | num_collisions=0 | num_building_permits=7 | num_permit_affected_homes=1 | type_of_permit=Travaux extérieurs(4); Transformation(1); Travaux intérieurs(1) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56407, -73.56507) | distance_to_access_m=5789.976876944101 | point_id=P00030 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=-4 | type_of_permit=Certificat d'autorisation(7); Travaux extérieurs(7); Travaux intérieurs(6) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56653, -73.56822) | distance_to_access_m=6063.459550004834 | point_id=P00024 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=12 | num_collisions=0 | num_building_permits=10 | num_permit_affected_homes=0 | type_of_permit=Transformation(10) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Févier Skyline(1) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.235
+Walk segment data (26 eligible points (showing 5 of 26)):
+  (45.51901, -73.60506) | distance_to_access_m=1774.5252153227732 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.814
+  (45.51858, -73.60486) | distance_to_access_m=1739.9034189966617 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.50947, -73.57386) | distance_to_access_m=9.07993079410836 | point_id=P00848 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=4 | num_collisions=0 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(1) | num_barriers=1 | active_barriers=1 | barriers_main_reason=Construction/rénovation sans excavation(1) | num_trees=1 | trees_main_type=Aesculus octandra(1) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.799
+  (45.50701, -73.57580) | distance_to_access_m=1.1119492665983 | point_id=P01650 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=6 | num_collisions=3 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(1) | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Érable argenté(1) | average_tree_size_from_trunk_diam_cm=40.0 | mae_inaccessible_prob=0.640
+  (45.50917, -73.57406) | distance_to_access_m=5.743525970106768 | point_id=P00918 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Micocoulier occidental(1) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.456
 
-=== Route 1 (45 min, 0 transfer(s)) ===
+=== Route 1 (25 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Rosemont / de Carignan | 14 min, 1017 m
-  2. BUS (Rosemont): Rosemont / de Carignan → Rosemont / 31e Avenue | 9 min, 2246 m
-  3. WALK: Rosemont / 31e Avenue → Destination | 22 min, 1679 m
+  1. WALK: Origin → du Parc / Saint-Viateur | 6 min, 441 m
+  2. BUS (Avenue du Parc): du Parc / Saint-Viateur → du Parc / Milton | 14 min, 2640 m
+  3. WALK: du Parc / Milton → Destination | 5 min, 327 m
 
-Walk segment data (83 eligible points (showing 10 of 83)):
-  (45.58556, -73.56296) | distance_to_access_m=8179.499397040409 | point_id=P00035 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Tilleul à petites feuilles(1) | average_tree_size_from_trunk_diam_cm=50.0
-  (45.56323, -73.56284) | distance_to_access_m=5696.529722534809 | point_id=P00035 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Tilleul à petites feuilles(1) | average_tree_size_from_trunk_diam_cm=50.0 | mae_inaccessible_prob=0.772
-  (45.58558, -73.56267) | distance_to_access_m=8181.724518278175 | point_id=P00036 | points_combined=2 | num_collisions=2 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56611, -73.56868) | distance_to_access_m=6016.7607068375755 | point_id=P00023 | arrondissement=Ville-Marie | heat_class=5.0 | heat_label=Îlot de chaleur | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Orme Morton (Accolade TM)(1) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.139
-  (45.56430, -73.56554) | distance_to_access_m=5815.504885690803 | point_id=P00030 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=32 | num_collisions=0 | num_building_permits=32 | num_permit_affected_homes=-4 | type_of_permit=Certificat d'autorisation(7); Travaux extérieurs(7); Travaux intérieurs(6) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56593, -73.56914) | distance_to_access_m=5996.849412304598 | point_id=P00022 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=56 | num_collisions=53 | num_building_permits=3 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(2); Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.995
-  (45.56573, -73.56730) | distance_to_access_m=5974.508485077887 | point_id=P00027 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=2 | num_permit_affected_homes=0 | type_of_permit=Transformation(1); Certificat d'autorisation(1) | num_barriers=0 | active_barriers=0 | num_trees=0 | mae_inaccessible_prob=0.334
-  (45.56540, -73.56692) | distance_to_access_m=5937.816438146615 | point_id=P00028 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Févier d'Amérique(1) | average_tree_size_from_trunk_diam_cm=50.0 | mae_inaccessible_prob=0.343
-  (45.56452, -73.56678) | distance_to_access_m=5839.957755113589 | point_id=P00028 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Févier d'Amérique(1) | average_tree_size_from_trunk_diam_cm=50.0 | mae_inaccessible_prob=0.153
-  (45.56493, -73.56685) | distance_to_access_m=5885.548755613318 | point_id=P00028 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Févier d'Amérique(1) | average_tree_size_from_trunk_diam_cm=50.0 | mae_inaccessible_prob=0.189
+Walk segment data (20 eligible points (showing 5 of 20)):
+  (45.51892, -73.60523) | distance_to_access_m=1782.0914427241778 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.791
+  (45.50947, -73.57386) | distance_to_access_m=9.07993079410836 | point_id=P00848 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=4 | num_collisions=0 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(1) | num_barriers=1 | active_barriers=1 | barriers_main_reason=Construction/rénovation sans excavation(1) | num_trees=1 | trees_main_type=Aesculus octandra(1) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.799
+  (45.52182, -73.60255) | distance_to_access_m=1774.341332640543 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.641
+  (45.51962, -73.60451) | distance_to_access_m=1767.614459028148 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.689
+  (45.50762, -73.57531) | distance_to_access_m=7.357577716402727 | point_id=P01452 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=12 | num_collisions=10 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Orme Morton (Accolade TM)(1) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.219
 
-=== Route 2 (56 min, 0 transfer(s)) ===
+=== Route 2 (42 min, 0 transfer(s)) ===
 Legs:
-  1. WALK: Origin → Destination | 56 min, 4132 m
+  1. WALK: Origin → Destination | 42 min, 3105 m
 
-Walk segment data (119 eligible points (showing 10 of 119)):
-  (45.57312, -73.57108) | distance_to_access_m=6796.240341917828 | point_id=P00020 | arrondissement=Le Plateau-Mont-Royal | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=2 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=1 | trees_main_type=Ostryer de Virginie(1) | average_tree_size_from_trunk_diam_cm=5.0
-  (45.56336, -73.56315) | distance_to_access_m=5710.972760201189 | point_id=P00034 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Tilleul à petites feuilles(2) | average_tree_size_from_trunk_diam_cm=48.5 | mae_inaccessible_prob=0.664
-  (45.56264, -73.56058) | distance_to_access_m=5630.937156000509 | point_id=P00043 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=7 | num_collisions=0 | num_building_permits=7 | num_permit_affected_homes=1 | type_of_permit=Travaux extérieurs(4); Transformation(1); Travaux intérieurs(1) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.58058, -73.56971) | distance_to_access_m=7625.752880461755 | point_id=P00022 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=56 | num_collisions=53 | num_building_permits=3 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(2); Transformation(1) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56406, -73.56437) | distance_to_access_m=5788.82302315959 | point_id=P00031 | arrondissement=Ville-Marie | heat_class=3.0 | heat_label=Température plus proche de la moyenne | points_combined=1 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.57675, -73.57221) | distance_to_access_m=7199.942297927854 | point_id=P00018 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=1 | num_collisions=0 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(1) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56691, -73.56771) | distance_to_access_m=6105.719432448223 | point_id=P00026 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=2 | num_collisions=0 | num_building_permits=2 | num_permit_affected_homes=0 | type_of_permit=Transformation(1); Certificat d'autorisation(1) | num_barriers=0 | active_barriers=0 | num_trees=0
-  (45.56357
-
-[... truncated for length ...]
+Walk segment data (72 eligible points (showing 5 of 72)):
+  (45.51286, -73.58135) | distance_to_access_m=95.70696888377722 | point_id=P00003 | arrondissement=Ville-Marie | heat_class=2.0 | heat_label=Température plus froide que la moyenne | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Micocoulier occidental(2) | average_tree_size_from_trunk_diam_cm=31.0
+  (45.50895, -73.57722) | distance_to_access_m=5.774054868905948 | point_id=P00974 | arrondissement=Le Plateau-Mont-Royal | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=7 | num_collisions=2 | num_building_permits=1 | num_permit_affected_homes=0 | type_of_permit=Transformation combinée(1) | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Érable de Norvège(1); Érable de Norvège colonnaire(1) | average_tree_size_from_trunk_diam_cm=20.5
+  (45.51592, -73.58793) | distance_to_access_m=507.26565695240834 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0
+  (45.51681, -73.59971) | distance_to_access_m=1293.1279623945563 | point_id=P00001 | arrondissement=Ville-Marie | heat_class=1.0 | heat_label=Îlot de fraîcheur | points_combined=4 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=2 | trees_main_type=Caryer cordiforme(2) | average_tree_size_from_trunk_diam_cm=5.0 | mae_inaccessible_prob=0.657
+  (45.51031, -73.57867) | distance_to_access_m=13.39258060341552 | point_id=P00559 | arrondissement=Ville-Marie | heat_class=4.0 | heat_label=Température plus chaude que la moyenne (à risque) | points_combined=6 | num_collisions=0 | num_building_permits=0 | num_permit_affected_homes=0 | num_barriers=0 | active_barriers=0 | num_trees=3 | trees_main_type=Orme Morton (Accolade TM)(3) | average_tree_size_from_trunk_diam_cm=5.0
 
 Analyse the routes above and identify which is most accessible for this user.
 
+Similar Route Rating:
+- Rating: 3/5
+- User comment: I'm confused why more talking was suggested
+- Mobility aid: manual wheelchair
+- Duration: 18 min
+- Transfers: 0
+- Route: WALK: Origin → Destination | 1.1 km, 18 min
+Factor this historical feedback into your recommendation where relevant.
+
+=== SIMILAR ROUTE RATING ===
+- Rating: 3/5
+- User comment: I'm confused why more talking was suggested
+- Mobility aid: manual wheelchair
+- Duration: 18 min
+- Transfers: 0
+- Route: WALK: Origin → Destination | 1.1 km, 18 min
+
 === GEMINI VLM STATUS: FAILED ===
-Gemini API call failed: The write operation timed out
+Gemini API call failed: _ssl.c:985: The handshake operation timed out

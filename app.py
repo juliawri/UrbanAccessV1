@@ -458,84 +458,107 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_m
             all_points, disability_type
         )
 
-    # Build per-route text blocks
-    blocks = []
-    for route, eligible in zip(routes_data[:3], route_eligible):
-        dur_min = round(route.get("duration_sec", 0) / 60)
-        transfers = route.get("transfers", 0)
+    # Build per-route text blocks.
+    # Gemini-scored points are always included; non-Gemini points are randomly
+    # sampled up to max_other_per_route. If the result exceeds MAX_CHARS we
+    # halve max_other_per_route and rebuild until it fits (or max_other == 0).
+    MAX_CHARS = 17_000
+    MAX_POINTS = 10  # initial cap on non-Gemini points per route
 
-        legs = route.get("legs", [])
-        leg_lines = []
-        for i, l in enumerate(legs, 1):
-            l_dur = round(l.get("duration_sec", 0) / 60)
-            l_dist = round(l.get("distance_m", 0))
-            route_label = l.get("route") or ""
-            name = f"{l.get('mode','?')}" + (f" ({route_label})" if route_label else "")
-            leg_lines.append(
-                f"  {i}. {name}: {l.get('from','?')} → {l.get('to','?')}"
-                f" | {l_dur} min, {l_dist} m"
+    def _build_route_blocks(max_other_per_route):
+        blocks = []
+        for route, eligible in zip(routes_data[:3], route_eligible):
+            dur_min = round(route.get("duration_sec", 0) / 60)
+            transfers = route.get("transfers", 0)
+
+            legs = route.get("legs", [])
+            leg_lines = []
+            for i, l in enumerate(legs, 1):
+                l_dur = round(l.get("duration_sec", 0) / 60)
+                l_dist = round(l.get("distance_m", 0))
+                route_label = l.get("route") or ""
+                name = f"{l.get('mode','?')}" + (f" ({route_label})" if route_label else "")
+                leg_lines.append(
+                    f"  {i}. {name}: {l.get('from','?')} → {l.get('to','?')}"
+                    f" | {l_dur} min, {l_dist} m"
+                )
+            leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
+
+            # Always keep points that were scored by Gemini; randomly sample the rest
+            gemini_pts = [
+                p for p in eligible
+                if p.get("lat") is not None and p.get("lon") is not None
+                and _coord_key(p["lat"], p["lon"]) in gemini_scores
+            ]
+            other_pts = [
+                p for p in eligible
+                if p.get("lat") is not None and p.get("lon") is not None
+                and _coord_key(p["lat"], p["lon"]) not in gemini_scores
+            ]
+            sampled_others = random.sample(other_pts, min(max_other_per_route, len(other_pts)))
+            display_points = gemini_pts + sampled_others
+
+            point_lines = []
+            for p in display_points:
+                if p.get("lat") is None or p.get("lon") is None:
+                    continue
+                coords = f"({p['lat']:.5f}, {p['lon']:.5f})"
+                fields = " | ".join(
+                    f"{k}={v}" for k, v in p.items()
+                    if k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
+                )
+                key = _coord_key(p["lat"], p["lon"])
+
+                mae_data = mae_coord_scores.get(key)
+                mae_suffix = (
+                    f" | mae_inaccessible_prob={mae_data:.3f}"
+                    if mae_data is not None else ""
+                )
+
+                g_data = gemini_scores.get(key, {})
+                gemini_suffix = (
+                    f" | gemini_accessibility_score={g_data['score']}"
+                    f" | gemini_accessibility_comments={g_data['comments']}"
+                    if g_data else ""
+                )
+
+                point_lines.append(f"  {coords} | {fields}{mae_suffix}{gemini_suffix}")
+
+            point_text = "\n".join(point_lines) if point_lines else "  (no walk segment data)"
+            sampled_note = (
+                f" (showing {len(display_points)} of {len(eligible)})"
+                if len(eligible) > len(display_points) else ""
             )
-        leg_text = "\n".join(leg_lines) if leg_lines else "  (no leg data)"
 
-        MAX_POINTS = 10
-        display_points = random.sample(eligible, min(MAX_POINTS, len(eligible)))
-
-        point_lines = []
-        for p in display_points:
-            if p.get("lat") is None or p.get("lon") is None:
-                continue
-            coords = f"({p['lat']:.5f}, {p['lon']:.5f})"
-            fields = " | ".join(
-                f"{k}={v}" for k, v in p.items()
-                if k not in SKIP_POINT_KEYS and v is not None and str(v) != "nan"
+            blocks.append(
+                f"=== Route {route['route_id']} ({dur_min} min, {transfers} transfer(s)) ===\n"
+                f"Legs:\n{leg_text}\n\n"
+                f"Walk segment data ({len(eligible)} eligible points{sampled_note}):\n{point_text}"
             )
-            key = _coord_key(p["lat"], p["lon"])
+        return blocks
 
-            mae_data = mae_coord_scores.get(key)
-            mae_suffix = (
-                f" | mae_inaccessible_prob={mae_data:.3f}"
-                if mae_data is not None else ""
-            )
+    max_other = MAX_POINTS
+    while True:
+        blocks = _build_route_blocks(max_other)
+        result = "\n\n".join(blocks)
+        if len(result) <= MAX_CHARS or max_other == 0:
+            break
+        max_other = max(0, max_other // 2)
+        print(f"  Context too long ({len(result)} chars); reducing to {max_other} non-Gemini points per route")
 
-            g_data = gemini_scores.get(key, {})
-            gemini_suffix = (
-                f" | gemini_accessibility_score={g_data['score']}"
-                f" | gemini_accessibility_comments={g_data['comments']}"
-                if g_data else ""
-            )
-
-            point_lines.append(f"  {coords} | {fields}{mae_suffix}{gemini_suffix}")
-
-        point_text = "\n".join(point_lines) if point_lines else "  (no walk segment data)"
-        sampled_note = (
-            f" (showing {len(display_points)} of {len(eligible)})"
-            if len(eligible) > MAX_POINTS else ""
-        )
-
-        blocks.append(
-            f"=== Route {route['route_id']} ({dur_min} min, {transfers} transfer(s)) ===\n"
-            f"Legs:\n{leg_text}\n\n"
-            f"Walk segment data ({len(eligible)} eligible points{sampled_note}):\n{point_text}"
-        )
-
-    return "\n\n".join(blocks), gemini_raw, gemini_error
+    return result, gemini_raw, gemini_error
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HuggingFace LLM recommendation
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_recommendation(origin, destination, disability_type, date, routes_data, fast_mode=False):
+def get_recommendation(origin, destination, disability_type, date, routes_data, fast_mode=False, similar_route_context=None):
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
         print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
 
     route_context, gemini_raw, gemini_error = format_routes_for_llm(routes_data, disability_type, fast_mode=fast_mode)
-
-    # Qwen2.5-72B has a 32k context window; cap route_context to ~12k chars to stay safe.
-    MAX_CONTEXT_CHARS = 12_000
-    if len(route_context) > MAX_CONTEXT_CHARS:
-        route_context = route_context[:MAX_CONTEXT_CHARS] + "\n\n[... truncated for length ...]"
 
     user_prompt = (
         f"User profile:\n"
@@ -546,6 +569,13 @@ def get_recommendation(origin, destination, disability_type, date, routes_data, 
         f"Routes:\n{route_context}\n\n"
         "Analyse the routes above and identify which is most accessible for this user."
     )
+
+    if similar_route_context:
+        user_prompt += (
+            f"\n\nSimilar Route Rating:\n"
+            f"{similar_route_context}\n"
+            f"Factor this historical feedback into your recommendation where relevant."
+        )
 
     with open("prompt_debug.txt", "w") as f:
         f.write("=== SYSTEM PROMPT ===\n")

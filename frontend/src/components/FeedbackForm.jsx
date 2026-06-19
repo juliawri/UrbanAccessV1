@@ -20,9 +20,6 @@ export default function FeedbackForm({ payload, routes, result, user }) {
     const totalMin = Math.round(
       route.legs.reduce((s, l) => s + (l.duration_sec ?? 0), 0) / 60
     )
-    const modes = route.legs
-      .map(l => (l.route ? `${l.mode} ${l.route}` : l.mode))
-      .join(' → ')
     const legsSummary = route.legs
       .map(l => {
         const dist = l.distance_m >= 1000
@@ -50,7 +47,6 @@ export default function FeedbackForm({ payload, routes, result, user }) {
         route_date:          payload.date,
         route_total_min:     totalMin,
         route_num_transfers: route.transfers ?? 0,
-        route_modes:         modes,
         route_legs_summary:  legsSummary,
         recommendation:      result,
       }, token)

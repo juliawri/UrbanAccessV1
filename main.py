@@ -62,6 +62,7 @@ def require_admin(authorization: Optional[str] = Header(default=None)):
 def optional_auth(authorization: Optional[str] = Header(default=None)):
     """Extract Supabase user from Bearer token; tries ES256 via JWKS then HS256 via secret."""
     if not authorization or not authorization.startswith("Bearer "):
+        print("[auth] no Authorization header received")
         return None, None
     token = authorization[7:]
 
@@ -94,6 +95,81 @@ def optional_auth(authorization: Optional[str] = Header(default=None)):
     print("[auth] all verification methods failed")
     return None, None
 
+_encoder = None
+
+def _get_encoder():
+    global _encoder
+    if _encoder is None:
+        from sentence_transformers import SentenceTransformer
+        _encoder = SentenceTransformer("all-MiniLM-L6-v2")
+    return _encoder
+
+def _build_route_text(payload) -> str:
+    parts = []
+    if payload.origin_lat is not None:
+        parts.append(f"from {payload.origin_lat:.5f} {payload.origin_lng:.5f}")
+    if payload.dest_lat is not None:
+        parts.append(f"to {payload.dest_lat:.5f} {payload.dest_lng:.5f}")
+    if payload.route_total_min is not None:
+        parts.append(f"duration {payload.route_total_min} minutes")
+    if payload.route_num_transfers is not None:
+        parts.append(f"transfers {payload.route_num_transfers}")
+    if payload.disability_type:
+        parts.append(f"disability {payload.disability_type}")
+    if payload.route_legs_summary:
+        parts.append(f"route {payload.route_legs_summary}")
+    return " | ".join(parts)
+
+def _search_similar_route(db: Session, query_vec: list) -> Optional[dict]:
+    """Build an in-memory FAISS index from stored feedback embeddings and return the closest match."""
+    try:
+        import faiss
+        import numpy as np
+    except ImportError:
+        print("[faiss] faiss-cpu not installed; skipping similarity search")
+        return None
+
+    total_rows = db.query(Feedback).count()
+    rows = db.query(Feedback).filter(Feedback.route_embedding.isnot(None)).all()
+    print(f"[faiss] {len(rows)} rows with embeddings out of {total_rows} total feedback entries")
+    if not rows:
+        return None
+
+    vecs, valid_rows = [], []
+    for row in rows:
+        try:
+            v = _json.loads(row.route_embedding)
+            vecs.append(v)
+            valid_rows.append(row)
+        except Exception as e:
+            print(f"[faiss] skipping row id={row.id}: {e}")
+            continue
+
+    print(f"[faiss] {len(vecs)} valid embedding vectors to search")
+    if not vecs:
+        return None
+
+    matrix = np.array(vecs, dtype="float32")
+    index = faiss.IndexFlatL2(matrix.shape[1])
+    index.add(matrix)
+
+    q = np.array([query_vec], dtype="float32")
+    _, indices = index.search(q, 1)
+    best_idx = int(indices[0][0])
+    if best_idx < 0 or best_idx >= len(valid_rows):
+        return None
+
+    r = valid_rows[best_idx]
+    return {
+        "rating": r.rating,
+        "comment": r.comment,
+        "disability_type": r.disability_type,
+        "route_total_min": r.route_total_min,
+        "route_num_transfers": r.route_num_transfers,
+        "route_legs_summary": r.route_legs_summary,
+    }
+
+
 @app.on_event("startup")
 def migrate_db():
     new_cols = [
@@ -105,7 +181,7 @@ def migrate_db():
         ("route_date", "VARCHAR"),
         ("route_total_min", "INTEGER"),
         ("route_num_transfers", "INTEGER"),
-        ("route_modes", "VARCHAR(512)"),
+        ("route_embedding", "TEXT"),
         ("route_legs_summary", "TEXT"),
         ("route_walk_waypoints", "TEXT"),
         ("route_transit_stops", "TEXT"),
@@ -199,7 +275,6 @@ class FeedbackSubmit(BaseModel):
     route_date: Optional[str] = None
     route_total_min: Optional[int] = None
     route_num_transfers: Optional[int] = None
-    route_modes: Optional[str] = None
     route_legs_summary: Optional[str] = None
     route_walk_waypoints: Optional[str] = None
     route_transit_stops: Optional[str] = None
@@ -219,7 +294,14 @@ def index():
 
 
 @app.post("/process")
-def process(req: Request):
+def process(
+    req: Request,
+    db: Session = Depends(get_db),
+    auth=Depends(optional_auth),
+):
+    jwt_user_id, _ = auth
+    print(f"[process] jwt_user_id={'set' if jwt_user_id else 'None (anonymous)'}")
+
     routes, routes_data = run_pipeline(
         req.source.lat,
         req.source.lng,
@@ -228,6 +310,40 @@ def process(req: Request):
         date=req.date
     )
 
+    similar_route_context = None
+    if not jwt_user_id:
+        print("[faiss] Skipping similarity search — no authenticated user")
+    else:
+        print("[faiss] Entering similarity search block")
+        try:
+            query_text = (
+                f"from {req.source.lat:.5f} {req.source.lng:.5f} | "
+                f"to {req.destination.lat:.5f} {req.destination.lng:.5f} | "
+                f"disability {req.disability_type}"
+            )
+            print(f"[faiss] Encoding query: {query_text}")
+            query_vec = _get_encoder().encode(query_text).tolist()
+            print(f"[faiss] Query vector length: {len(query_vec)}")
+            similar = _search_similar_route(db, query_vec)
+            if similar:
+                parts = [f"Rating: {similar['rating']}/5"]
+                if similar.get("comment"):
+                    parts.append(f"User comment: {similar['comment']}")
+                if similar.get("disability_type"):
+                    parts.append(f"Mobility aid: {similar['disability_type']}")
+                if similar.get("route_total_min"):
+                    parts.append(f"Duration: {similar['route_total_min']} min")
+                if similar.get("route_num_transfers") is not None:
+                    parts.append(f"Transfers: {similar['route_num_transfers']}")
+                if similar.get("route_legs_summary"):
+                    parts.append(f"Route: {similar['route_legs_summary']}")
+                similar_route_context = "\n".join(f"- {p}" for p in parts)
+                print(f"[faiss] Similar past route found — rating={similar['rating']}")
+            else:
+                print("[faiss] No similar route found — DB has no feedback embeddings yet")
+        except Exception as _faiss_err:
+            print(f"[faiss] ERROR: {type(_faiss_err).__name__}: {_faiss_err}")
+
     result = get_recommendation(
         origin=(req.source.lat, req.source.lng),
         destination=(req.destination.lat, req.destination.lng),
@@ -235,6 +351,7 @@ def process(req: Request):
         date=req.date,
         routes_data=routes_data,
         fast_mode=req.fast_mode,
+        similar_route_context=similar_route_context,
     )
 
     ranked_ids = result.get("ranked_ids", list(range(len(routes))))
@@ -268,7 +385,7 @@ def submit_feedback(
         route_date=payload.route_date,
         route_total_min=payload.route_total_min,
         route_num_transfers=payload.route_num_transfers,
-        route_modes=payload.route_modes,
+        route_embedding=_json.dumps(_get_encoder().encode(_build_route_text(payload)).tolist()),
         route_legs_summary=payload.route_legs_summary,
         route_walk_waypoints=payload.route_walk_waypoints,
         route_transit_stops=payload.route_transit_stops,
@@ -298,7 +415,7 @@ def get_feedback_json(db: Session = Depends(get_db), _=Depends(require_admin)):
             "route_date": r.route_date,
             "route_total_min": r.route_total_min,
             "route_num_transfers": r.route_num_transfers,
-            "route_modes": r.route_modes,
+            "route_embedding": r.route_embedding,
             "user_id": r.user_id,
         }
         for r in rows
@@ -314,7 +431,7 @@ def get_feedback(db: Session = Depends(get_db)):
         dest = f"{r.dest_lat:.4f}, {r.dest_lng:.4f}" if r.dest_lat is not None else "—"
         duration = f"{r.route_total_min} min" if r.route_total_min is not None else "—"
         transfers = str(r.route_num_transfers) if r.route_num_transfers is not None else "—"
-        modes = _html.escape(r.route_modes or "—")
+        embedding_cell = f'<span title="384-dim route vector">✓ 384-dim</span>' if r.route_embedding else "—"
         rec_text = _html.escape(r.recommendation or "—")
         user_cell = _html.escape(r.user_email or "anonymous")
         rows_html += f"""
@@ -328,7 +445,7 @@ def get_feedback(db: Session = Depends(get_db)):
           <td>{r.route_date or "—"}</td>
           <td>{duration}</td>
           <td>{transfers}</td>
-          <td>{modes}</td>
+          <td>{embedding_cell}</td>
           <td>{user_cell}</td>
           <td class="rec-cell">{rec_text}</td>
         </tr>"""
@@ -354,7 +471,7 @@ def get_feedback(db: Session = Depends(get_db)):
         <th>ID</th><th>Rating</th><th>Comment</th>
         <th>Origin (lat, lng)</th><th>Destination (lat, lng)</th>
         <th>Mobility Aid</th><th>Date</th>
-        <th>Duration</th><th>Transfers</th><th>Modes</th>
+        <th>Duration</th><th>Transfers</th><th>Route Vector</th>
         <th>User</th><th>Recommendation</th>
       </tr>
     </thead>

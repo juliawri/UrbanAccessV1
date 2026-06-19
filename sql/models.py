@@ -18,7 +18,7 @@ class Feedback(Base):
     route_date = Column(String, nullable=True)
     route_total_min = Column(Integer, nullable=True)
     route_num_transfers = Column(Integer, nullable=True)
-    route_modes = Column(String, nullable=True)       # e.g. "WALK → BUS 67 → WALK"
+    route_embedding = Column(Text, nullable=True)      # JSON list of floats (384-dim sentence vector)
     route_legs_summary = Column(Text, nullable=True)  # one line per leg
     route_walk_waypoints = Column(Text, nullable=True) # "lat,lon;lat,lon;..."
     route_transit_stops = Column(Text, nullable=True)  # "name|lat|lon|mode;..."

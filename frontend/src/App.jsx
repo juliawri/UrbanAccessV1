@@ -48,7 +48,9 @@ export default function App() {
     setRoutes([])
     setResult('')
     try {
-      const data = await planRoute(payload)
+      const { data: { session } } = supabase ? await supabase.auth.getSession() : { data: {} }
+      const token = session?.access_token ?? null
+      const data = await planRoute(payload, token)
       setRoutes(data.routes)
       setResult(data.result)
       setLastPayload(payload)

@@ -6,10 +6,12 @@ export async function searchStops(q) {
   return res.json()
 }
 
-export async function planRoute({ source, destination, disability_type, date, fast_mode }) {
+export async function planRoute({ source, destination, disability_type, date, fast_mode }, token = null) {
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
   const res = await fetch(`${BASE}/process`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ source, destination, disability_type, date, fast_mode: !!fast_mode }),
   })
   if (!res.ok) throw new Error(await res.text())
