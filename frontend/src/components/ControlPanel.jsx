@@ -34,6 +34,7 @@ export default function ControlPanel({
     () => [localStorage.getItem('default_mobility_aid') || 'manual wheelchair']
   )
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [time, setTime] = useState(() => new Date().toTimeString().slice(0, 5))
 
   const LOADING_STEPS = [
     'Finding Accessible Routes…',
@@ -62,6 +63,7 @@ export default function ControlPanel({
       destination:     { lat: destination.lat, lng: destination.lng },
       disability_type: disabilityType[0],
       date,
+      time,
       fast_mode,
     })
   }
@@ -97,12 +99,23 @@ export default function ControlPanel({
           </SelectRoot>
         </Box>
 
-        <Box minW="160px">
+        <Box minW="140px">
           <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Date</Text>
           <Input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
+            color="white"
+            style={{ color: 'white' }}
+          />
+        </Box>
+
+        <Box minW="120px">
+          <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Time</Text>
+          <Input
+            type="time"
+            value={time}
+            onChange={e => setTime(e.target.value)}
             color="white"
             style={{ color: 'white' }}
           />
