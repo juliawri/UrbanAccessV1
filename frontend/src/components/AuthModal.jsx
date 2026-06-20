@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, Text, Stack } from '@chakra-ui/react'
 import { supabase } from '../supabaseClient'
+import { useT } from '../LanguageContext'
 
 export default function AuthModal({ isOpen, onClose }) {
   const [tab, setTab] = useState('signin')
@@ -9,6 +10,7 @@ export default function AuthModal({ isOpen, onClose }) {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const t = useT()
 
   if (!isOpen) return null
 
@@ -19,14 +21,14 @@ export default function AuthModal({ isOpen, onClose }) {
     setPassword('')
   }
 
-  function switchTab(t) {
-    setTab(t)
+  function switchTab(newTab) {
+    setTab(newTab)
     setError('')
     setMessage('')
   }
 
   async function handleSignIn() {
-    if (!supabase) { setError('Supabase is not configured yet.'); return }
+    if (!supabase) { setError(t('supabase_error')); return }
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -37,13 +39,13 @@ export default function AuthModal({ isOpen, onClose }) {
   }
 
   async function handleSignUp() {
-    if (!supabase) { setError('Supabase is not configured yet.'); return }
+    if (!supabase) { setError(t('supabase_error')); return }
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
     if (error) { setError(error.message); return }
-    setMessage('Account created! Check your email to confirm, then sign in.')
+    setMessage(t('account_created'))
   }
 
   return (
@@ -51,17 +53,16 @@ export default function AuthModal({ isOpen, onClose }) {
       <div style={styles.modal}>
         <button style={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
 
-        <h2 style={styles.title}>Your Account</h2>
+        <h2 style={styles.title}>{t('your_account')}</h2>
 
-        {/* Tabs */}
         <div style={styles.tabs}>
-          {['signin', 'signup'].map(t => (
+          {['signin', 'signup'].map(tabKey => (
             <button
-              key={t}
-              onClick={() => switchTab(t)}
-              style={{ ...styles.tab, ...(tab === t ? styles.tabActive : {}) }}
+              key={tabKey}
+              onClick={() => switchTab(tabKey)}
+              style={{ ...styles.tab, ...(tab === tabKey ? styles.tabActive : {}) }}
             >
-              {t === 'signin' ? 'Sign In' : 'Sign Up'}
+              {tabKey === 'signin' ? t('sign_in') : t('sign_up')}
             </button>
           ))}
         </div>
@@ -69,14 +70,14 @@ export default function AuthModal({ isOpen, onClose }) {
         <Stack gap={3}>
           <input
             type="email"
-            placeholder="Email"
+            placeholder={t('email_placeholder')}
             value={email}
             onChange={e => setEmail(e.target.value)}
             style={styles.input}
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder={t('password_placeholder')}
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && (tab === 'signin' ? handleSignIn() : handleSignUp())}
@@ -89,17 +90,17 @@ export default function AuthModal({ isOpen, onClose }) {
           <Button
             onClick={tab === 'signin' ? handleSignIn : handleSignUp}
             loading={loading}
-            loadingText={tab === 'signin' ? 'Signing in…' : 'Creating account…'}
+            loadingText={tab === 'signin' ? t('signing_in') : t('creating_account')}
             style={{ background: '#1e3d3d', color: '#fff', borderRadius: 8 }}
           >
-            {tab === 'signin' ? 'Sign In' : 'Create Account'}
+            {tab === 'signin' ? t('sign_in') : t('create_account')}
           </Button>
         </Stack>
 
         <p style={styles.switchHint}>
-          {tab === 'signin' ? "Don't have an account? " : 'Already have an account? '}
+          {tab === 'signin' ? t('dont_have_account') : t('already_have_account')}
           <button style={styles.switchLink} onClick={() => switchTab(tab === 'signin' ? 'signup' : 'signin')}>
-            {tab === 'signin' ? 'Sign up' : 'Sign in'}
+            {tab === 'signin' ? t('sign_up_link') : t('sign_in_link')}
           </button>
         </p>
       </div>

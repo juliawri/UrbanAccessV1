@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Stack, HStack, Text, Badge, Box } from '@chakra-ui/react'
 import ReactMarkdown from 'react-markdown'
-import { ROUTE_COLORS, ROUTE_LABELS } from './routeColors'
+import { ROUTE_COLORS } from './routeColors'
 import { getLegColor, getLegBadgeLabel, getLegRouteName } from './transitLines'
+import { useT, useLanguage } from '../LanguageContext'
 
 function fmtDist(m) {
   return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`
@@ -18,10 +19,10 @@ function fmtTimestamp(ms) {
 }
 
 function separateFields(text) {
-  // Insert a blank line before each **Field:** line so markdown renders them as separate paragraphs
   return text.replace(/\n(\*\*)/g, '\n\n$1')
 }
 
+// Parsing always uses English labels since the backend returns English markdown
 function parseRouteBlocks(result) {
   if (!result) return { blocks: ['', '', ''], confidence: '' }
 
@@ -44,10 +45,7 @@ function parseRouteBlocks(result) {
 function RouteModal({ label, color, block, onClose }) {
   return createPortal(
     <div className="route-modal-backdrop" onClick={onClose}>
-      <div
-        className="route-modal"
-        onClick={e => e.stopPropagation()}
-      >
+      <div className="route-modal" onClick={e => e.stopPropagation()}>
         <div className="route-modal-header" style={{ borderBottomColor: color }}>
           <span className="route-modal-title" style={{ color }}>{label}</span>
           <button className="route-modal-close" onClick={onClose} aria-label="Close">✕</button>
@@ -63,31 +61,73 @@ function RouteModal({ label, color, block, onClose }) {
 
 const STEP_ICON = { WALK: '🚶', SUBWAY: '🚇', BUS: '🚌', TRAM: '🚋' }
 
-const DIRECTION_LABEL = {
-  DEPART:                   'Head',
-  CONTINUE:                 'Continue on',
-  LEFT:                     'Turn left onto',
-  RIGHT:                    'Turn right onto',
-  SLIGHTLY_LEFT:            'Slight left onto',
-  SLIGHTLY_RIGHT:           'Slight right onto',
-  HARD_LEFT:                'Sharp left onto',
-  HARD_RIGHT:               'Sharp right onto',
-  UTURN_LEFT:               'U-turn onto',
-  UTURN_RIGHT:              'U-turn onto',
-  CIRCLE_CLOCKWISE:         'Follow roundabout onto',
-  CIRCLE_COUNTERCLOCKWISE:  'Follow roundabout onto',
-  ELEVATOR:                 'Take elevator to',
-  ENTER_STATION:            'Enter station',
-  EXIT_STATION:             'Exit station',
+const STREET_TYPE_FR = {
+  street: 'Rue', st: 'Rue',
+  avenue: 'Avenue', ave: 'Avenue',
+  boulevard: 'Boulevard', blvd: 'Boulevard',
+  road: 'Chemin', rd: 'Chemin',
+  drive: 'Allée',
+  place: 'Place',
+  crescent: 'Croissant',
+  terrace: 'Terrasse',
+  lane: 'Ruelle',
+  way: 'Voie',
+  circle: 'Rond-Point',
+  court: 'Cour',
+}
+const DIR_FR = { E: 'E', W: 'O', N: 'N', S: 'S' }
+
+function localizeStreetName(raw, lang) {
+  if (!raw) return raw
+  const lower = raw.toLowerCase()
+  if (lang !== 'fr') {
+    if (lower === 'path') return 'a Path'
+    if (lower === 'service road') return 'Service Road'
+    return raw
+  }
+  if (lower === 'path') return 'un sentier'
+  if (lower === 'service road') return 'voie de service'
+  const parts = raw.trim().split(/\s+/)
+  if (parts.length < 2) return raw
+  const last = parts[parts.length - 1]
+  const frDir = DIR_FR[last]
+  const core = frDir ? parts.slice(0, -1) : parts
+  const frType = STREET_TYPE_FR[core[core.length - 1].toLowerCase()]
+  if (frType) {
+    const name = core.slice(0, -1).join(' ')
+    if (!name) return raw
+    return frDir ? `${frType} ${name} ${frDir}` : `${frType} ${name}`
+  }
+  return raw
 }
 
-
 function RouteDetailsModal({ label, color, route, onClose }) {
+  const t = useT()
+  const { lang } = useLanguage()
+
+  const DIRECTION_LABEL = {
+    DEPART:                  t('dir_DEPART'),
+    CONTINUE:                t('dir_CONTINUE'),
+    LEFT:                    t('dir_LEFT'),
+    RIGHT:                   t('dir_RIGHT'),
+    SLIGHTLY_LEFT:           t('dir_SLIGHTLY_LEFT'),
+    SLIGHTLY_RIGHT:          t('dir_SLIGHTLY_RIGHT'),
+    HARD_LEFT:               t('dir_HARD_LEFT'),
+    HARD_RIGHT:              t('dir_HARD_RIGHT'),
+    UTURN_LEFT:              t('dir_UTURN_LEFT'),
+    UTURN_RIGHT:             t('dir_UTURN_RIGHT'),
+    CIRCLE_CLOCKWISE:        t('dir_CIRCLE_CLOCKWISE'),
+    CIRCLE_COUNTERCLOCKWISE: t('dir_CIRCLE_COUNTERCLOCKWISE'),
+    ELEVATOR:                t('dir_ELEVATOR'),
+    ENTER_STATION:           t('dir_ENTER_STATION'),
+    EXIT_STATION:            t('dir_EXIT_STATION'),
+  }
+
   return createPortal(
     <div className="route-modal-backdrop" onClick={onClose}>
       <div className="route-modal" onClick={e => e.stopPropagation()}>
         <div className="route-modal-header" style={{ borderBottomColor: color }}>
-          <span className="route-modal-title" style={{ color }}>{label} — Step-by-Step</span>
+          <span className="route-modal-title" style={{ color }}>{label} {t('step_by_step')}</span>
           <button className="route-modal-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div className="route-modal-body">
@@ -140,11 +180,7 @@ function RouteDetailsModal({ label, color, route, onClose }) {
                         {leg.walk_steps.map((step, si) => {
                           const dir = step.direction
                           const rawStreet = step.street || ''
-                          const street = rawStreet.toLowerCase() === 'path'
-                            ? 'a Path'
-                            : rawStreet.toLowerCase() === 'service road'
-                            ? 'Service Road'
-                            : rawStreet
+                          const street = localizeStreetName(rawStreet, lang)
                           const dist = step.distance_m > 0 ? fmtDist(step.distance_m) : null
                           const isWalk = dir === 'DEPART' || dir === 'CONTINUE'
                           const turnLabel = DIRECTION_LABEL[dir] ?? dir
@@ -153,14 +189,14 @@ function RouteDetailsModal({ label, color, route, onClose }) {
                             <li key={si} className="walk-substep">
                               {isWalk ? (
                                 <>
-                                  Walk <span className="walk-substep-dist-inline">{dist ?? '—'}</span>
-                                  {street && <> on <span className={step.bogus_name ? 'walk-street-dim' : 'walk-street'}>{street}</span></>}
+                                  {t('walk_verb')} <span className="walk-substep-dist-inline">{dist ?? '—'}</span>
+                                  {street && <>{t('walk_on')}<span className={step.bogus_name ? 'walk-street-dim' : 'walk-street'}>{street}</span></>}
                                 </>
                               ) : (
                                 <>
                                   <span className="walk-turn-label">{turnLabel}</span>
                                   {street && <> <span className={step.bogus_name ? 'walk-street-dim' : 'walk-street'}>{street}</span></>}
-                                  {dist && <span className="walk-substep-dist">, then walk {dist}</span>}
+                                  {dist && <span className="walk-substep-dist">{t('then_walk')}{dist}</span>}
                                 </>
                               )}
                             </li>
@@ -180,11 +216,27 @@ function RouteDetailsModal({ label, color, route, onClose }) {
   )
 }
 
+function localizeBlock(block, t, lang) {
+  if (!block || lang !== 'fr') return block
+  return block
+    .replace(/\*\*Active Blockages:\*\*/g, `**${t('field_active_blockages')}:**`)
+    .replace(/\*\*Street Photos:\*\*/g, `**${t('field_street_photos')}:**`)
+    .replace(/\*\*Detailed Photo Review:\*\*/g, `**${t('field_detailed_photo')}:**`)
+    .replace(/\*\*Traffic Safety:\*\*/g, `**${t('field_traffic_safety')}:**`)
+    .replace(/\*\*Construction:\*\*/g, `**${t('field_construction')}:**`)
+    .replace(/\*\*Heat & Shade:\*\*/g, `**${t('field_heat_shade')}:**`)
+    .replace(/\*\*Summary:\*\*/g, `**${t('field_summary')}:**`)
+}
+
 export default function RouteDirections({ routes, result }) {
   const [modalIdx, setModalIdx] = useState(null)
   const [detailIdx, setDetailIdx] = useState(null)
   const [expandedCards, setExpandedCards] = useState([false, false, false])
   const { blocks, confidence } = parseRouteBlocks(result)
+  const t = useT()
+  const { lang } = useLanguage()
+
+  const ROUTE_LABELS = [t('route_recommended'), t('route_alt1'), t('route_alt2')]
 
   return (
     <Stack gap={4}>
@@ -221,14 +273,14 @@ export default function RouteDirections({ routes, result }) {
                 borderColor={ROUTE_COLORS[idx] ?? 'gray.200'}
               >
                 <Text fontWeight="bold" color={ROUTE_COLORS[idx] ?? '#1a1a1a'}>
-                  {ROUTE_LABELS[idx] ?? `Option ${idx + 1}`}
+                  {ROUTE_LABELS[idx] ?? `${t('option')} ${idx + 1}`}
                 </Text>
                 <Box textAlign="right">
                   {departTime && (
-                    <Text fontSize="sm" fontWeight="semibold" color="#1a1a1a">Leave at {departTime}</Text>
+                    <Text fontSize="sm" fontWeight="semibold" color="#1a1a1a">{t('leave_at')} {departTime}</Text>
                   )}
                   <Text color="#444" fontSize="xs">
-                    {totalMin} min{arriveTime ? ` · arrive ${arriveTime}` : ''}
+                    {totalMin} min{arriveTime ? ` · ${t('arrive')} ${arriveTime}` : ''}
                   </Text>
                 </Box>
               </HStack>
@@ -286,14 +338,8 @@ export default function RouteDirections({ routes, result }) {
                         </Box>
                       </HStack>
                       {waitMin >= 1 && li < visibleLegs.length - 1 && (
-                        <Box
-                          px={2}
-                          py="3px"
-                          fontSize="xs"
-                          color="#888"
-                          fontStyle="italic"
-                        >
-                          ⏱ Wait {waitMin} min
+                        <Box px={2} py="3px" fontSize="xs" color="#888" fontStyle="italic">
+                          ⏱ {t('wait')} {waitMin} min
                         </Box>
                       )}
                     </Box>
@@ -313,7 +359,7 @@ export default function RouteDirections({ routes, result }) {
                       fontWeight: 600,
                     }}
                   >
-                    {isExpanded ? '▲ See Less' : '▼ See More'}
+                    {isExpanded ? t('see_less') : t('see_more')}
                   </button>
                 )}
               </Stack>
@@ -324,7 +370,7 @@ export default function RouteDirections({ routes, result }) {
                   style={{ borderColor: ROUTE_COLORS[idx] ?? '#1e3d3d', color: ROUTE_COLORS[idx] ?? '#1e3d3d' }}
                   onClick={() => setDetailIdx(idx)}
                 >
-                  More Route Details
+                  {t('more_details')}
                 </button>
                 {block && (
                   <button
@@ -332,7 +378,7 @@ export default function RouteDirections({ routes, result }) {
                     style={{ borderColor: ROUTE_COLORS[idx] ?? '#1e3d3d', color: ROUTE_COLORS[idx] ?? '#1e3d3d' }}
                     onClick={() => setModalIdx(idx)}
                   >
-                    Accessibility Analysis
+                    {t('accessibility_analysis')}
                   </button>
                 )}
               </Box>
@@ -353,22 +399,22 @@ export default function RouteDirections({ routes, result }) {
           color="#1a1a1a"
           className="md-result"
         >
-          <ReactMarkdown>{confidence.replace(/\*\*Confidence:\*\*/i, '**Recommendation Confidence:**')}</ReactMarkdown>
+          <ReactMarkdown>{confidence.replace(/\*\*Confidence:\*\*/i, t('recommendation_confidence'))}</ReactMarkdown>
         </Box>
       )}
 
       {modalIdx !== null && blocks[modalIdx] && (
         <RouteModal
-          label={ROUTE_LABELS[modalIdx] ?? `Option ${modalIdx + 1}`}
+          label={ROUTE_LABELS[modalIdx] ?? `${t('option')} ${modalIdx + 1}`}
           color={ROUTE_COLORS[modalIdx] ?? '#1e3d3d'}
-          block={blocks[modalIdx]}
+          block={localizeBlock(blocks[modalIdx], t, lang)}
           onClose={() => setModalIdx(null)}
         />
       )}
 
       {detailIdx !== null && routes[detailIdx] && (
         <RouteDetailsModal
-          label={ROUTE_LABELS[detailIdx] ?? `Option ${detailIdx + 1}`}
+          label={ROUTE_LABELS[detailIdx] ?? `${t('option')} ${detailIdx + 1}`}
           color={ROUTE_COLORS[detailIdx] ?? '#1e3d3d'}
           route={routes[detailIdx]}
           onClose={() => setDetailIdx(null)}

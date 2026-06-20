@@ -117,7 +117,7 @@ def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date, time=None):
             itins = resp.json().get("plan", {}).get("itineraries", [])
             return itins[0] if itins else None
         except Exception as e:
-            print(f"Walk segment ({a_lat},{a_lon})→({b_lat},{b_lon}) failed: {e}")
+            print(f"[routing] Walk segment ({a_lat:.4f},{a_lon:.4f})→({b_lat:.4f},{b_lon:.4f}) OTP request failed: {str(e)[:60]}")
             return None
 
     itins = []
@@ -126,7 +126,7 @@ def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date, time=None):
     direct = _walk_segment(from_lat, from_lon, to_lat, to_lon)
     if direct:
         itins.append(direct)
-        print(f"Walk direct: dist={round(_total_distance_m(direct))}m")
+        print(f"[routing] Direct walk route computed: {round(_total_distance_m(direct))}m total distance")
 
     # Chained routes: origin→waypoint + waypoint→destination
     for angle in (0, 90, 180, 270):
@@ -139,12 +139,14 @@ def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date, time=None):
                 "transfers": 0,
                 "legs":      _merge_walk_legs(seg1.get("legs", []) + seg2.get("legs", [])),
             }
-            print(f"Walk angle={angle}: dist={round(_total_distance_m(merged))}m")
+            print(f"[routing] Walk via angle={angle}°: {round(_total_distance_m(merged))}m total distance")
             itins.append(merged)
         else:
-            print(f"Walk angle={angle}: segment failed (seg1={seg1 is not None}, seg2={seg2 is not None})")
+            s1 = "ok" if seg1 is not None else "missing"
+            s2 = "ok" if seg2 is not None else "missing"
+            print(f"[routing] Walk via angle={angle}° failed to compute — seg1={s1}, seg2={s2}")
 
-    print(f"Walk candidates before dedup: {len(itins)}")
+    print(f"[routing] {len(itins)} walk route candidates generated before deduplication")
     return itins
 
 
@@ -240,9 +242,10 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None, time=None):
     transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date, eff_time)
 
     # Walk variants: four optimize modes → deduplicated by distance+duration
+    walk_candidates = _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, eff_date, eff_time)
     _walk_seen, walk_raw = set(), []
-    for it in _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, eff_date, eff_time):
-        if _total_distance_m(it) > 5000:
+    for it in walk_candidates:
+        if _total_distance_m(it) > 2000:
             continue
         sig = _walk_signature(it)
         if sig not in _walk_seen:
@@ -253,15 +256,16 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None, time=None):
     transit_itins = [it for it in transit_raw
                      if any(l.get("mode") != "WALK" for l in it.get("legs", []))]
 
-    print(f"OTP ({eff_date}): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only (≤5 km)")
+    print(f"[otp] {eff_date}: {len(transit_itins)}/{len(transit_raw)} valid transit itineraries, {len(walk_raw)} walk-only candidates (≤2 km)")
 
     # If the requested date falls outside OTP's GTFS feed, retry with the known-good fallback date
     if not transit_itins and eff_date != "2026-06-04":
-        print("No transit for requested date — retrying with fallback date 2026-06-04")
+        print("[otp] No transit itineraries for requested date — retrying with fallback date 2026-06-04")
         transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, "2026-06-04")
+        walk_candidates = _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, "2026-06-04")
         _walk_seen, walk_raw = set(), []
-        for it in _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, "2026-06-04"):
-            if _total_distance_m(it) > 5000:
+        for it in walk_candidates:
+            if _total_distance_m(it) > 2000:
                 continue
             sig = _walk_signature(it)
             if sig not in _walk_seen:
@@ -269,7 +273,7 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None, time=None):
                 walk_raw.append(it)
         transit_itins = [it for it in transit_raw
                          if any(l.get("mode") != "WALK" for l in it.get("legs", []))]
-        print(f"OTP (fallback): {len(transit_itins)}/{len(transit_raw)} transit, {len(walk_raw)} walk-only (≤5 km)")
+        print(f"[otp] Fallback date 2026-06-04: {len(transit_itins)}/{len(transit_raw)} valid transit itineraries, {len(walk_raw)} walk-only candidates (≤2 km)")
 
     # Deduplicate by which lines are used (keeps best/fastest per combination)
     seen_sigs, unique = set(), []
@@ -285,24 +289,51 @@ def get_routes(from_lat, from_lon, to_lat, to_lon, date=None, time=None):
     # Take up to 2 distinct transit routes + 1 walk-only
     chosen = unique[:2] + walk_raw[:1]
 
-    # Backfill to 3: first try same-line transit at different times, then extra walk routes
+    # Backfill to 3: try remaining unique transit routes, then extra walk routes
     if len(chosen) < 3:
-        ids_used = {id(it) for it in chosen}
-        for it in list(transit_itins) + list(walk_raw[1:]):
-            if id(it) not in ids_used:
+        chosen_ids = {id(it) for it in chosen}
+        chosen_sigs = {_route_signature(it) for it in chosen}
+        for it in transit_itins:
+            if id(it) in chosen_ids:
+                continue
+            sig = _route_signature(it)
+            if sig in chosen_sigs:
+                continue
+            chosen.append(it)
+            chosen_ids.add(id(it))
+            chosen_sigs.add(sig)
+            if len(chosen) >= 3:
+                break
+        for it in walk_raw[1:]:
+            if len(chosen) >= 3:
+                break
+            if id(it) not in chosen_ids:
                 chosen.append(it)
-                ids_used.add(id(it))
-                if len(chosen) >= 3:
-                    break
+                chosen_ids.add(id(it))
 
-    print(f"OTP final {len(chosen[:3])}: {[_route_signature(it) for it in chosen[:3]]}")
+    # Final fallback: use walk candidates ignoring the 2 km cap — avoids adding
+    # same-signature transit routes that would look visually identical on the map.
+    if len(chosen) < 3:
+        chosen_ids = {id(it) for it in chosen}
+        chosen_walk_sigs = {_walk_signature(it) for it in chosen}
+        for it in walk_candidates:
+            if len(chosen) >= 3:
+                break
+            sig = _walk_signature(it)
+            if sig not in chosen_walk_sigs:
+                chosen.append(it)
+                chosen_ids.add(id(it))
+                chosen_walk_sigs.add(sig)
+
+    sigs = [_route_signature(it) for it in chosen[:3]]
+    print(f"[otp] Final selection: {len(chosen[:3])} routes — {sigs}")
     return [_parse_itinerary(i, itin) for i, itin in enumerate(chosen[:3])]
 
 
 def save_routes_to_json(routes, filename="otp_routes.json"):
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(routes, f, indent=2, ensure_ascii=False)
-    print(f"Saved {len(routes)} routes to {filename}")
+    print(f"[routing] Saved {len(routes)} parsed route(s) to {filename}")
 
 
 

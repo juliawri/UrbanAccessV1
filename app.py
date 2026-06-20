@@ -57,7 +57,11 @@ SYSTEM_PROMPT = (
     "  2. MULTIPLE HIGH-CONCERN PHOTO SPOTS: Several points where photos show clear barriers — strong evidence of difficulty.\n"
     "  3. MODERATE PHOTO CONCERNS: A few spots with potential issues — worth flagging, but not necessarily a dealbreaker.\n"
     "  4. ENVIRONMENTAL RISKS: High collision history, active construction, and intense heat are important context.\n"
-    "  5. SHADE AND COMFORT: Prefer routes with more shade when other factors are similar, especially in hot weather.\n\n"
+    "  5. SHADE AND COMFORT: Prefer routes with more shade when other factors are similar, especially in hot weather.\n"
+    "  6. PAST USER FEEDBACK: If a 'PAST USER FEEDBACK' section is present in the user message, factor it in "
+    "proportionally to its stated relevance level. CRITICAL RELEVANCE feedback should influence your recommendation "
+    "significantly; LOW RELEVANCE feedback should only add minor context. Always mention relevant past feedback "
+    "in the Summary field of the affected route.\n\n"
 
     "=== OUTPUT FORMAT ===\n\n"
     "Your response MUST follow this exact structure. Every section header must appear verbatim "
@@ -86,11 +90,13 @@ SYSTEM_PROMPT = (
 
     "After all three route blocks, add:\n"
     "**Confidence:** <High / Medium / Low> — <one sentence explaining why, "
-    "noting whether photo data was available>\n\n"
+    "noting whether photo data was available. Do NOT mention any route names, route numbers, or transit line numbers here.>\n\n"
 
     "STRICT RULES:\n"
     "- Every header (**Active Blockages:**, **Street Photos:**, etc.) must appear for every route.\n"
     "- Do NOT use route ID numbers (0, 1, 2) anywhere in the evaluation text.\n"
+    "- The **Confidence:** line must describe data quality only — do NOT reference route names, route labels, "
+    "transit line numbers, or any identifier that distinguishes one route from another.\n"
     "- Do NOT mention scores, probabilities, field names, or model names. "
     "Use plain language a non-technical reader would understand.\n"
     "- Do NOT evaluate routes solely by travel time.\n"
@@ -152,11 +158,11 @@ def _fetch_three_views(lat, lon, radius=20):
         resp.raise_for_status()
         data = resp.json().get("data", [])
     except Exception as e:
-        print(f"  Mapillary error at ({lat:.5f}, {lon:.5f}): {e}")
+        print(f"[mapillary] ERROR fetching image at ({lat:.5f}, {lon:.5f}): {str(e)[:80]}")
         return []
 
     if not data:
-        print(f"  Mapillary: no image within {radius}m of ({lat:.5f}, {lon:.5f})")
+        print(f"[mapillary] No image found within {radius}m of ({lat:.5f}, {lon:.5f}) — skipping coordinate")
         return []
 
     img_meta = next((i for i in data if not i.get("is_pano", False)), data[0])
@@ -169,7 +175,7 @@ def _fetch_three_views(lat, lon, radius=20):
         img_resp.raise_for_status()
         img = Image.open(BytesIO(img_resp.content)).convert("RGB")
     except Exception as e:
-        print(f"  Mapillary download error at ({lat:.5f}, {lon:.5f}): {e}")
+        print(f"[mapillary] ERROR downloading image at ({lat:.5f}, {lon:.5f}): {str(e)[:80]}")
         return []
 
     img = img.resize((1024, 512))
@@ -197,7 +203,7 @@ def fetch_all_images(points):
     """
     def _fetch_point(p):
         lat, lon = p["lat"], p["lon"]
-        print(f"  Fetching Mapillary image for ({lat:.5f}, {lon:.5f})")
+        print(f"[mapillary] Fetching street-level images at ({lat:.5f}, {lon:.5f})")
         views = _fetch_three_views(lat, lon)
         return [(lat, lon, v) for v in views]
 
@@ -227,11 +233,11 @@ def run_mae_scoring(dataset, disability_type):
     try:
         import mae_inference
     except ImportError:
-        print("  mae_inference not available; skipping MAE scoring.")
+        print("[vit] ViT inference module not available — skipping accessibility vision scoring")
         return [0.0] * len(dataset), {}
 
     images = [img for _, _, img in dataset]
-    print(f"  Running MAE on {len(images)} images…")
+    print(f"[vit] Running ViT accessibility model on {len(images)} street-level images…")
     scores = mae_inference.score_images(images, disability_type)
 
     # Aggregate per coordinate (mean over 3 views)
@@ -241,7 +247,7 @@ def run_mae_scoring(dataset, disability_type):
         coord_accum.setdefault(key, []).append(score)
     coord_scores = {k: sum(v) / len(v) for k, v in coord_accum.items()}
 
-    print(f"  MAE scored {len(coord_scores)} coordinates.")
+    print(f"[vit] Scored {len(coord_scores)} unique coordinates with inaccessibility probabilities")
     return scores, coord_scores
 
 
@@ -292,15 +298,15 @@ def fetch_gemini_scores(dataset, mobility_aid="no mobility aid"):
     try:
         from google import genai as _genai
     except ImportError:
-        print("google-genai not installed; skipping VLM scoring.")
+        print("[gemini] google-genai package not installed — skipping Gemini vision analysis")
         return {}, "", "google-genai package not installed"
 
     if not GEMINI_API_KEY or not MAPILLARY_TOKEN:
-        print("GEMINI_API_KEY or MAPILLARY_TOKEN not set; skipping VLM scoring.")
+        print("[gemini] Missing GEMINI_API_KEY or MAPILLARY_TOKEN — skipping Gemini vision analysis")
         return {}, "", "GEMINI_API_KEY or MAPILLARY_TOKEN not set"
 
     if not dataset:
-        print("  No images for Gemini; skipping.")
+        print("[gemini] No images in dataset — skipping vision analysis")
         return {}, "", "No images provided"
 
     aid_criteria = MOBILITY_AID_CRITERIA.get(
@@ -332,8 +338,8 @@ def fetch_gemini_scores(dataset, mobility_aid="no mobility aid"):
     )
 
     contents = [prompt] + [img for _, _, img in dataset]
-    print(f"  Calling Gemini with {len(dataset)} images across "
-          f"{len(set(_coord_key(lat, lon) for lat, lon, _ in dataset))} coordinates…")
+    n_coords = len(set(_coord_key(lat, lon) for lat, lon, _ in dataset))
+    print(f"[gemini] Sending {len(dataset)} street images across {n_coords} coordinates for accessibility scoring…")
 
     try:
         response = gemini_client.models.generate_content(
@@ -341,7 +347,7 @@ def fetch_gemini_scores(dataset, mobility_aid="no mobility aid"):
             contents=contents,
         )
     except Exception as e:
-        print(f"  Gemini unavailable, skipping scores: {e}")
+        print(f"[gemini] ERROR: API call failed — {str(e)[:100]}")
         return {}, "", f"Gemini API call failed: {e}"
 
     raw_entries = {}
@@ -351,18 +357,18 @@ def fetch_gemini_scores(dataset, mobility_aid="no mobility aid"):
             continue
         parts = line.split(",", 2)
         if len(parts) < 3:
-            print(f"  Could not parse Gemini line: {line}")
+            print(f"[gemini] Could not parse response line: {line[:80]!r}")
             continue
         try:
             img_num = int(parts[0])
             score = round(float(parts[1]))
             comment = parts[2].strip()
         except ValueError:
-            print(f"  Could not parse Gemini line: {line}")
+            print(f"[gemini] Could not parse response line: {line[:80]!r}")
             continue
         coord = idx_to_coord.get(img_num)
         if coord is None:
-            print(f"  Unknown image index from Gemini: {img_num}")
+            print(f"[gemini] Response referenced unknown image index {img_num} — ignoring")
             continue
         raw_entries.setdefault(_coord_key(*coord), []).append((score, comment))
 
@@ -372,7 +378,7 @@ def fetch_gemini_scores(dataset, mobility_aid="no mobility aid"):
         combined_comments = " ".join(c for _, c in entries)
         result[key] = {"score": avg_score, "comments": combined_comments}
 
-    print(f"  Gemini scored {len(result)} coordinates.")
+    print(f"[gemini] Done — accessibility scores returned for {len(result)} unique coordinates")
     return result, response.text, None
 
 
@@ -416,8 +422,9 @@ def run_image_pipeline(all_points, disability_type):
         reverse=True,
     )
     gemini_dataset = [item for _, item in ranked[:GEMINI_IMAGE_BUDGET]]
-    print(f"  Top {len(gemini_dataset)} most-inaccessible images selected for Gemini "
-          f"(confidence range: {ranked[0][0]:.3f}–{ranked[min(GEMINI_IMAGE_BUDGET-1, len(ranked)-1)][0]:.3f})")
+    conf_hi = ranked[0][0]
+    conf_lo = ranked[min(GEMINI_IMAGE_BUDGET - 1, len(ranked) - 1)][0]
+    print(f"[pipeline] Top {len(gemini_dataset)} most-inaccessible images selected for Gemini (confidence range: {conf_hi:.3f}–{conf_lo:.3f})")
 
     # 4. Gemini VLM scoring on selected images
     gemini_scores, gemini_raw, gemini_error = fetch_gemini_scores(gemini_dataset, disability_type)
@@ -430,27 +437,47 @@ def run_image_pipeline(all_points, disability_type):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_mode=False):
-    print(f"  fast_mode={fast_mode}, disability_type={disability_type!r}")
+    fast_label = "ON — image pipeline skipped" if fast_mode else "OFF — full image pipeline will run"
+    print(f"[pipeline] Starting route analysis | disability type: {disability_type!r} | fast mode: {fast_label}")
     # Collect unique eligible points across all routes (capped at MAX_IMAGE_COORDS)
+    # Points are interleaved round-robin across routes so each route contributes
+    # equally rather than earlier routes monopolising the cap.
     all_points = []
     seen_coords = set()
     route_eligible = []
     for route in routes_data[:3]:
         eligible = _eligible_points(route)
         route_eligible.append(eligible)
-        print(f"  route {route.get('route_id')}: {len(eligible)} eligible walk points")
-        for p in eligible:
-            if p.get("lat") is None or p.get("lon") is None:
+        print(f"[pipeline] Route {route.get('route_id')}: {len(eligible)} eligible walk segment points found for image analysis")
+
+    # Build per-route iterators and round-robin until the cap is reached
+    iters = [
+        (p for p in pts if p.get("lat") is not None and p.get("lon") is not None)
+        for pts in route_eligible
+    ]
+    active = list(range(len(iters)))
+    nexts = [next(it, None) for it in iters]
+    while active and len(all_points) < MAX_IMAGE_COORDS:
+        still_active = []
+        for idx in active:
+            p = nexts[idx]
+            if p is None:
                 continue
             key = _coord_key(p["lat"], p["lon"])
-            if key not in seen_coords and len(all_points) < MAX_IMAGE_COORDS:
+            if key not in seen_coords:
                 seen_coords.add(key)
                 all_points.append(p)
+            nexts[idx] = next(iters[idx], None)
+            if nexts[idx] is not None:
+                still_active.append(idx)
+            if len(all_points) >= MAX_IMAGE_COORDS:
+                break
+        active = still_active
 
-    print(f"  {len(all_points)} unique coords queued for image pipeline")
+    print(f"[pipeline] {len(all_points)} unique coordinates queued for Mapillary image fetching (round-robin across {len(route_eligible)} routes, cap: {MAX_IMAGE_COORDS})")
 
     if fast_mode:
-        print("  fast_mode is ON — skipping image pipeline")
+        print("[pipeline] Fast mode enabled — skipping Mapillary, ViT, and Gemini image analysis")
         mae_coord_scores, gemini_scores, gemini_raw, gemini_error = {}, {}, "", None
     else:
         # Run the full image pipeline: Mapillary → MAE → top-15 → Gemini
@@ -544,7 +571,7 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_m
         if len(result) <= MAX_CHARS or max_other == 0:
             break
         max_other = max(0, max_other // 2)
-        print(f"  Context too long ({len(result)} chars); reducing to {max_other} non-Gemini points per route")
+        print(f"[llm] Context too long ({len(result)} chars > {MAX_CHARS} limit) — reducing to {max_other} non-Gemini points per route")
 
     return result, gemini_raw, gemini_error
 
@@ -553,10 +580,10 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_m
 # HuggingFace LLM recommendation
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_recommendation(origin, destination, disability_type, date, routes_data, fast_mode=False, similar_route_context=None):
+def get_recommendation(origin, destination, disability_type, date, routes_data, fast_mode=False, similar_route_context=None, similarity_score=None, language="en"):
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
-        print(f"  route {r.get('route_id')}: {modes}, {len(r.get('points', []))} pts")
+        print(f"[llm] Route {r.get('route_id')}: modes={modes}, {len(r.get('points', []))} total points")
 
     route_context, gemini_raw, gemini_error = format_routes_for_llm(routes_data, disability_type, fast_mode=fast_mode)
 
@@ -571,25 +598,62 @@ def get_recommendation(origin, destination, disability_type, date, routes_data, 
     )
 
     if similar_route_context:
+        score = similarity_score or 0.0
+        if score >= 0.9:
+            weight_label = "CRITICAL RELEVANCE"
+            weight_instruction = (
+                "This feedback is from a nearly identical route and should be weighted very heavily — "
+                "treat the user's past experience as strong evidence."
+            )
+        elif score >= 0.7:
+            weight_label = "HIGH RELEVANCE"
+            weight_instruction = (
+                "This feedback is from a very similar route and should meaningfully influence "
+                "your recommendation."
+            )
+        elif score >= 0.5:
+            weight_label = "MODERATE RELEVANCE"
+            weight_instruction = (
+                "This feedback is from a moderately similar route — consider it alongside "
+                "the current route data, but don't let it override clear evidence."
+            )
+        else:
+            weight_label = "LOW RELEVANCE"
+            weight_instruction = (
+                "This feedback is from a loosely similar route — treat it as background "
+                "context only, not a primary factor."
+            )
+
         user_prompt += (
-            f"\n\nSimilar Route Rating:\n"
+            f"\n\n"
+            f"=== PAST USER FEEDBACK [{weight_label} — similarity {score:.2f}/1.00] ===\n"
+            f"{weight_instruction}\n\n"
             f"{similar_route_context}\n"
-            f"Factor this historical feedback into your recommendation where relevant."
+            f"=== END PAST USER FEEDBACK ===\n"
         )
 
-    with open("prompt_debug.txt", "w") as f:
-        f.write("=== SYSTEM PROMPT ===\n")
-        f.write(SYSTEM_PROMPT)
-        f.write("\n\n=== USER PROMPT ===\n")
-        f.write(user_prompt)
-        if gemini_error:
-            f.write("\n\n=== GEMINI VLM STATUS: FAILED ===\n")
-            f.write(gemini_error)
-        elif gemini_raw:
-            f.write("\n\n=== GEMINI VLM STATUS: OK ===\n")
-            f.write("\n=== GEMINI VLM RAW RESPONSE ===\n")
-            f.write(gemini_raw)
-    print("Prompts written to prompt_debug.txt")
+    if language == "fr":
+        user_prompt += (
+            "\n\nIMPORTANT: Respond entirely in French. You MUST keep ALL of the following structural "
+            "markers in English exactly as written so that automated parsing works correctly:\n"
+            "- Section headers: '## Recommended Route', '## Alternative 1', '## Alternative 2'\n"
+            "- The confidence line: '**Confidence:**'\n"
+            "- ALL field labels: '**Active Blockages:**', '**Street Photos:**', '**Detailed Photo Review:**', "
+            "'**Traffic Safety:**', '**Construction:**', '**Heat & Shade:**', '**Summary:**'\n"
+            "Only the VALUES after each field label and the confidence explanation should be written in French. "
+            "Do NOT translate the field labels themselves — they must remain in English exactly as shown."
+        )
+
+    print("=== SYSTEM PROMPT ===")
+    print(SYSTEM_PROMPT)
+    print("\n=== USER PROMPT ===")
+    print(user_prompt)
+    if gemini_error:
+        print(f"\n=== GEMINI VLM STATUS: FAILED ===\n{gemini_error}")
+    elif gemini_raw:
+        print("\n=== GEMINI VLM STATUS: OK ===")
+        print("\n=== GEMINI VLM RAW RESPONSE ===")
+        print(gemini_raw)
 
     try:
         response = client.chat_completion(
@@ -602,13 +666,14 @@ def get_recommendation(origin, destination, disability_type, date, routes_data, 
             temperature=0.2,
         )
     except Exception as e:
-        print(f"  HF inference error: {e}")
+        print(f"[llm] ERROR: HuggingFace inference call failed — {str(e)[:100]}")
         return {"text": f"Model unavailable: {e}", "ranked_ids": list(range(len(routes_data)))}
 
     if not response.choices:
         return {"text": "No response from model.", "ranked_ids": list(range(len(routes_data)))}
 
     text = response.choices[0].message.content.strip()
+    print(f"[llm] HuggingFace response received — {len(text)} chars, recommending route for {len(routes_data)} options")
 
     best_id = 0
     lines = text.split('\n')
@@ -619,9 +684,9 @@ def get_recommendation(origin, destination, disability_type, date, routes_data, 
             if 0 <= candidate < len(routes_data):
                 best_id = candidate
             else:
-                print(f"  RECOMMENDED id {candidate} out of range, defaulting to 0")
+                print(f"[llm] RECOMMENDED route id {candidate} is out of range ({len(routes_data)} routes) — defaulting to route 0")
         else:
-            print(f"  Could not parse RECOMMENDED line: {lines[0]!r}, defaulting to route 0")
+            print(f"[llm] Could not parse RECOMMENDED line: {lines[0][:80]!r} — defaulting to route 0")
         text = '\n'.join(lines[1:]).strip()
 
     all_ids = list(range(len(routes_data)))

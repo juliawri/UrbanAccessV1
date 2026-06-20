@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { ROUTE_COLORS, ROUTE_LABELS } from './routeColors'
+import { ROUTE_COLORS } from './routeColors'
+import { useT } from '../LanguageContext'
 
 function FitRoute({ route }) {
   const map = useMap()
@@ -22,9 +23,11 @@ function FitRoute({ route }) {
 export default function RouteMap({ routes, origin, destination }) {
   const [selectedRouteIdx, setSelectedRouteIdx] = useState(0)
   const activeColor = ROUTE_COLORS[selectedRouteIdx] ?? '#888'
+  const t = useT()
+  const ROUTE_LABELS = [t('route_recommended'), t('route_alt1'), t('route_alt2')]
 
   return (
-    <div style={{ position: 'relative', height: '83vh', borderRadius: '12px', overflow: 'hidden', marginTop: '32px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+    <div className="route-map-container">
       <MapContainer
         center={[45.5017, -73.5673]}
         zoom={13}
@@ -64,17 +67,7 @@ export default function RouteMap({ routes, origin, destination }) {
       </MapContainer>
 
       {/* Route selector dropdown */}
-      <div style={{
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        zIndex: 1000,
-        background: 'rgba(255,255,255,0.97)',
-        borderRadius: '10px',
-        padding: '10px 14px 12px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
-        minWidth: '230px',
-      }}>
+      <div className="route-map-selector">
         <div style={{
           fontSize: '11px',
           fontWeight: 700,
@@ -83,7 +76,7 @@ export default function RouteMap({ routes, origin, destination }) {
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
         }}>
-          What Route Do You Want to Display?
+          {t('route_display_label')}
         </div>
         <div style={{ position: 'relative' }}>
           <select

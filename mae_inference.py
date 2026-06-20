@@ -151,13 +151,13 @@ def _get_model():
     global _model_cache
     if _model_cache is not None:
         return _model_cache
-    print("Loading MAE checkpoint…")
+    print("[vit] Loading ViT checkpoint…")
     model = _MAEFinetunedModel()
     ckpt = torch.load(CHECKPOINT_PATH, map_location="cpu", weights_only=False)
     model.load_state_dict(ckpt["model_state"])
     model.eval()
     _model_cache = model
-    print(f"  MAE loaded (epoch {ckpt.get('epoch', '?')}, f1={ckpt.get('f1', '?'):.4f})")
+    print(f"[vit] ViT loaded (epoch {ckpt.get('epoch', '?')}, f1={ckpt.get('f1', '?'):.4f})")
     return model
 
 

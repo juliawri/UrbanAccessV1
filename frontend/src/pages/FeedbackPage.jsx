@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Box, Heading, Text, Spinner } from '@chakra-ui/react'
 import { getFeedback } from '../api'
+import Navbar from '../components/Navbar'
 
 const COLUMNS = ['ID', 'User', 'Rating', 'Comment', 'Mobility Aid', 'Date', 'Duration', 'Transfers', 'Route Vector', 'Origin', 'Destination']
 
@@ -89,67 +89,63 @@ export default function FeedbackPage() {
   const userIds = Object.keys(byUser).sort()
 
   return (
-    <Box w="100%" px={8} py={4}>
-      <Heading
-        mb={2}
-        style={{
-          fontFamily: "'Exo 2', sans-serif",
-          fontSize: '60px',
-          color: '#FE8E3C',
-          fontWeight: 400,
-          lineHeight: 1.1,
-          textAlign: 'center',
-        }}
-      >
-        Urban Access
-      </Heading>
+    <div style={{ minHeight: '100vh', background: '#f9fafb' }}>
+      <Navbar />
+      <Box px={8} py={4}>
+        <Heading
+          mb={6}
+          style={{
+            fontFamily: "'Segoe UI', system-ui, sans-serif",
+            fontSize: 'clamp(42px, 6vw, 72px)',
+            color: '#d4722a',
+            fontWeight: 800,
+            lineHeight: 1,
+            letterSpacing: '6px',
+            textAlign: 'center',
+          }}
+        >
+          URBAN ACCESS
+        </Heading>
 
-      <Box textAlign="center" mb={6}>
-        <Link to="/" style={{ color: '#FE8E3C', fontSize: '14px', textDecoration: 'underline' }}>
-          ← Back to planner
-        </Link>
+        <Heading size="md" mb={6} style={{ color: '#111827' }}>
+          User Feedback ({rows.length} {rows.length === 1 ? 'entry' : 'entries'})
+        </Heading>
+
+        {loading && <Spinner color="orange.400" />}
+
+        {error && (
+          <Box bg="red.50" border="1px solid" borderColor="red.200" borderRadius="md" p={3} color="red.700" fontSize="sm">
+            {error}
+          </Box>
+        )}
+
+        {!loading && !error && rows.length === 0 && (
+          <Text color="gray.500">No feedback submitted yet.</Text>
+        )}
+
+        {!loading && !error && userIds.map(uid => (
+          <Box key={uid} mb={8}>
+            <div style={sectionHeader}>
+              <span style={userIcon}>👤</span>
+              <span style={{ ...sectionTitle, fontFamily: 'monospace' }}>User {uid.slice(0, 8)}</span>
+              <span style={badge}>{byUser[uid].length} {byUser[uid].length === 1 ? 'entry' : 'entries'}</span>
+            </div>
+            <FeedbackTable rows={byUser[uid]} />
+          </Box>
+        ))}
+
+        {!loading && !error && anonymous.length > 0 && (
+          <Box mb={8}>
+            <div style={sectionHeader}>
+              <span style={userIcon}>👤</span>
+              <span style={{ ...sectionTitle, color: '#6b7280' }}>Anonymous</span>
+              <span style={badge}>{anonymous.length} {anonymous.length === 1 ? 'entry' : 'entries'}</span>
+            </div>
+            <FeedbackTable rows={anonymous} />
+          </Box>
+        )}
       </Box>
-
-      <Heading size="md" mb={6} style={{ color: '#111827' }}>
-        User Feedback ({rows.length} {rows.length === 1 ? 'entry' : 'entries'})
-      </Heading>
-
-      {loading && <Spinner color="orange.400" />}
-
-      {error && (
-        <Box bg="red.50" border="1px solid" borderColor="red.200" borderRadius="md" p={3} color="red.700" fontSize="sm">
-          {error}
-        </Box>
-      )}
-
-      {!loading && !error && rows.length === 0 && (
-        <Text color="gray.500">No feedback submitted yet.</Text>
-      )}
-
-      {/* One table per registered user */}
-      {!loading && !error && userIds.map(uid => (
-        <Box key={uid} mb={8}>
-          <div style={sectionHeader}>
-            <span style={userIcon}>👤</span>
-            <span style={{ ...sectionTitle, fontFamily: 'monospace' }}>User {uid.slice(0, 8)}</span>
-            <span style={badge}>{byUser[uid].length} {byUser[uid].length === 1 ? 'entry' : 'entries'}</span>
-          </div>
-          <FeedbackTable rows={byUser[uid]} />
-        </Box>
-      ))}
-
-      {/* Anonymous feedback */}
-      {!loading && !error && anonymous.length > 0 && (
-        <Box mb={8}>
-          <div style={sectionHeader}>
-            <span style={userIcon}>👤</span>
-            <span style={{ ...sectionTitle, color: '#6b7280' }}>Anonymous</span>
-            <span style={badge}>{anonymous.length} {anonymous.length === 1 ? 'entry' : 'entries'}</span>
-          </div>
-          <FeedbackTable rows={anonymous} />
-        </Box>
-      )}
-    </Box>
+    </div>
   )
 }
 

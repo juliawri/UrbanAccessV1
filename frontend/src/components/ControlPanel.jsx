@@ -13,45 +13,37 @@ import {
   SelectIndicator,
 } from '@chakra-ui/react/select'
 import Autocomplete from './Autocomplete'
-
-const MOBILITY_AIDS = [
-  { label: 'Manual Wheelchair',   value: 'manual wheelchair' },
-  { label: 'Electric Wheelchair', value: 'electric wheelchair' },
-  { label: 'Walker',              value: 'walker' },
-  { label: 'Walking Cane',        value: 'walking cane' },
-  { label: 'Mobility Scooter',    value: 'mobility scooter' },
-  { label: 'No Mobility Aid',     value: 'no mobility aid' },
-]
-
-const aidCollection = createListCollection({ items: MOBILITY_AIDS })
+import { useT } from '../LanguageContext'
 
 export default function ControlPanel({
   onPlan, loading,
   origin, destination, onOriginChange, onDestinationChange,
   inputMode, onInputModeChange, mapClickStep, onResetMapClick,
 }) {
+  const t = useT()
+
+  const MOBILITY_AIDS = [
+    { label: t('aid_manual'),   value: 'manual wheelchair' },
+    { label: t('aid_electric'), value: 'electric wheelchair' },
+    { label: t('aid_walker'),   value: 'walker' },
+    { label: t('aid_cane'),     value: 'walking cane' },
+    { label: t('aid_scooter'),  value: 'mobility scooter' },
+    { label: t('aid_none'),     value: 'no mobility aid' },
+  ]
+  const aidCollection = createListCollection({ items: MOBILITY_AIDS })
+
   const [disabilityType, setDisabilityType] = useState(
     () => [localStorage.getItem('default_mobility_aid') || 'manual wheelchair']
   )
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [time, setTime] = useState(() => new Date().toTimeString().slice(0, 5))
 
-  const LOADING_STEPS = [
-    'Finding Accessible Routes…',
-    'Checking Elevation & Terrain…',
-    'Evaluating Transit Stops…',
-    'Reviewing Sidewalk Conditions…',
-    'Checking for Ramps & Curb Cuts…',
-    'Calculating Travel Times…',
-    'Analyzing Accessibility Features…',
-    'Comparing Route Options…',
-    'Ranking Routes for You…',
-  ]
+  const loadingSteps = t('loading_steps')
   const [stepIndex, setStepIndex] = useState(0)
 
   useEffect(() => {
     if (!loading) { setStepIndex(0); return }
-    const id = setInterval(() => setStepIndex(i => (i + 1) % LOADING_STEPS.length), 8000)
+    const id = setInterval(() => setStepIndex(i => (i + 1) % loadingSteps.length), 8000)
     return () => clearInterval(id)
   }, [loading])
 
@@ -80,13 +72,13 @@ export default function ControlPanel({
     >
       {/* Mobility aid + date row */}
       <HStack align="flex-end" flexWrap="wrap" gap={3}>
-        <Box flex="1" minW="200px" position="relative">
+        <Box flex="1" minW="140px" position="relative">
           <SelectRoot
             collection={aidCollection}
             value={disabilityType}
             onValueChange={({ value }) => setDisabilityType(value)}
           >
-            <SelectLabel fontSize="sm" fontWeight="medium" color="white">Mobility Aid</SelectLabel>
+            <SelectLabel fontSize="sm" fontWeight="medium" color="white">{t('mobility_aid')}</SelectLabel>
             <SelectTrigger>
               <SelectValueText placeholder="Select…" color="white" flex="1" style={{ color: 'white' }} />
               <SelectIndicator color="white" />
@@ -99,8 +91,8 @@ export default function ControlPanel({
           </SelectRoot>
         </Box>
 
-        <Box minW="140px">
-          <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Date</Text>
+        <Box minW="110px">
+          <Text fontSize="sm" fontWeight="medium" mb={1} color="white">{t('date_label')}</Text>
           <Input
             type="date"
             value={date}
@@ -110,8 +102,8 @@ export default function ControlPanel({
           />
         </Box>
 
-        <Box minW="120px">
-          <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Time</Text>
+        <Box minW="100px">
+          <Text fontSize="sm" fontWeight="medium" mb={1} color="white">{t('time_label')}</Text>
           <Input
             type="time"
             value={time}
@@ -139,7 +131,7 @@ export default function ControlPanel({
               fontWeight: 500,
             }}
           >
-            {m === 'search' ? 'Search by address' : 'Click on map'}
+            {m === 'search' ? t('search_by_address') : t('click_on_map')}
           </button>
         ))}
       </HStack>
@@ -148,12 +140,12 @@ export default function ControlPanel({
       {inputMode === 'search' && (
         <Stack gap={2}>
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Origin</Text>
-            <Autocomplete label="Origin" onSelect={onOriginChange} />
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="white">{t('origin')}</Text>
+            <Autocomplete label={t('origin')} onSelect={onOriginChange} />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="white">Destination</Text>
-            <Autocomplete label="Destination" onSelect={onDestinationChange} />
+            <Text fontSize="sm" fontWeight="medium" mb={1} color="white">{t('destination')}</Text>
+            <Autocomplete label={t('destination')} onSelect={onDestinationChange} />
           </Box>
         </Stack>
       )}
@@ -161,19 +153,19 @@ export default function ControlPanel({
       {/* Map click status */}
       {inputMode === 'map' && (
         <Stack gap={2}>
-          <Box fontSize="14px" p={2} bg="rgba(0,0,0,0.15)" borderRadius="md" border="1px solid" borderColor="rgba(255,255,255,0.3)" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
+          <Box fontSize="14px" p={2} bg="rgba(0,0,0,0.15)" borderRadius="md" border="1px solid" borderColor="rgba(255,255,255,0.3)">
             {!origin && !destination && (
-              <Text color="white" fontSize="14px">Click on the map to set your <strong>origin</strong>.</Text>
+              <Text color="white" fontSize="14px">{t('click_origin_pre')} <strong>{t('click_origin_bold')}</strong>.</Text>
             )}
             {origin && !destination && (
-              <Text color="white" fontSize="14px">Now click to set your <strong>destination</strong>.</Text>
+              <Text color="white" fontSize="14px">{t('click_dest_pre')} <strong>{t('click_dest_bold')}</strong>.</Text>
             )}
             {origin && destination && (
-              <Text color="white" fontSize="14px">Both points set. Ready to plan!</Text>
+              <Text color="white" fontSize="14px">{t('both_set')}</Text>
             )}
           </Box>
           <HStack gap={2} align="stretch">
-            {[{ key: 'origin', val: origin }, { key: 'destination', val: destination }].map(({ key, val }) => (
+            {[{ key: 'origin', val: origin, label: t('origin') }, { key: 'destination', val: destination, label: t('destination') }].map(({ key, val, label }) => (
               <Box
                 key={key}
                 flex="1"
@@ -184,10 +176,10 @@ export default function ControlPanel({
                 borderColor={val ? 'rgba(168,240,184,0.5)' : 'rgba(255,255,255,0.15)'}
               >
                 <Text fontSize="14px" fontWeight="semibold" color={val ? '#a8f0b8' : 'rgba(255,255,255,0.5)'} textTransform="capitalize" mb="1px">
-                  {key}
+                  {label}
                 </Text>
                 <Text fontSize="14px" color={val ? 'white' : 'rgba(255,255,255,0.4)'} lineHeight="1.3">
-                  {val ? val.label : 'not set'}
+                  {val ? val.label : t('not_set')}
                 </Text>
               </Box>
             ))}
@@ -204,7 +196,7 @@ export default function ControlPanel({
               fontWeight: 500,
             }}
           >
-            Reset points
+            {t('reset_points')}
           </button>
         </Stack>
       )}
@@ -224,7 +216,7 @@ export default function ControlPanel({
           width: '100%',
         }}
       >
-        {loading ? LOADING_STEPS[stepIndex] : 'Plan Route'}
+        {loading ? loadingSteps[stepIndex] : t('plan_route')}
       </button>
     </Stack>
   )

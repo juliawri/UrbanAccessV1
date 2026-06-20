@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Box, Stack, HStack, Button, Textarea, Text } from '@chakra-ui/react'
 import { submitFeedback } from '../api'
 import { supabase } from '../supabaseClient'
+import { useT } from '../LanguageContext'
 
 export default function FeedbackForm({ payload, routes, result, user }) {
   const [rating, setRating]   = useState(0)
@@ -9,8 +10,8 @@ export default function FeedbackForm({ payload, routes, result, user }) {
   const [comment, setComment] = useState('')
   const [status, setStatus]   = useState('')
   const [loading, setLoading] = useState(false)
+  const t = useT()
 
-  
   async function handleSubmit() {
     if (!rating) return
     setLoading(true)
@@ -50,7 +51,7 @@ export default function FeedbackForm({ payload, routes, result, user }) {
         route_legs_summary:  legsSummary,
         recommendation:      result,
       }, token)
-      setStatus(`Thanks! Feedback saved (ID: ${data.id})`)
+      setStatus(`${t('thanks_feedback')}${data.id})`)
       setRating(0)
       setComment('')
     } catch (err) {
@@ -68,17 +69,19 @@ export default function FeedbackForm({ payload, routes, result, user }) {
       style={{ background: '#ffffff', border: '1px solid #d1d5db' }}
     >
       <Box px={4} py={3} style={{ background: '#ffffff', borderBottom: '1px solid #d1d5db' }}>
-        <Text fontWeight="bold" color="#1f2937">How was this route?</Text>
+        <Text fontWeight="bold" color="#1f2937">{t('how_was_route')}</Text>
       </Box>
       <Stack gap={3} p={4} style={{ background: '#ffffff' }}>
-        {/* Auth context */}
         {user ? (
-          <Text fontSize="sm" color="#6b7280">Submitting as <strong style={{ color: '#1f2937' }}>{user.email}</strong></Text>
+          <Text fontSize="sm" color="#6b7280">{t('submitting_as')} <strong style={{ color: '#1f2937' }}>{user.email}</strong></Text>
         ) : (
-          <Text fontSize="sm" color="#9ca3af">Submitting anonymously — <a href="#" onClick={e => { e.preventDefault(); document.querySelector('.navbar-auth-btn')?.click() }} style={{ color: '#1e3d3d', textDecoration: 'underline' }}>sign in</a> to associate feedback with your account.</Text>
+          <Text fontSize="sm" color="#9ca3af">
+            {t('submitting_anon')}
+            <a href="#" onClick={e => { e.preventDefault(); document.querySelector('.navbar-auth-btn')?.click() }} style={{ color: '#1e3d3d', textDecoration: 'underline' }}>{t('sign_in_to_link')}</a>
+            {t('sign_in_to_associate')}
+          </Text>
         )}
 
-        {/* Star rating */}
         <HStack onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map(n => {
             const filled = rating >= n
@@ -111,30 +114,27 @@ export default function FeedbackForm({ payload, routes, result, user }) {
         </HStack>
 
         <Textarea
-          placeholder="Any comments about accessibility on this route?"
+          placeholder={t('feedback_placeholder')}
           value={comment}
           onChange={e => setComment(e.target.value)}
           rows={3}
           style={{ background: '#ffffff', color: '#1f2937', borderColor: '#d1d5db' }}
-          _placeholder={{ color: '#9ca3af' }}
+          _placeholder={{ color: '#4b5563' }}
         />
 
         <Button
           colorPalette="green"
           onClick={handleSubmit}
           loading={loading}
-          loadingText="Submitting…"
+          loadingText={t('submitting')}
           disabled={!rating}
           style={{ opacity: 0.80 }}
         >
-          Submit Feedback
+          {t('submit_feedback')}
         </Button>
 
         {status && (
-          <Text
-            fontSize="sm"
-            color={status.startsWith('Error') ? '#dc2626' : '#16a34a'}
-          >
+          <Text fontSize="sm" color={status.startsWith('Error') ? '#dc2626' : '#16a34a'}>
             {status}
           </Text>
         )}

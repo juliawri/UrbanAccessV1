@@ -70,7 +70,7 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  padding: 48px 24px 40px;
+  padding: 48px 24px 28px;
   text-align: center;
 }
 .brand-logo {
@@ -101,6 +101,18 @@
   margin: 0 auto;
   /* overflow visible so the panel can spill outside the map edge */
   overflow: visible;
+}
+.map-prompt-bubble {
+  display: inline-block;
+  background: #fff;
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  margin-bottom: 0;
 }
 .map-inner {
   position: relative;
@@ -480,6 +492,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 80px;
+  margin-top: 48px;
   border-top: 1px solid #a8d4e8;
 }
 .bottom-left {
@@ -509,6 +522,28 @@
   color: #555;
 }
 
+/* ── Route Map (full-page view after search) ────────────── */
+.route-map-container {
+  position: relative;
+  height: 83vh;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.route-map-selector {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1000;
+  background: rgba(255,255,255,0.97);
+  border-radius: 10px;
+  padding: 10px 14px 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  min-width: 230px;
+}
+
 /* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 768px) {
   .navbar {
@@ -525,10 +560,18 @@
   .navbar-user {
     display: none;
   }
+  .navbar-auth-btn {
+    padding: 10px 14px;
+    min-height: 44px;
+  }
 
-  /* 80% width centered for map, results, and feedback on mobile */
+  .hero {
+    padding: 32px 16px 20px;
+  }
+
+  /* Use nearly full width on mobile */
   .map-section {
-    width: 80%;
+    width: 95%;
   }
 
   /* Stack panel above map instead of overlaying it */
@@ -550,7 +593,7 @@
   }
 
   .results-section {
-    width: 80%;
+    width: 95%;
     margin: 0 auto;
     padding: 16px 0;
     box-sizing: border-box;
@@ -559,7 +602,7 @@
 
   .feedback-section {
     padding: 32px 0 48px;
-    width: 80%;
+    width: 95%;
     align-self: center;
   }
   .footer-cols {
@@ -582,11 +625,23 @@
     justify-content: center;
   }
 
-  /* Route detail modal — match 80% width of other elements */
+  /* Route detail modal */
   .route-modal-backdrop {
-    padding: 10% 10%;
+    padding: 16px;
   }
   .route-modal {
     max-width: 100%;
+  }
+
+  /* Route map — shorter on mobile so controls stay visible */
+  .route-map-container {
+    height: 55vh;
+    margin-top: 16px;
+    border-radius: 8px;
+  }
+  .route-map-selector {
+    min-width: 0;
+    width: calc(100% - 24px);
+    max-width: 280px;
   }
 }
