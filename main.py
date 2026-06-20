@@ -1,14 +1,14 @@
 import sys
 sys.stdout.reconfigure(line_buffering=True)
 
-# ─── Stdout capture for /api/logs SSE ────────────────────────────────────────
+# ─── Stdout capture for /api/logs SSE (file-based, multi-worker safe) ────────
 import threading as _th
 import asyncio as _aio
-from collections import deque as _deque
+import os as _os
+from pathlib import Path as _Path
 
-_log_buf: _deque = _deque(maxlen=500)
-_log_subs: list = []   # [(asyncio.AbstractEventLoop, asyncio.Queue)]
-_log_mu = _th.Lock()
+_LOG_FILE = _Path(__file__).parent / "logs" / "app.log"
+_LOG_FILE.parent.mkdir(exist_ok=True)
 
 _NOISE = (
     "Started server process", "Waiting for application startup",
@@ -18,34 +18,22 @@ _NOISE = (
     "HTTP/1.",
 )
 
-def _safe_put(q, v):
-    try:
-        q.put_nowait(v)
-    except Exception:
-        pass
-
 def _emit(line: str):
     s = line.strip()
     if not s or any(pat in s for pat in _NOISE):
         return
-    with _log_mu:
-        _log_buf.append(s)
-        subs = list(_log_subs)
-    for loop, q in subs:
-        try:
-            loop.call_soon_threadsafe(_safe_put, q, s)
-        except Exception:
-            pass
+    try:
+        with open(_LOG_FILE, 'a') as f:
+            f.write(s + '\n')
+    except Exception:
+        pass
 
 def _reset_logs():
-    with _log_mu:
-        _log_buf.clear()
-        subs = list(_log_subs)
-    for loop, q in subs:
-        try:
-            loop.call_soon_threadsafe(_safe_put, q, "__RESET__")
-        except Exception:
-            pass
+    try:
+        with open(_LOG_FILE, 'w') as f:
+            f.write('__RESET__\n')
+    except Exception:
+        pass
 
 _orig_write = sys.stdout.write
 _tl = _th.local()
@@ -195,7 +183,7 @@ def _search_similar_route(
     Disability type is pre-filtered in SQL (exact match required).
     Distance threshold: each endpoint must be within ~500 m of the stored route
     (combined 4-D L2 ≤ ~707 m, i.e. L2² ≤ 500 000).
-    Returns (match_dict, similarity_score) or None.
+    Returns a list of (match_dict, similarity_score) tuples (up to 5, closest first), or None.
     """
     try:
         import faiss
@@ -234,24 +222,29 @@ def _search_similar_route(
     top = [(int(indices[0][i]), float(sq_distances[0][i])) for i in range(k)]
     print(f"[faiss] Top-{k} distances (metres): {[(idx, round(d**0.5)) for idx, d in top]}")
 
-    best_idx, best_sq = top[0]
-    if best_sq > THRESHOLD_SQ:
-        print(f"[faiss] No close match — nearest is {best_sq**0.5:.0f} m away (threshold ≈ {THRESHOLD_M:.0f} m)")
+    if top[0][1] > THRESHOLD_SQ:
+        print(f"[faiss] No close match — nearest is {top[0][1]**0.5:.0f} m away (threshold ≈ {THRESHOLD_M:.0f} m)")
         return None
 
-    actual_dist = best_sq ** 0.5
-    similarity_score = max(0.0, 1.0 - actual_dist / THRESHOLD_M)
-    print(f"[faiss] Best match: row_id={rows[best_idx].id}, dist≈{actual_dist:.0f} m, similarity={similarity_score:.4f}")
+    matches = []
+    for idx, sq_dist in top:
+        if sq_dist > THRESHOLD_SQ:
+            break  # results are sorted; no need to continue
+        actual_dist = sq_dist ** 0.5
+        score = max(0.0, 1.0 - actual_dist / THRESHOLD_M)
+        r = rows[idx]
+        print(f"[faiss] Match #{len(matches)+1}: row_id={r.id}, dist≈{actual_dist:.0f} m, similarity={score:.4f}")
+        matches.append(({
+            "rating": r.rating,
+            "comment": r.comment,
+            "disability_type": r.disability_type,
+            "route_total_min": r.route_total_min,
+            "route_num_transfers": r.route_num_transfers,
+            "route_legs_summary": r.route_legs_summary,
+        }, score))
 
-    r = rows[best_idx]
-    return {
-        "rating": r.rating,
-        "comment": r.comment,
-        "disability_type": r.disability_type,
-        "route_total_min": r.route_total_min,
-        "route_num_transfers": r.route_num_transfers,
-        "route_legs_summary": r.route_legs_summary,
-    }, similarity_score
+    print(f"[faiss] {len(matches)} match(es) within {THRESHOLD_M:.0f} m threshold")
+    return matches
 
 
 @app.on_event("startup")
@@ -406,35 +399,23 @@ def process(
         time=req.time,
     )
 
-    similar_route_context = None
-    similarity_score = None
+    similar_routes = None
     if not jwt_user_id:
         print("[similarity] Skipping similarity search — no authenticated user; past route feedback will not influence recommendation")
     else:
         print("[similarity] Authenticated user — searching past feedback for similar routes to inform recommendation")
         try:
-            match = _search_similar_route(
+            matches = _search_similar_route(
                 db,
                 req.source.lat, req.source.lng,
                 req.destination.lat, req.destination.lng,
                 req.disability_type,
                 jwt_user_id,
             )
-            if match:
-                similar, similarity_score = match
-                parts = [f"Rating: {similar['rating']}/5"]
-                if similar.get("comment"):
-                    parts.append(f"User comment: {similar['comment']}")
-                if similar.get("disability_type"):
-                    parts.append(f"Mobility aid: {similar['disability_type']}")
-                if similar.get("route_total_min"):
-                    parts.append(f"Duration: {similar['route_total_min']} min")
-                if similar.get("route_num_transfers") is not None:
-                    parts.append(f"Transfers: {similar['route_num_transfers']}")
-                if similar.get("route_legs_summary"):
-                    parts.append(f"Route: {similar['route_legs_summary']}")
-                similar_route_context = "\n".join(f"- {p}" for p in parts)
-                print(f"[similarity] Similar past route found — rating={similar['rating']}/5, similarity={similarity_score:.4f}")
+            if matches:
+                similar_routes = matches
+                scores = [f"{s:.4f}" for _, s in matches]
+                print(f"[similarity] {len(matches)} similar past route(s) found — similarities: {scores}")
             else:
                 print("[similarity] No similar past route found — feedback DB may be empty or no close matches")
         except Exception as _sim_err:
@@ -447,8 +428,7 @@ def process(
         date=req.date,
         routes_data=routes_data,
         fast_mode=req.fast_mode,
-        similar_route_context=similar_route_context,
-        similarity_score=similarity_score,
+        similar_routes=similar_routes,
         language=req.language,
     )
 
@@ -537,30 +517,46 @@ def delete_account(
 
 @app.get("/api/logs")
 async def stream_logs():
-    loop = _aio.get_running_loop()
-    q: _aio.Queue = _aio.Queue(maxsize=1000)
-    with _log_mu:
-        _log_subs.append((loop, q))
-        snap = list(_log_buf)
-
     async def _gen():
-        for line in snap:
-            yield f"data: {line}\n\n"
+        pos = 0
+        # Send existing log content
+        try:
+            with open(_LOG_FILE, 'r') as f:
+                for line in f:
+                    line = line.rstrip('\n')
+                    if line == '__RESET__':
+                        yield "data: __RESET__\n\n"
+                    elif line:
+                        yield f"data: {line}\n\n"
+                pos = f.tell()
+        except FileNotFoundError:
+            pos = 0
+
+        # Tail new lines as they arrive
         try:
             while True:
                 try:
-                    line = await _aio.wait_for(q.get(), timeout=15.0)
-                    yield f"data: {line}\n\n"
-                except _aio.TimeoutError:
+                    size = _os.path.getsize(_LOG_FILE)
+                    if size < pos:
+                        # File was truncated (reset) — start from beginning
+                        pos = 0
+                    with open(_LOG_FILE, 'r') as f:
+                        f.seek(pos)
+                        new_content = f.read()
+                        pos = f.tell()
+                    if new_content:
+                        for line in new_content.splitlines():
+                            if line == '__RESET__':
+                                yield "data: __RESET__\n\n"
+                            elif line:
+                                yield f"data: {line}\n\n"
+                    else:
+                        yield ": keepalive\n\n"
+                except FileNotFoundError:
                     yield ": keepalive\n\n"
-        except (GeneratorExit, _aio.CancelledError, Exception):
+                await _aio.sleep(0.5)
+        except (GeneratorExit, _aio.CancelledError):
             pass
-        finally:
-            with _log_mu:
-                try:
-                    _log_subs.remove((loop, q))
-                except ValueError:
-                    pass
 
     return StreamingResponse(
         _gen(),

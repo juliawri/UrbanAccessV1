@@ -66,8 +66,11 @@ export default function Autocomplete({ label, onSelect }) {
             lng: lon,
           })
         } else {
+          // For street-type results, p.street is undefined and p.name holds the street name
+          const streetPart = street || (!street && p.name ? p.name : '')
+          const displayAddr = [streetPart, cityLine].filter(Boolean).join(', ')
           addrResults.push({
-            label: fullAddr || p.name || q,
+            label: displayAddr || q,
             badge: 'ADDR',
             lat,
             lng: lon,

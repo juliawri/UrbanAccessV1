@@ -89,8 +89,8 @@ SYSTEM_PROMPT = (
     "**Summary:** <one or two sentences — overall accessibility verdict for this route.>\n\n"
 
     "After all three route blocks, add:\n"
-    "**Confidence:** <High / Medium / Low> — <one sentence explaining why, "
-    "noting whether photo data was available. Do NOT mention any route names, route numbers, or transit line numbers here.>\n\n"
+    "**Confidence:** <High / Medium / Low> — <two sentences explaining why, "
+    "noting whether photo data was available and what the main limiting factor was. Do NOT mention any route names, route numbers, or transit line numbers here.>\n\n"
 
     "STRICT RULES:\n"
     "- Every header (**Active Blockages:**, **Street Photos:**, etc.) must appear for every route.\n"
@@ -450,11 +450,15 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_m
         route_eligible.append(eligible)
         print(f"[pipeline] Route {route.get('route_id')}: {len(eligible)} eligible walk segment points found for image analysis")
 
-    # Build per-route iterators and round-robin until the cap is reached
-    iters = [
-        (p for p in pts if p.get("lat") is not None and p.get("lon") is not None)
-        for pts in route_eligible
-    ]
+    # Stride-sample each route so images are spread evenly along its full length
+    # rather than front-loaded. Per-route budget = cap / n_routes.
+    n_routes = len(route_eligible)
+    per_route_budget = max(1, MAX_IMAGE_COORDS // n_routes) if n_routes else MAX_IMAGE_COORDS
+    iters = []
+    for pts in route_eligible:
+        valid = [p for p in pts if p.get("lat") is not None and p.get("lon") is not None]
+        step = max(1, len(valid) // per_route_budget)
+        iters.append(iter(valid[::step]))
     active = list(range(len(iters)))
     nexts = [next(it, None) for it in iters]
     while active and len(all_points) < MAX_IMAGE_COORDS:
@@ -580,7 +584,7 @@ def format_routes_for_llm(routes_data, disability_type="no mobility aid", fast_m
 # HuggingFace LLM recommendation
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_recommendation(origin, destination, disability_type, date, routes_data, fast_mode=False, similar_route_context=None, similarity_score=None, language="en"):
+def get_recommendation(origin, destination, disability_type, date, routes_data, fast_mode=False, similar_routes=None, language="en"):
     for r in routes_data:
         modes = [l.get("mode") for l in r.get("legs", [])]
         print(f"[llm] Route {r.get('route_id')}: modes={modes}, {len(r.get('points', []))} total points")
@@ -597,39 +601,60 @@ def get_recommendation(origin, destination, disability_type, date, routes_data, 
         "Analyse the routes above and identify which is most accessible for this user."
     )
 
-    if similar_route_context:
-        score = similarity_score or 0.0
-        if score >= 0.9:
-            weight_label = "CRITICAL RELEVANCE"
-            weight_instruction = (
-                "This feedback is from a nearly identical route and should be weighted very heavily — "
-                "treat the user's past experience as strong evidence."
-            )
-        elif score >= 0.7:
-            weight_label = "HIGH RELEVANCE"
-            weight_instruction = (
-                "This feedback is from a very similar route and should meaningfully influence "
-                "your recommendation."
-            )
-        elif score >= 0.5:
-            weight_label = "MODERATE RELEVANCE"
-            weight_instruction = (
-                "This feedback is from a moderately similar route — consider it alongside "
-                "the current route data, but don't let it override clear evidence."
-            )
-        else:
-            weight_label = "LOW RELEVANCE"
-            weight_instruction = (
-                "This feedback is from a loosely similar route — treat it as background "
-                "context only, not a primary factor."
+    if similar_routes:
+        sections = []
+        for i, (similar, score) in enumerate(similar_routes, 1):
+            if score >= 0.9:
+                weight_label = "CRITICAL RELEVANCE"
+                weight_instruction = (
+                    "This feedback is from a nearly identical route — treat the user's past "
+                    "experience as strong evidence and weight it very heavily."
+                )
+            elif score >= 0.7:
+                weight_label = "HIGH RELEVANCE"
+                weight_instruction = (
+                    "This feedback is from a very similar route and should meaningfully "
+                    "influence your recommendation."
+                )
+            elif score >= 0.5:
+                weight_label = "MODERATE RELEVANCE"
+                weight_instruction = (
+                    "This feedback is from a moderately similar route — consider it alongside "
+                    "the current route data, but don't let it override clear evidence."
+                )
+            else:
+                weight_label = "LOW RELEVANCE"
+                weight_instruction = (
+                    "This feedback is from a loosely similar route — treat it as background "
+                    "context only, not a primary factor."
+                )
+
+            parts = [f"Rating: {similar['rating']}/5"]
+            if similar.get("comment"):
+                parts.append(f"User comment: {similar['comment']}")
+            if similar.get("disability_type"):
+                parts.append(f"Mobility aid: {similar['disability_type']}")
+            if similar.get("route_total_min"):
+                parts.append(f"Duration: {similar['route_total_min']} min")
+            if similar.get("route_num_transfers") is not None:
+                parts.append(f"Transfers: {similar['route_num_transfers']}")
+            if similar.get("route_legs_summary"):
+                parts.append(f"Route: {similar['route_legs_summary']}")
+            context = "\n".join(f"  - {p}" for p in parts)
+            sections.append(
+                f"[Feedback #{i} — {weight_label} — similarity {score:.2f}/1.00]\n"
+                f"{weight_instruction}\n"
+                f"{context}"
             )
 
         user_prompt += (
             f"\n\n"
-            f"=== PAST USER FEEDBACK [{weight_label} — similarity {score:.2f}/1.00] ===\n"
-            f"{weight_instruction}\n\n"
-            f"{similar_route_context}\n"
-            f"=== END PAST USER FEEDBACK ===\n"
+            f"=== PAST USER FEEDBACK ({len(similar_routes)} match(es), ordered closest to furthest) ===\n"
+            f"Weight each entry by its relevance label. Feedback #1 is the closest geographic match "
+            f"and should carry the most influence; later entries are progressively less similar and "
+            f"should be weighted accordingly. If entries conflict, prefer the higher-priority one.\n\n"
+            + "\n\n".join(sections)
+            + "\n=== END PAST USER FEEDBACK ==="
         )
 
     if language == "fr":
@@ -655,6 +680,7 @@ def get_recommendation(origin, destination, disability_type, date, routes_data, 
         print("\n=== GEMINI VLM RAW RESPONSE ===")
         print(gemini_raw)
 
+    print(f"[llm] Sending request to HuggingFace — model={MODEL}, prompt_chars={len(user_prompt)}")
     try:
         response = client.chat_completion(
             model=MODEL,

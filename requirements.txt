@@ -17,3 +17,4 @@ numpy<2
 
 Pillow
 faiss-cpu
+google-genai

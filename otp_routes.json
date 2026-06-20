@@ -1,110 +1,241 @@
 [
   {
     "route_id": 0,
-    "duration_sec": 2601,
+    "duration_sec": 1952,
     "transfers": 1,
     "legs": [
       {
         "mode": "WALK",
         "from": "Origin",
-        "from_lat": 45.5349588,
-        "from_lon": -73.6006849,
-        "to": "Station Beaubien",
-        "to_lat": 45.535078,
-        "to_lon": -73.605037,
-        "start_time": 1781988491000,
-        "end_time": 1781989020000,
-        "duration_sec": 529.0,
-        "distance_m": 466.98,
+        "from_lat": 45.5196781,
+        "from_lon": -73.6022304,
+        "to": "Laurier / Querbes",
+        "to_lat": 45.517311,
+        "to_lon": -73.597705,
+        "start_time": 1781995468000,
+        "end_time": 1781995848000,
+        "duration_sec": 380.0,
+        "distance_m": 458.78,
         "route": "",
         "route_short_name": "",
         "walk_steps": [
           {
             "direction": "DEPART",
-            "street": "Rue Saint-Hubert",
-            "distance_m": 219,
+            "street": "sidewalk",
+            "distance_m": 273,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "sidewalk",
+            "distance_m": 186,
+            "bogus_name": true
+          }
+        ],
+        "geometry_sampled_50m": [
+          [
+            45.51955,
+            -73.60234
+          ],
+          [
+            45.51831,
+            -73.59956
+          ],
+          [
+            45.51768,
+            -73.59813
+          ],
+          [
+            45.51747,
+            -73.5979
+          ],
+          [
+            45.51735,
+            -73.59765
+          ]
+        ]
+      },
+      {
+        "mode": "BUS",
+        "from": "Laurier / Querbes",
+        "from_lat": 45.517311,
+        "from_lon": -73.597705,
+        "to": "Saint-Joseph / Saint-Denis",
+        "to_lat": 45.52606,
+        "to_lon": -73.587891,
+        "start_time": 1781995848000,
+        "end_time": 1781996220000,
+        "duration_sec": 372.0,
+        "distance_m": 1379.47,
+        "route": "Édouard-Montpetit",
+        "route_short_name": "51",
+        "walk_steps": null,
+        "geometry_sampled_50m": [
+          [
+            45.51734,
+            -73.59779
+          ],
+          [
+            45.51804,
+            -73.59718
+          ],
+          [
+            45.51866,
+            -73.59663
+          ],
+          [
+            45.51948,
+            -73.5959
+          ],
+          [
+            45.5203,
+            -73.59519
+          ],
+          [
+            45.52098,
+            -73.5946
+          ],
+          [
+            45.5217,
+            -73.59397
+          ],
+          [
+            45.52117,
+            -73.59253
+          ],
+          [
+            45.52148,
+            -73.59202
+          ],
+          [
+            45.52179,
+            -73.59174
+          ],
+          [
+            45.52215,
+            -73.59143
+          ],
+          [
+            45.52233,
+            -73.59126
+          ],
+          [
+            45.52282,
+            -73.59081
+          ],
+          [
+            45.52334,
+            -73.59035
+          ],
+          [
+            45.52378,
+            -73.58996
+          ],
+          [
+            45.5244,
+            -73.58943
+          ],
+          [
+            45.52505,
+            -73.58883
+          ],
+          [
+            45.5255,
+            -73.58842
+          ],
+          [
+            45.52577,
+            -73.58815
+          ],
+          [
+            45.52606,
+            -73.58791
+          ]
+        ]
+      },
+      {
+        "mode": "WALK",
+        "from": "Saint-Joseph / Saint-Denis",
+        "from_lat": 45.52606,
+        "from_lon": -73.587891,
+        "to": "Station Laurier",
+        "to_lat": 45.527436,
+        "to_lon": -73.587002,
+        "start_time": 1781996220000,
+        "end_time": 1781996529000,
+        "duration_sec": 309.0,
+        "distance_m": 192.87,
+        "route": "",
+        "route_short_name": "",
+        "walk_steps": [
+          {
+            "direction": "DEPART",
+            "street": "Boulevard Saint-Joseph Est",
+            "distance_m": 78,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Rue Beaubien Est",
-            "distance_m": 183,
+            "street": "sidewalk",
+            "distance_m": 1,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Rivard",
+            "distance_m": 24,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Rue de Saint-Vallier",
-            "distance_m": 66,
+            "street": "Boulevard Saint-Joseph Est",
+            "distance_m": 90,
             "bogus_name": false
           }
         ],
         "geometry_sampled_50m": [
           [
-            45.53497,
-            -73.60068
+            45.52604,
+            -73.58789
           ],
           [
-            45.53555,
-            -73.60197
+            45.52623,
+            -73.58771
           ],
           [
-            45.53603,
-            -73.60301
+            45.52661,
+            -73.58737
           ],
           [
-            45.53584,
-            -73.60323
+            45.52672,
+            -73.58754
           ],
           [
-            45.53547,
-            -73.60358
+            45.52686,
+            -73.58753
           ],
           [
-            45.53542,
-            -73.60373
-          ],
-          [
-            45.53508,
-            -73.60403
-          ],
-          [
-            45.53484,
-            -73.60426
-          ],
-          [
-            45.53489,
-            -73.60463
-          ],
-          [
-            45.53507,
-            -73.60504
+            45.52738,
+            -73.58704
           ]
         ]
       },
       {
         "mode": "SUBWAY",
-        "from": "Station Beaubien",
-        "from_lat": 45.535078,
-        "from_lon": -73.605037,
-        "to": "Station Lionel-Groulx",
-        "to_lat": 45.482509,
-        "to_lon": -73.58018,
-        "start_time": 1781989020000,
-        "end_time": 1781989980000,
-        "duration_sec": 960.0,
-        "distance_m": 8348.46,
+        "from": "Station Laurier",
+        "from_lat": 45.527436,
+        "from_lon": -73.587002,
+        "to": "Station Sherbrooke",
+        "to_lat": 45.51906,
+        "to_lon": -73.569217,
+        "start_time": 1781996820000,
+        "end_time": 1781997000000,
+        "duration_sec": 180.0,
+        "distance_m": 1669.74,
         "route": "Line 2 - Orange",
         "route_short_name": "2",
         "walk_steps": null,
         "geometry_sampled_50m": [
-          [
-            45.53539,
-            -73.60479
-          ],
-          [
-            45.53173,
-            -73.59778
-          ],
           [
             45.52743,
             -73.58701
@@ -120,197 +251,111 @@
           [
             45.51906,
             -73.56922
-          ],
-          [
-            45.51521,
-            -73.56106
-          ],
-          [
-            45.51004,
-            -73.5566
-          ],
-          [
-            45.50634,
-            -73.55955
-          ],
-          [
-            45.50193,
-            -73.56312
-          ],
-          [
-            45.49809,
-            -73.56723
-          ],
-          [
-            45.49474,
-            -73.57108
-          ],
-          [
-            45.48905,
-            -73.5767
-          ],
-          [
-            45.48889,
-            -73.57686
-          ],
-          [
-            45.4825,
-            -73.58018
-          ]
-        ]
-      },
-      {
-        "mode": "SUBWAY",
-        "from": "Station Lionel-Groulx",
-        "from_lat": 45.482509,
-        "from_lon": -73.58018,
-        "to": "Station Atwater",
-        "to_lat": 45.489796,
-        "to_lon": -73.586078,
-        "start_time": 1781990220000,
-        "end_time": 1781990340000,
-        "duration_sec": 120.0,
-        "distance_m": 931.1,
-        "route": "Line 1 - Green",
-        "route_short_name": "1",
-        "walk_steps": null,
-        "geometry_sampled_50m": [
-          [
-            45.4825,
-            -73.58018
-          ],
-          [
-            45.48993,
-            -73.58572
           ]
         ]
       },
       {
         "mode": "WALK",
-        "from": "Station Atwater",
-        "from_lat": 45.489796,
-        "from_lon": -73.586078,
+        "from": "Station Sherbrooke",
+        "from_lat": 45.51906,
+        "from_lon": -73.569217,
         "to": "Destination",
-        "to_lat": 45.4872982,
-        "to_lon": -73.593301,
-        "start_time": 1781990340000,
-        "end_time": 1781991092000,
-        "duration_sec": 752.0,
-        "distance_m": 779.44,
+        "to_lat": 45.517151,
+        "to_lon": -73.5680582,
+        "start_time": 1781997000000,
+        "end_time": 1781997420000,
+        "duration_sec": 420.0,
+        "distance_m": 311.58,
         "route": "",
         "route_short_name": "",
         "walk_steps": [
           {
             "direction": "DEPART",
-            "street": "Boulevard De Maisonneuve Ouest",
-            "distance_m": 427,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "path",
-            "distance_m": 154,
-            "bogus_name": true
-          },
-          {
-            "direction": "CONTINUE",
-            "street": "Greene Avenue",
-            "distance_m": 49,
+            "street": "Rue Cherrier",
+            "distance_m": 7,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Sherbrooke Street West",
-            "distance_m": 135,
+            "street": "Rue Berri",
+            "distance_m": 14,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Berri",
+            "distance_m": 63,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Avenue Mountain",
-            "distance_m": 14,
+            "street": "Rue de Malines",
+            "distance_m": 6,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "path",
+            "distance_m": 8,
+            "bogus_name": true
+          },
+          {
+            "direction": "CONTINUE",
+            "street": "Rue Berri",
+            "distance_m": 45,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Berri",
+            "distance_m": 16,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Rue de Rigaud",
+            "distance_m": 98,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Saint-Denis",
+            "distance_m": 55,
             "bogus_name": false
           }
         ],
         "geometry_sampled_50m": [
           [
-            45.48979,
-            -73.58608
+            45.51906,
+            -73.56922
           ],
           [
-            45.48916,
-            -73.58679
+            45.51892,
+            -73.56928
           ],
           [
-            45.48866,
-            -73.58738
+            45.51857,
+            -73.56862
           ],
           [
-            45.48815,
-            -73.58798
+            45.51833,
+            -73.56822
           ],
           [
-            45.48784,
-            -73.58834
+            45.51823,
+            -73.56801
           ],
           [
-            45.48755,
-            -73.58869
+            45.51779,
+            -73.56831
           ],
           [
-            45.48731,
-            -73.58897
+            45.51755,
+            -73.56853
           ],
           [
-            45.48711,
-            -73.5892
-          ],
-          [
-            45.48694,
-            -73.58944
-          ],
-          [
-            45.48687,
-            -73.58965
-          ],
-          [
-            45.48734,
-            -73.59076
-          ],
-          [
-            45.48745,
-            -73.591
-          ],
-          [
-            45.48756,
-            -73.59126
-          ],
-          [
-            45.48776,
-            -73.59173
-          ],
-          [
-            45.48771,
-            -73.59191
-          ],
-          [
-            45.4876,
-            -73.59213
-          ],
-          [
-            45.48748,
-            -73.59242
-          ],
-          [
-            45.48734,
-            -73.59278
-          ],
-          [
-            45.48725,
-            -73.59301
-          ],
-          [
-            45.48717,
-            -73.59325
+            45.51718,
+            -73.56803
           ]
         ]
       }
@@ -318,110 +363,279 @@
   },
   {
     "route_id": 1,
-    "duration_sec": 2850,
-    "transfers": 0,
+    "duration_sec": 2052,
+    "transfers": 1,
     "legs": [
       {
         "mode": "WALK",
         "from": "Origin",
-        "from_lat": 45.5349588,
-        "from_lon": -73.6006849,
-        "to": "Station Beaubien",
-        "to_lat": 45.535078,
-        "to_lon": -73.605037,
-        "start_time": 1781988491000,
-        "end_time": 1781989020000,
-        "duration_sec": 529.0,
-        "distance_m": 466.98,
+        "from_lat": 45.5196781,
+        "from_lon": -73.6022304,
+        "to": "Bernard / Durocher",
+        "to_lat": 45.522164,
+        "to_lon": -73.606766,
+        "start_time": 1781995728000,
+        "end_time": 1781996122000,
+        "duration_sec": 394.0,
+        "distance_m": 504.32,
         "route": "",
         "route_short_name": "",
         "walk_steps": [
           {
             "direction": "DEPART",
-            "street": "Rue Saint-Hubert",
-            "distance_m": 219,
-            "bogus_name": false
-          },
+            "street": "sidewalk",
+            "distance_m": 504,
+            "bogus_name": true
+          }
+        ],
+        "geometry_sampled_50m": [
+          [
+            45.51955,
+            -73.60234
+          ],
+          [
+            45.52008,
+            -73.60353
+          ],
+          [
+            45.52022,
+            -73.60385
+          ],
+          [
+            45.52032,
+            -73.60406
+          ],
+          [
+            45.52079,
+            -73.60512
+          ],
+          [
+            45.52153,
+            -73.60679
+          ],
+          [
+            45.52168,
+            -73.60712
+          ],
+          [
+            45.52215,
+            -73.60676
+          ]
+        ]
+      },
+      {
+        "mode": "BUS",
+        "from": "Bernard / Durocher",
+        "from_lat": 45.522164,
+        "from_lon": -73.606766,
+        "to": "Laurier / Saint-Denis",
+        "to_lat": 45.526812,
+        "to_lon": -73.589498,
+        "start_time": 1781996122000,
+        "end_time": 1781996580000,
+        "duration_sec": 458.0,
+        "distance_m": 2047.09,
+        "route": "Rockland",
+        "route_short_name": "119",
+        "walk_steps": null,
+        "geometry_sampled_50m": [
+          [
+            45.52219,
+            -73.60683
+          ],
+          [
+            45.52294,
+            -73.60614
+          ],
+          [
+            45.52354,
+            -73.60562
+          ],
+          [
+            45.52436,
+            -73.60489
+          ],
+          [
+            45.52478,
+            -73.60449
+          ],
+          [
+            45.52494,
+            -73.60435
+          ],
+          [
+            45.52552,
+            -73.6038
+          ],
+          [
+            45.52596,
+            -73.60341
+          ],
+          [
+            45.52612,
+            -73.60327
+          ],
+          [
+            45.52461,
+            -73.60001
+          ],
+          [
+            45.52525,
+            -73.59939
+          ],
+          [
+            45.52572,
+            -73.599
+          ],
+          [
+            45.52655,
+            -73.5983
+          ],
+          [
+            45.52709,
+            -73.59782
+          ],
+          [
+            45.52753,
+            -73.59741
+          ],
+          [
+            45.52625,
+            -73.5944
+          ],
+          [
+            45.52565,
+            -73.59313
+          ],
+          [
+            45.52486,
+            -73.5914
+          ],
+          [
+            45.5251,
+            -73.59096
+          ],
+          [
+            45.52552,
+            -73.59061
+          ],
+          [
+            45.52578,
+            -73.5904
+          ],
+          [
+            45.52625,
+            -73.59001
+          ],
+          [
+            45.52683,
+            -73.58956
+          ]
+        ]
+      },
+      {
+        "mode": "WALK",
+        "from": "Laurier / Saint-Denis",
+        "from_lat": 45.526812,
+        "from_lon": -73.589498,
+        "to": "Station Laurier",
+        "to_lat": 45.527436,
+        "to_lon": -73.587002,
+        "start_time": 1781996580000,
+        "end_time": 1781996957000,
+        "duration_sec": 377.0,
+        "distance_m": 292.85,
+        "route": "",
+        "route_short_name": "",
+        "walk_steps": [
           {
-            "direction": "LEFT",
-            "street": "Rue Beaubien Est",
-            "distance_m": 183,
+            "direction": "DEPART",
+            "street": "Avenue Laurier Est",
+            "distance_m": 4,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Rue de Saint-Vallier",
-            "distance_m": 66,
+            "street": "Rue Saint-Denis",
+            "distance_m": 96,
+            "bogus_name": false
+          },
+          {
+            "direction": "UTURN_LEFT",
+            "street": "Rue Saint-Denis",
+            "distance_m": 14,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Rue Chapais",
+            "distance_m": 73,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Rue Rivard",
+            "distance_m": 31,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Boulevard Saint-Joseph Est",
+            "distance_m": 75,
             "bogus_name": false
           }
         ],
         "geometry_sampled_50m": [
           [
-            45.53497,
-            -73.60068
+            45.52679,
+            -73.5895
           ],
           [
-            45.53555,
-            -73.60197
+            45.52671,
+            -73.58921
           ],
           [
-            45.53603,
-            -73.60301
+            45.52637,
+            -73.58846
           ],
           [
-            45.53584,
-            -73.60323
+            45.52651,
+            -73.58832
           ],
           [
-            45.53547,
-            -73.60358
+            45.52671,
+            -73.58814
           ],
           [
-            45.53542,
-            -73.60373
+            45.5269,
+            -73.58798
           ],
           [
-            45.53508,
-            -73.60403
+            45.52687,
+            -73.58755
           ],
           [
-            45.53484,
-            -73.60426
-          ],
-          [
-            45.53489,
-            -73.60463
-          ],
-          [
-            45.53507,
-            -73.60504
+            45.52738,
+            -73.58704
           ]
         ]
       },
       {
         "mode": "SUBWAY",
-        "from": "Station Beaubien",
-        "from_lat": 45.535078,
-        "from_lon": -73.605037,
-        "to": "Station Lionel-Groulx",
-        "to_lat": 45.482509,
-        "to_lon": -73.58018,
-        "start_time": 1781989020000,
-        "end_time": 1781989980000,
-        "duration_sec": 960.0,
-        "distance_m": 8348.46,
+        "from": "Station Laurier",
+        "from_lat": 45.527436,
+        "from_lon": -73.587002,
+        "to": "Station Sherbrooke",
+        "to_lat": 45.51906,
+        "to_lon": -73.569217,
+        "start_time": 1781997180000,
+        "end_time": 1781997360000,
+        "duration_sec": 180.0,
+        "distance_m": 1669.74,
         "route": "Line 2 - Orange",
         "route_short_name": "2",
         "walk_steps": null,
         "geometry_sampled_50m": [
-          [
-            45.53539,
-            -73.60479
-          ],
-          [
-            45.53173,
-            -73.59778
-          ],
           [
             45.52743,
             -73.58701
@@ -437,291 +651,111 @@
           [
             45.51906,
             -73.56922
-          ],
-          [
-            45.51521,
-            -73.56106
-          ],
-          [
-            45.51004,
-            -73.5566
-          ],
-          [
-            45.50634,
-            -73.55955
-          ],
-          [
-            45.50193,
-            -73.56312
-          ],
-          [
-            45.49809,
-            -73.56723
-          ],
-          [
-            45.49474,
-            -73.57108
-          ],
-          [
-            45.48905,
-            -73.5767
-          ],
-          [
-            45.48889,
-            -73.57686
-          ],
-          [
-            45.4825,
-            -73.58018
           ]
         ]
       },
       {
         "mode": "WALK",
-        "from": "Station Lionel-Groulx",
-        "from_lat": 45.482509,
-        "from_lon": -73.58018,
+        "from": "Station Sherbrooke",
+        "from_lat": 45.51906,
+        "from_lon": -73.569217,
         "to": "Destination",
-        "to_lat": 45.4872982,
-        "to_lon": -73.593301,
-        "start_time": 1781989980000,
-        "end_time": 1781991341000,
-        "duration_sec": 1361.0,
-        "distance_m": 1401.39,
+        "to_lat": 45.517151,
+        "to_lon": -73.5680582,
+        "start_time": 1781997360000,
+        "end_time": 1781997780000,
+        "duration_sec": 420.0,
+        "distance_m": 311.58,
         "route": "",
         "route_short_name": "",
         "walk_steps": [
           {
             "direction": "DEPART",
-            "street": "Lionel-Groulx",
-            "distance_m": 46,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "way 767306187 from 0",
-            "distance_m": 106,
-            "bogus_name": true
-          },
-          {
-            "direction": "LEFT",
-            "street": "Saint-Jacques Street",
-            "distance_m": 5,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Avenue Walker",
-            "distance_m": 46,
+            "street": "Rue Cherrier",
+            "distance_m": 7,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "alley",
-            "distance_m": 83,
-            "bogus_name": true
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Avenue Greene",
-            "distance_m": 612,
+            "street": "Rue Berri",
+            "distance_m": 14,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "sidewalk",
-            "distance_m": 3,
-            "bogus_name": true
+            "street": "Rue Berri",
+            "distance_m": 63,
+            "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "sidewalk",
-            "distance_m": 302,
+            "street": "Rue de Malines",
+            "distance_m": 6,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "path",
+            "distance_m": 8,
             "bogus_name": true
           },
           {
             "direction": "CONTINUE",
-            "street": "Greene Avenue",
-            "distance_m": 49,
+            "street": "Rue Berri",
+            "distance_m": 45,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Sherbrooke Street West",
-            "distance_m": 135,
+            "street": "Rue Berri",
+            "distance_m": 16,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Avenue Mountain",
-            "distance_m": 14,
+            "street": "Rue de Rigaud",
+            "distance_m": 98,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Saint-Denis",
+            "distance_m": 55,
             "bogus_name": false
           }
         ],
         "geometry_sampled_50m": [
           [
-            45.4825,
-            -73.58018
+            45.51906,
+            -73.56922
           ],
           [
-            45.48273,
-            -73.57978
+            45.51892,
+            -73.56928
           ],
           [
-            45.48288,
-            -73.57965
+            45.51857,
+            -73.56862
           ],
           [
-            45.48299,
-            -73.57981
+            45.51833,
+            -73.56822
           ],
           [
-            45.48313,
-            -73.58048
+            45.51823,
+            -73.56801
           ],
           [
-            45.48315,
-            -73.58072
+            45.51779,
+            -73.56831
           ],
           [
-            45.48341,
-            -73.58107
+            45.51755,
+            -73.56853
           ],
           [
-            45.48322,
-            -73.58137
-          ],
-          [
-            45.4831,
-            -73.58157
-          ],
-          [
-            45.48296,
-            -73.58181
-          ],
-          [
-            45.48316,
-            -73.5822
-          ],
-          [
-            45.48357,
-            -73.58276
-          ],
-          [
-            45.48373,
-            -73.58298
-          ],
-          [
-            45.48368,
-            -73.58326
-          ],
-          [
-            45.4838,
-            -73.58345
-          ],
-          [
-            45.48394,
-            -73.58372
-          ],
-          [
-            45.48418,
-            -73.58415
-          ],
-          [
-            45.4845,
-            -73.58474
-          ],
-          [
-            45.48462,
-            -73.58496
-          ],
-          [
-            45.48483,
-            -73.58534
-          ],
-          [
-            45.48496,
-            -73.58557
-          ],
-          [
-            45.48509,
-            -73.58581
-          ],
-          [
-            45.48526,
-            -73.58612
-          ],
-          [
-            45.48541,
-            -73.5864
-          ],
-          [
-            45.48565,
-            -73.58682
-          ],
-          [
-            45.48578,
-            -73.58716
-          ],
-          [
-            45.48595,
-            -73.58755
-          ],
-          [
-            45.48604,
-            -73.58777
-          ],
-          [
-            45.48616,
-            -73.58797
-          ],
-          [
-            45.48649,
-            -73.58875
-          ],
-          [
-            45.48682,
-            -73.58952
-          ],
-          [
-            45.48734,
-            -73.59076
-          ],
-          [
-            45.48745,
-            -73.591
-          ],
-          [
-            45.48756,
-            -73.59126
-          ],
-          [
-            45.48776,
-            -73.59173
-          ],
-          [
-            45.48771,
-            -73.59191
-          ],
-          [
-            45.4876,
-            -73.59213
-          ],
-          [
-            45.48748,
-            -73.59242
-          ],
-          [
-            45.48734,
-            -73.59278
-          ],
-          [
-            45.48725,
-            -73.59301
-          ],
-          [
-            45.48717,
-            -73.59325
+            45.51718,
+            -73.56803
           ]
         ]
       }
@@ -729,1113 +763,448 @@
   },
   {
     "route_id": 2,
-    "duration_sec": 5942,
+    "duration_sec": 2083,
     "transfers": 0,
     "legs": [
       {
         "mode": "WALK",
         "from": "Origin",
-        "from_lat": 45.5349588,
-        "from_lon": -73.6006849,
-        "to": "Destination",
-        "to_lat": 45.4872982,
-        "to_lon": -73.593301,
-        "start_time": 1781988480000,
-        "end_time": 1781994422000,
-        "duration_sec": 5942.0,
-        "distance_m": 7016.99,
+        "from_lat": 45.5196781,
+        "from_lon": -73.6022304,
+        "to": "Saint-Urbain / Saint-Viateur",
+        "to_lat": 45.524413,
+        "to_lon": -73.599664,
+        "start_time": 1781995298000,
+        "end_time": 1781995947000,
+        "duration_sec": 649.0,
+        "distance_m": 739.94,
         "route": "",
         "route_short_name": "",
         "walk_steps": [
           {
             "direction": "DEPART",
-            "street": "Rue Saint-Hubert",
-            "distance_m": 56,
-            "bogus_name": false
-          },
-          {
-            "direction": "UTURN_LEFT",
-            "street": "Rue Saint-Hubert",
-            "distance_m": 778,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue Saint-Grégoire",
-            "distance_m": 33,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "path",
-            "distance_m": 36,
+            "street": "sidewalk",
+            "distance_m": 142,
             "bogus_name": true
           },
           {
-            "direction": "SLIGHTLY_RIGHT",
-            "street": "Rue Saint-Grégoire",
-            "distance_m": 18,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Berri",
-            "distance_m": 140,
-            "bogus_name": false
+            "direction": "RIGHT",
+            "street": "sidewalk",
+            "distance_m": 166,
+            "bogus_name": true
           },
           {
             "direction": "RIGHT",
-            "street": "Rue Boucher",
-            "distance_m": 89,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Rivard",
-            "distance_m": 472,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue Gilford",
-            "distance_m": 85,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Saint-Denis",
-            "distance_m": 53,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue Gilford",
-            "distance_m": 217,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Avenue Henri-Julien",
-            "distance_m": 107,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Avenue du Mont-Royal Est",
-            "distance_m": 368,
-            "bogus_name": false
+            "street": "sidewalk",
+            "distance_m": 97,
+            "bogus_name": true
           },
           {
             "direction": "CONTINUE",
-            "street": "Avenue du Mont-Royal Ouest",
-            "distance_m": 571,
-            "bogus_name": false
-          },
-          {
-            "direction": "SLIGHTLY_LEFT",
-            "street": "Boulevard du Mont-Royal",
-            "distance_m": 70,
-            "bogus_name": false
-          },
-          {
-            "direction": "SLIGHTLY_LEFT",
-            "street": "Voie Camillien-Houde",
-            "distance_m": 332,
+            "street": "Rue Saint-Viateur Ouest",
+            "distance_m": 76,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "path",
-            "distance_m": 211,
+            "street": "sidewalk",
+            "distance_m": 1,
             "bogus_name": true
           },
           {
-            "direction": "SLIGHTLY_RIGHT",
-            "street": "Chemin Olmsted",
-            "distance_m": 726,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "path",
-            "distance_m": 266,
-            "bogus_name": true
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Chemin le Serpentin",
-            "distance_m": 73,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "path",
-            "distance_m": 25,
+            "direction": "UTURN_RIGHT",
+            "street": "sidewalk",
+            "distance_m": 15,
             "bogus_name": true
           },
           {
             "direction": "LEFT",
-            "street": "Redpath Crescent",
-            "distance_m": 154,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Pine Avenue West",
-            "distance_m": 717,
+            "street": "Rue Saint-Viateur Ouest",
+            "distance_m": 136,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Chemin de la Côte-des-Neiges",
+            "street": "sidewalk",
+            "distance_m": 15,
+            "bogus_name": true
+          },
+          {
+            "direction": "RIGHT",
+            "street": "sidewalk",
+            "distance_m": 2,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Saint-Viateur Ouest",
             "distance_m": 66,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
             "street": "sidewalk",
-            "distance_m": 1,
+            "distance_m": 26,
+            "bogus_name": true
+          }
+        ],
+        "geometry_sampled_50m": [
+          [
+            45.51955,
+            -73.60234
+          ],
+          [
+            45.52008,
+            -73.60353
+          ],
+          [
+            45.52022,
+            -73.60385
+          ],
+          [
+            45.52055,
+            -73.6036
+          ],
+          [
+            45.52074,
+            -73.60344
+          ],
+          [
+            45.52112,
+            -73.60309
+          ],
+          [
+            45.52134,
+            -73.60289
+          ],
+          [
+            45.52149,
+            -73.60274
+          ],
+          [
+            45.52179,
+            -73.60247
+          ],
+          [
+            45.52207,
+            -73.60221
+          ],
+          [
+            45.52224,
+            -73.60205
+          ],
+          [
+            45.52251,
+            -73.60182
+          ],
+          [
+            45.52279,
+            -73.60157
+          ],
+          [
+            45.52314,
+            -73.60125
+          ],
+          [
+            45.52335,
+            -73.60104
+          ],
+          [
+            45.52368,
+            -73.60075
+          ],
+          [
+            45.52392,
+            -73.60052
+          ],
+          [
+            45.52406,
+            -73.60039
+          ],
+          [
+            45.52427,
+            -73.6002
+          ],
+          [
+            45.52452,
+            -73.59997
+          ],
+          [
+            45.52442,
+            -73.59966
+          ]
+        ]
+      },
+      {
+        "mode": "BUS",
+        "from": "Saint-Urbain / Saint-Viateur",
+        "from_lat": 45.524413,
+        "from_lon": -73.599664,
+        "to": "Saint-Urbain / Prince-Arthur",
+        "to_lat": 45.512689,
+        "to_lon": -73.573817,
+        "start_time": 1781995947000,
+        "end_time": 1781996646000,
+        "duration_sec": 699.0,
+        "distance_m": 2399.21,
+        "route": "Saint-Laurent",
+        "route_short_name": "55",
+        "walk_steps": null,
+        "geometry_sampled_50m": [
+          [
+            45.52444,
+            -73.59964
+          ],
+          [
+            45.52359,
+            -73.59775
+          ],
+          [
+            45.52265,
+            -73.59562
+          ],
+          [
+            45.52251,
+            -73.59533
+          ],
+          [
+            45.52227,
+            -73.59479
+          ],
+          [
+            45.52184,
+            -73.5939
+          ],
+          [
+            45.52169,
+            -73.59359
+          ],
+          [
+            45.52117,
+            -73.59253
+          ],
+          [
+            45.52024,
+            -73.59047
+          ],
+          [
+            45.52009,
+            -73.59014
+          ],
+          [
+            45.51887,
+            -73.58749
+          ],
+          [
+            45.51871,
+            -73.58712
+          ],
+          [
+            45.51785,
+            -73.58518
+          ],
+          [
+            45.51773,
+            -73.58491
+          ],
+          [
+            45.5168,
+            -73.58283
+          ],
+          [
+            45.51663,
+            -73.58245
+          ],
+          [
+            45.51579,
+            -73.58062
+          ],
+          [
+            45.51525,
+            -73.57947
+          ],
+          [
+            45.51481,
+            -73.57849
+          ],
+          [
+            45.5146,
+            -73.57804
+          ],
+          [
+            45.51418,
+            -73.57709
+          ],
+          [
+            45.51392,
+            -73.57651
+          ],
+          [
+            45.51377,
+            -73.57618
+          ],
+          [
+            45.51356,
+            -73.57568
+          ],
+          [
+            45.51317,
+            -73.57484
+          ],
+          [
+            45.51271,
+            -73.5738
+          ]
+        ]
+      },
+      {
+        "mode": "WALK",
+        "from": "Saint-Urbain / Prince-Arthur",
+        "from_lat": 45.512689,
+        "from_lon": -73.573817,
+        "to": "Destination",
+        "to_lat": 45.517151,
+        "to_lon": -73.5680582,
+        "start_time": 1781996646000,
+        "end_time": 1781997381000,
+        "duration_sec": 735.0,
+        "distance_m": 777.54,
+        "route": "",
+        "route_short_name": "",
+        "walk_steps": [
+          {
+            "direction": "DEPART",
+            "street": "sidewalk",
+            "distance_m": 7,
             "bogus_name": true
           },
           {
-            "direction": "RIGHT",
-            "street": "Avenue du Docteur-Penfield",
-            "distance_m": 16,
-            "bogus_name": false
-          },
-          {
-            "direction": "SLIGHTLY_RIGHT",
-            "street": "Chemin de la Côte-des-Neiges",
-            "distance_m": 15,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "link",
-            "distance_m": 24,
+            "direction": "UTURN_LEFT",
+            "street": "sidewalk",
+            "distance_m": 94,
             "bogus_name": true
           },
           {
-            "direction": "SLIGHTLY_RIGHT",
-            "street": "Avenue du Docteur-Penfield",
-            "distance_m": 146,
-            "bogus_name": false
+            "direction": "UTURN_LEFT",
+            "street": "sidewalk",
+            "distance_m": 70,
+            "bogus_name": true
           },
           {
             "direction": "LEFT",
-            "street": "Avenue Atwater",
-            "distance_m": 474,
+            "street": "path",
+            "distance_m": 19,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Prince-Arthur Est",
+            "distance_m": 288,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Chemin Barat",
-            "distance_m": 207,
+            "street": "Avenue Laval",
+            "distance_m": 29,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Vignal Street",
-            "distance_m": 65,
+            "street": "Rue du Square-Saint-Louis",
+            "distance_m": 203,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Sherbrooke Street West",
-            "distance_m": 401,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Avenue Mountain",
-            "distance_m": 6,
+            "street": "Rue Saint-Denis",
+            "distance_m": 68,
             "bogus_name": false
           }
         ],
         "geometry_sampled_50m": [
           [
-            45.53497,
-            -73.60068
+            45.51268,
+            -73.57382
           ],
           [
-            45.5347,
-            -73.6001
+            45.51277,
+            -73.57364
           ],
           [
-            45.5346,
-            -73.5999
+            45.51307,
+            -73.57337
           ],
           [
-            45.53314,
-            -73.5967
+            45.51331,
+            -73.57315
           ],
           [
-            45.53298,
-            -73.5965
-          ],
-          [
-            45.53289,
-            -73.59632
-          ],
-          [
-            45.53268,
-            -73.59592
-          ],
-          [
-            45.53252,
-            -73.59564
-          ],
-          [
-            45.53238,
-            -73.59535
-          ],
-          [
-            45.5322,
-            -73.59495
-          ],
-          [
-            45.53208,
-            -73.59469
-          ],
-          [
-            45.53191,
-            -73.59431
-          ],
-          [
-            45.53171,
-            -73.59388
-          ],
-          [
-            45.53148,
-            -73.59335
-          ],
-          [
-            45.53132,
-            -73.59301
-          ],
-          [
-            45.53118,
-            -73.59291
-          ],
-          [
-            45.53102,
-            -73.59265
-          ],
-          [
-            45.53088,
-            -73.59233
-          ],
-          [
-            45.53076,
-            -73.59212
-          ],
-          [
-            45.53058,
-            -73.59221
-          ],
-          [
-            45.53037,
-            -73.59219
-          ],
-          [
-            45.53022,
-            -73.59198
-          ],
-          [
-            45.53004,
-            -73.59197
-          ],
-          [
-            45.52987,
-            -73.5918
-          ],
-          [
-            45.52967,
-            -73.59158
-          ],
-          [
-            45.52954,
-            -73.59138
-          ],
-          [
-            45.52943,
-            -73.59116
-          ],
-          [
-            45.52926,
-            -73.59081
-          ],
-          [
-            45.52862,
-            -73.59124
-          ],
-          [
-            45.52849,
-            -73.59119
-          ],
-          [
-            45.52834,
-            -73.59087
-          ],
-          [
-            45.52807,
-            -73.59028
-          ],
-          [
-            45.52785,
-            -73.58977
-          ],
-          [
-            45.52765,
-            -73.58939
-          ],
-          [
-            45.52752,
-            -73.5891
-          ],
-          [
-            45.52695,
-            -73.58792
-          ],
-          [
-            45.5268,
-            -73.58756
-          ],
-          [
-            45.52668,
-            -73.5873
-          ],
-          [
-            45.52652,
-            -73.58695
-          ],
-          [
-            45.52641,
-            -73.58671
-          ],
-          [
-            45.52631,
-            -73.58648
-          ],
-          [
-            45.52622,
-            -73.58622
-          ],
-          [
-            45.52591,
-            -73.58616
-          ],
-          [
-            45.52549,
-            -73.586
-          ],
-          [
-            45.52538,
-            -73.58579
-          ],
-          [
-            45.52524,
-            -73.58574
-          ],
-          [
-            45.52508,
-            -73.58569
-          ],
-          [
-            45.52469,
-            -73.58548
-          ],
-          [
-            45.5245,
-            -73.58537
-          ],
-          [
-            45.52419,
-            -73.58522
-          ],
-          [
-            45.52402,
-            -73.58513
-          ],
-          [
-            45.52379,
-            -73.58506
-          ],
-          [
-            45.5235,
-            -73.58497
-          ],
-          [
-            45.52326,
-            -73.58479
-          ],
-          [
-            45.52315,
-            -73.58446
-          ],
-          [
-            45.52304,
-            -73.5842
-          ],
-          [
-            45.52292,
-            -73.58392
-          ],
-          [
-            45.52241,
-            -73.58427
-          ],
-          [
-            45.52223,
-            -73.58444
-          ],
-          [
-            45.52197,
-            -73.58469
-          ],
-          [
-            45.52169,
-            -73.58494
-          ],
-          [
-            45.52151,
-            -73.5851
-          ],
-          [
-            45.52117,
-            -73.58541
-          ],
-          [
-            45.521,
-            -73.58556
-          ],
-          [
-            45.52083,
-            -73.58572
-          ],
-          [
-            45.52064,
-            -73.58589
-          ],
-          [
-            45.52019,
-            -73.58631
-          ],
-          [
-            45.52002,
-            -73.58645
-          ],
-          [
-            45.51962,
-            -73.58681
-          ],
-          [
-            45.51901,
-            -73.58737
-          ],
-          [
-            45.51883,
-            -73.58747
-          ],
-          [
-            45.51842,
-            -73.58784
-          ],
-          [
-            45.51823,
-            -73.58796
-          ],
-          [
-            45.51754,
-            -73.58854
-          ],
-          [
-            45.51687,
-            -73.58917
-          ],
-          [
-            45.51664,
-            -73.58938
-          ],
-          [
-            45.51607,
-            -73.58993
-          ],
-          [
-            45.51587,
-            -73.59011
-          ],
-          [
-            45.51569,
-            -73.59032
-          ],
-          [
-            45.51522,
-            -73.59067
-          ],
-          [
-            45.51504,
-            -73.5907
-          ],
-          [
-            45.51484,
-            -73.59067
-          ],
-          [
-            45.51465,
-            -73.59053
-          ],
-          [
-            45.51442,
-            -73.59023
-          ],
-          [
-            45.51396,
-            -73.58954
+            45.51361,
+            -73.57288
           ],
           [
             45.51378,
-            -73.58926
+            -73.57273
           ],
           [
-            45.51359,
-            -73.58908
+            45.51392,
+            -73.5726
           ],
           [
-            45.51341,
-            -73.58903
+            45.51433,
+            -73.57222
           ],
           [
-            45.51321,
-            -73.58909
+            45.51455,
+            -73.57203
           ],
           [
-            45.51305,
-            -73.58927
+            45.51477,
+            -73.57183
           ],
           [
-            45.51295,
-            -73.58951
+            45.51521,
+            -73.57145
           ],
           [
-            45.51287,
-            -73.58964
+            45.51547,
+            -73.5712
           ],
           [
-            45.51273,
-            -73.58944
+            45.51566,
+            -73.57102
           ],
           [
-            45.51269,
-            -73.58906
+            45.51585,
+            -73.57085
           ],
           [
-            45.51253,
-            -73.58885
+            45.5161,
+            -73.57061
           ],
           [
-            45.51246,
-            -73.58843
+            45.51605,
+            -73.5703
           ],
           [
-            45.51231,
-            -73.5882
+            45.51647,
+            -73.56982
           ],
           [
-            45.51205,
-            -73.58817
+            45.51703,
+            -73.5693
           ],
           [
-            45.51187,
-            -73.58817
+            45.51743,
+            -73.56893
           ],
           [
-            45.51169,
-            -73.588
+            45.51745,
+            -73.56862
           ],
           [
-            45.51145,
-            -73.58776
-          ],
-          [
-            45.51124,
-            -73.58753
-          ],
-          [
-            45.51102,
-            -73.5874
-          ],
-          [
-            45.51084,
-            -73.58723
-          ],
-          [
-            45.51072,
-            -73.58702
-          ],
-          [
-            45.51041,
-            -73.5867
-          ],
-          [
-            45.51026,
-            -73.5865
-          ],
-          [
-            45.51013,
-            -73.58628
-          ],
-          [
-            45.50999,
-            -73.58608
-          ],
-          [
-            45.50972,
-            -73.58581
-          ],
-          [
-            45.50957,
-            -73.58563
-          ],
-          [
-            45.50932,
-            -73.58533
-          ],
-          [
-            45.50913,
-            -73.58515
-          ],
-          [
-            45.50887,
-            -73.58494
-          ],
-          [
-            45.50869,
-            -73.58482
-          ],
-          [
-            45.50846,
-            -73.58476
-          ],
-          [
-            45.50827,
-            -73.58474
-          ],
-          [
-            45.50807,
-            -73.5847
-          ],
-          [
-            45.5076,
-            -73.58444
-          ],
-          [
-            45.50736,
-            -73.5844
-          ],
-          [
-            45.50715,
-            -73.58442
-          ],
-          [
-            45.5069,
-            -73.58447
-          ],
-          [
-            45.50652,
-            -73.58455
-          ],
-          [
-            45.5061,
-            -73.58462
-          ],
-          [
-            45.50595,
-            -73.58443
-          ],
-          [
-            45.50578,
-            -73.58434
-          ],
-          [
-            45.50559,
-            -73.58427
-          ],
-          [
-            45.50538,
-            -73.58429
-          ],
-          [
-            45.50517,
-            -73.58439
-          ],
-          [
-            45.50499,
-            -73.58452
-          ],
-          [
-            45.50482,
-            -73.58455
-          ],
-          [
-            45.50462,
-            -73.58441
-          ],
-          [
-            45.50439,
-            -73.58411
-          ],
-          [
-            45.50446,
-            -73.58386
-          ],
-          [
-            45.50438,
-            -73.58366
-          ],
-          [
-            45.50418,
-            -73.58371
-          ],
-          [
-            45.50398,
-            -73.58377
-          ],
-          [
-            45.50381,
-            -73.58369
-          ],
-          [
-            45.50365,
-            -73.58381
-          ],
-          [
-            45.50356,
-            -73.58364
-          ],
-          [
-            45.5034,
-            -73.58355
-          ],
-          [
-            45.50306,
-            -73.58371
-          ],
-          [
-            45.50284,
-            -73.58381
-          ],
-          [
-            45.50263,
-            -73.58388
-          ],
-          [
-            45.50248,
-            -73.58377
-          ],
-          [
-            45.50209,
-            -73.58393
-          ],
-          [
-            45.50186,
-            -73.58411
-          ],
-          [
-            45.50169,
-            -73.58424
-          ],
-          [
-            45.50147,
-            -73.58442
-          ],
-          [
-            45.5012,
-            -73.58463
-          ],
-          [
-            45.50104,
-            -73.58475
-          ],
-          [
-            45.50076,
-            -73.58496
-          ],
-          [
-            45.50055,
-            -73.58511
-          ],
-          [
-            45.50036,
-            -73.58527
-          ],
-          [
-            45.50013,
-            -73.58535
-          ],
-          [
-            45.4994,
-            -73.58561
-          ],
-          [
-            45.49919,
-            -73.58568
-          ],
-          [
-            45.49898,
-            -73.58576
-          ],
-          [
-            45.49881,
-            -73.58586
-          ],
-          [
-            45.49851,
-            -73.58609
-          ],
-          [
-            45.49826,
-            -73.58628
-          ],
-          [
-            45.49802,
-            -73.58646
-          ],
-          [
-            45.49777,
-            -73.58665
-          ],
-          [
-            45.49754,
-            -73.58683
-          ],
-          [
-            45.49733,
-            -73.58699
-          ],
-          [
-            45.49706,
-            -73.58721
-          ],
-          [
-            45.49684,
-            -73.58738
-          ],
-          [
-            45.49668,
-            -73.5875
-          ],
-          [
-            45.49654,
-            -73.58716
-          ],
-          [
-            45.49649,
-            -73.5869
-          ],
-          [
-            45.4964,
-            -73.58679
-          ],
-          [
-            45.4963,
-            -73.58698
-          ],
-          [
-            45.49608,
-            -73.58707
-          ],
-          [
-            45.49591,
-            -73.5873
-          ],
-          [
-            45.49577,
-            -73.58751
-          ],
-          [
-            45.49563,
-            -73.58775
-          ],
-          [
-            45.49552,
-            -73.58799
-          ],
-          [
-            45.49541,
-            -73.58826
-          ],
-          [
-            45.4953,
-            -73.58855
-          ],
-          [
-            45.49511,
-            -73.58858
-          ],
-          [
-            45.49494,
-            -73.58849
-          ],
-          [
-            45.49475,
-            -73.58838
-          ],
-          [
-            45.49454,
-            -73.58831
-          ],
-          [
-            45.49436,
-            -73.58836
-          ],
-          [
-            45.49419,
-            -73.58852
-          ],
-          [
-            45.49405,
-            -73.58885
-          ],
-          [
-            45.49392,
-            -73.58906
-          ],
-          [
-            45.49375,
-            -73.58926
-          ],
-          [
-            45.49359,
-            -73.58941
-          ],
-          [
-            45.49341,
-            -73.58955
-          ],
-          [
-            45.49324,
-            -73.58964
-          ],
-          [
-            45.49306,
-            -73.5897
-          ],
-          [
-            45.49288,
-            -73.58972
-          ],
-          [
-            45.4927,
-            -73.58971
-          ],
-          [
-            45.49249,
-            -73.58963
-          ],
-          [
-            45.49232,
-            -73.58953
-          ],
-          [
-            45.49214,
-            -73.58937
-          ],
-          [
-            45.49199,
-            -73.58916
-          ],
-          [
-            45.49181,
-            -73.58886
-          ],
-          [
-            45.49162,
-            -73.58878
-          ],
-          [
-            45.49139,
-            -73.58903
-          ],
-          [
-            45.49102,
-            -73.58943
-          ],
-          [
-            45.49086,
-            -73.5896
-          ],
-          [
-            45.49056,
-            -73.58992
-          ],
-          [
-            45.49039,
-            -73.5901
-          ],
-          [
-            45.49023,
-            -73.59028
-          ],
-          [
-            45.49006,
-            -73.59022
-          ],
-          [
-            45.48995,
-            -73.59003
-          ],
-          [
-            45.48984,
-            -73.58981
-          ],
-          [
-            45.4897,
-            -73.58983
-          ],
-          [
-            45.48935,
-            -73.59021
-          ],
-          [
-            45.48919,
-            -73.59038
-          ],
-          [
-            45.48904,
-            -73.59055
-          ],
-          [
-            45.48876,
-            -73.59091
-          ],
-          [
-            45.48858,
-            -73.59114
-          ],
-          [
-            45.48844,
-            -73.59132
-          ],
-          [
-            45.48802,
-            -73.59186
-          ],
-          [
-            45.48789,
-            -73.59204
-          ],
-          [
-            45.48764,
-            -73.59257
-          ],
-          [
-            45.48748,
-            -73.59297
-          ],
-          [
-            45.48734,
-            -73.59333
+            45.51718,
+            -73.56803
           ]
         ]
       }

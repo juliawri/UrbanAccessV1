@@ -228,7 +228,7 @@ function localizeBlock(block, t, lang) {
     .replace(/\*\*Summary:\*\*/g, `**${t('field_summary')}:**`)
 }
 
-export default function RouteDirections({ routes, result }) {
+export default function RouteDirections({ routes, result, origin, destination }) {
   const [modalIdx, setModalIdx] = useState(null)
   const [detailIdx, setDetailIdx] = useState(null)
   const [expandedCards, setExpandedCards] = useState([false, false, false])
@@ -240,6 +240,26 @@ export default function RouteDirections({ routes, result }) {
 
   return (
     <Stack gap={4}>
+      {(origin?.label || destination?.label) && (
+        <Box
+          px={4}
+          py={2}
+          bg="white"
+          border="1px solid"
+          borderColor="gray.200"
+          borderRadius="lg"
+          fontSize="sm"
+          color="#1a1a1a"
+        >
+          <HStack gap={2} flexWrap="wrap">
+            <Text fontWeight="semibold" color="#555">{t('origin')}:</Text>
+            <Text>{origin?.label ?? '—'}</Text>
+            <Text color="#888">→</Text>
+            <Text fontWeight="semibold" color="#555">{t('destination')}:</Text>
+            <Text>{destination?.label ?? '—'}</Text>
+          </HStack>
+        </Box>
+      )}
       <HStack gap={3} align="flex-start" flexWrap="wrap">
         {routes.map((route, idx) => {
           const totalMin = Math.round(

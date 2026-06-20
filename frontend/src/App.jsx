@@ -148,7 +148,7 @@ export default function App() {
 
       {result && (
         <section className="results-section">
-          <RouteDirections routes={routes} result={result} />
+          <RouteDirections routes={routes} result={result} origin={origin} destination={destination} />
           <RouteMap routes={routes} origin={origin} destination={destination} />
         </section>
       )}

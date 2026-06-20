@@ -8,7 +8,7 @@ export const translations = {
     nav_signout: 'Sign Out',
 
     // App hero + sections
-    brand_subtitle: 'Find The Best Route For Your Mobility Needs',
+    brand_subtitle: 'Find The Best Route On Montreal Island For Your Mobility Needs',
     map_prompt: 'Enter A Route Below To Get Started!',
     feedback_heading: 'Rank Your Route Based On How Accessible It Was',
     plan_new_route: 'Plan New Route',
@@ -130,7 +130,7 @@ export const translations = {
     // AboutPage
     about_tagline: 'AI-powered route planning built for people with mobility impairments.',
     about_what_label: 'What We Do',
-    about_what_p1: 'Urban Access assists mobility-impaired individuals find routes that work for their needs. Most navigation apps plan the fastest route, but we plan the most accessible one.',
+    about_what_p1: 'Urban Access assists mobility-impaired individuals find routes that work for their needs on Montreal Island. Most navigation apps plan the fastest route, but we plan the most accessible one.',
     about_what_p2: "Enter your origin and destination, select the mobility aid you'll be using for your trip, and Urban Access returns up to three ranked route options with step-by-step directions. Each route is evaluated for real-world accessibility alongside theoretical path length.",
     about_how_label: 'How It Works',
     about_step1_title: 'Route Discovery',
@@ -183,7 +183,7 @@ export const translations = {
     nav_signout: 'Se déconnecter',
 
     // App hero + sections
-    brand_subtitle: 'Trouvez Le Meilleur Itinéraire Adapté À Vos Besoins',
+    brand_subtitle: "Trouvez Le Meilleur Itinéraire Sur L'Île De Montréal Pour Vos Besoins",
     map_prompt: 'Entrez Un Itinéraire Ci-Dessous Pour Commencer !',
     feedback_heading: 'Évaluez votre itinéraire selon son accessibilité',
     plan_new_route: 'Nouvel itinéraire',
@@ -305,7 +305,7 @@ export const translations = {
     // AboutPage
     about_tagline: "Planification d'itinéraires accessibles alimentée par l'IA, pour les personnes à mobilité réduite.",
     about_what_label: 'Ce que nous faisons',
-    about_what_p1: "Urban Access aide les personnes à mobilité réduite à trouver des itinéraires adaptés à leurs besoins. La plupart des applications de navigation planifient l'itinéraire le plus rapide, mais nous planifions le plus accessible.",
+    about_what_p1: "Urban Access aide les personnes à mobilité réduite à trouver des itinéraires adaptés à leurs besoins sur l'île de Montréal. La plupart des applications de navigation planifient l'itinéraire le plus rapide, mais nous planifions le plus accessible.",
     about_what_p2: "Entrez votre point de départ et votre destination, sélectionnez l'aide à la mobilité que vous utiliserez, et Urban Access vous propose jusqu'à trois itinéraires classés avec des indications étape par étape. Chaque itinéraire est évalué selon son accessibilité réelle.",
     about_how_label: 'Comment ça fonctionne',
     about_step1_title: "Découverte d'itinéraires",
