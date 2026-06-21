@@ -6,6 +6,22 @@ import os
 
 OTP_BASE_URL = os.environ.get("OTP_URL", "http://localhost:8080/otp/routers/default/plan")
 
+def _to_otp_time(time_str: str) -> str:
+    """Convert HH:MM (24h) or already-formatted 12h strings to OTP's HHMMam/pm format."""
+    if not time_str:
+        return "08:00am"
+    s = time_str.strip().lower()
+    if s.endswith("am") or s.endswith("pm"):
+        return s  # already in OTP format
+    try:
+        h, m = map(int, s.split(":"))
+        suffix = "am" if h < 12 else "pm"
+        h12 = h % 12 or 12
+        return f"{h12:02d}:{m:02d}{suffix}"
+    except ValueError:
+        return s
+
+
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371000  # meters
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
@@ -44,7 +60,7 @@ def _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, mode, num, date, time
         "maxWalkDistance": 2000,
         "arriveBy": "false",
         "date": date or "2026-06-04",
-        "time": time or "08:00am",
+        "time": _to_otp_time(time or "08:00am"),
     }
     resp = requests.get(OTP_BASE_URL, params=params)
     resp.raise_for_status()
@@ -91,7 +107,7 @@ def _fetch_walk_variants(from_lat, from_lon, to_lat, to_lon, date, time=None):
     independent optimal-path queries, so OTP cannot route around the waypoint.
     """
     eff_date = date or "2026-06-04"
-    eff_time = time or "08:00am"
+    eff_time = _to_otp_time(time or "08:00am")
     direct_dist = haversine(from_lat, from_lon, to_lat, to_lon)
     offset_m = max(400, min(800, direct_dist * 0.4))
     max_walk = max(8000, int(direct_dist * 4))
@@ -236,7 +252,7 @@ def _route_signature(itin):
 
 def get_routes(from_lat, from_lon, to_lat, to_lon, date=None, time=None):
     eff_date = date or "2026-06-04"
-    eff_time = time or "08:00am"
+    eff_time = _to_otp_time(time or "08:00am")
 
     # Single broad request — OTP returns its best options first
     transit_raw = _fetch_itineraries(from_lat, from_lon, to_lat, to_lon, "WALK,TRANSIT", 12, eff_date, eff_time)

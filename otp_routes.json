@@ -1,361 +1,173 @@
 [
   {
     "route_id": 0,
-    "duration_sec": 1952,
-    "transfers": 1,
+    "duration_sec": 729,
+    "transfers": 0,
     "legs": [
       {
         "mode": "WALK",
         "from": "Origin",
-        "from_lat": 45.5196781,
-        "from_lon": -73.6022304,
-        "to": "Laurier / Querbes",
-        "to_lat": 45.517311,
-        "to_lon": -73.597705,
-        "start_time": 1781995468000,
-        "end_time": 1781995848000,
-        "duration_sec": 380.0,
-        "distance_m": 458.78,
-        "route": "",
-        "route_short_name": "",
-        "walk_steps": [
-          {
-            "direction": "DEPART",
-            "street": "sidewalk",
-            "distance_m": 273,
-            "bogus_name": true
-          },
-          {
-            "direction": "LEFT",
-            "street": "sidewalk",
-            "distance_m": 186,
-            "bogus_name": true
-          }
-        ],
-        "geometry_sampled_50m": [
-          [
-            45.51955,
-            -73.60234
-          ],
-          [
-            45.51831,
-            -73.59956
-          ],
-          [
-            45.51768,
-            -73.59813
-          ],
-          [
-            45.51747,
-            -73.5979
-          ],
-          [
-            45.51735,
-            -73.59765
-          ]
-        ]
-      },
-      {
-        "mode": "BUS",
-        "from": "Laurier / Querbes",
-        "from_lat": 45.517311,
-        "from_lon": -73.597705,
-        "to": "Saint-Joseph / Saint-Denis",
-        "to_lat": 45.52606,
-        "to_lon": -73.587891,
-        "start_time": 1781995848000,
-        "end_time": 1781996220000,
-        "duration_sec": 372.0,
-        "distance_m": 1379.47,
-        "route": "Édouard-Montpetit",
-        "route_short_name": "51",
-        "walk_steps": null,
-        "geometry_sampled_50m": [
-          [
-            45.51734,
-            -73.59779
-          ],
-          [
-            45.51804,
-            -73.59718
-          ],
-          [
-            45.51866,
-            -73.59663
-          ],
-          [
-            45.51948,
-            -73.5959
-          ],
-          [
-            45.5203,
-            -73.59519
-          ],
-          [
-            45.52098,
-            -73.5946
-          ],
-          [
-            45.5217,
-            -73.59397
-          ],
-          [
-            45.52117,
-            -73.59253
-          ],
-          [
-            45.52148,
-            -73.59202
-          ],
-          [
-            45.52179,
-            -73.59174
-          ],
-          [
-            45.52215,
-            -73.59143
-          ],
-          [
-            45.52233,
-            -73.59126
-          ],
-          [
-            45.52282,
-            -73.59081
-          ],
-          [
-            45.52334,
-            -73.59035
-          ],
-          [
-            45.52378,
-            -73.58996
-          ],
-          [
-            45.5244,
-            -73.58943
-          ],
-          [
-            45.52505,
-            -73.58883
-          ],
-          [
-            45.5255,
-            -73.58842
-          ],
-          [
-            45.52577,
-            -73.58815
-          ],
-          [
-            45.52606,
-            -73.58791
-          ]
-        ]
-      },
-      {
-        "mode": "WALK",
-        "from": "Saint-Joseph / Saint-Denis",
-        "from_lat": 45.52606,
-        "from_lon": -73.587891,
-        "to": "Station Laurier",
-        "to_lat": 45.527436,
-        "to_lon": -73.587002,
-        "start_time": 1781996220000,
-        "end_time": 1781996529000,
-        "duration_sec": 309.0,
-        "distance_m": 192.87,
-        "route": "",
-        "route_short_name": "",
-        "walk_steps": [
-          {
-            "direction": "DEPART",
-            "street": "Boulevard Saint-Joseph Est",
-            "distance_m": 78,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "sidewalk",
-            "distance_m": 1,
-            "bogus_name": true
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Rivard",
-            "distance_m": 24,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Boulevard Saint-Joseph Est",
-            "distance_m": 90,
-            "bogus_name": false
-          }
-        ],
-        "geometry_sampled_50m": [
-          [
-            45.52604,
-            -73.58789
-          ],
-          [
-            45.52623,
-            -73.58771
-          ],
-          [
-            45.52661,
-            -73.58737
-          ],
-          [
-            45.52672,
-            -73.58754
-          ],
-          [
-            45.52686,
-            -73.58753
-          ],
-          [
-            45.52738,
-            -73.58704
-          ]
-        ]
-      },
-      {
-        "mode": "SUBWAY",
-        "from": "Station Laurier",
-        "from_lat": 45.527436,
-        "from_lon": -73.587002,
-        "to": "Station Sherbrooke",
-        "to_lat": 45.51906,
-        "to_lon": -73.569217,
-        "start_time": 1781996820000,
-        "end_time": 1781997000000,
-        "duration_sec": 180.0,
-        "distance_m": 1669.74,
-        "route": "Line 2 - Orange",
-        "route_short_name": "2",
-        "walk_steps": null,
-        "geometry_sampled_50m": [
-          [
-            45.52743,
-            -73.58701
-          ],
-          [
-            45.52493,
-            -73.58196
-          ],
-          [
-            45.52481,
-            -73.58171
-          ],
-          [
-            45.51906,
-            -73.56922
-          ]
-        ]
-      },
-      {
-        "mode": "WALK",
-        "from": "Station Sherbrooke",
-        "from_lat": 45.51906,
-        "from_lon": -73.569217,
+        "from_lat": 45.5304417,
+        "from_lon": -73.6139839,
         "to": "Destination",
-        "to_lat": 45.517151,
-        "to_lon": -73.5680582,
-        "start_time": 1781997000000,
-        "end_time": 1781997420000,
-        "duration_sec": 420.0,
-        "distance_m": 311.58,
+        "to_lat": 45.5359145,
+        "to_lon": -73.6150625,
+        "start_time": 1780574400000,
+        "end_time": 1780575129000,
+        "duration_sec": 729.0,
+        "distance_m": 842.76,
         "route": "",
         "route_short_name": "",
         "walk_steps": [
           {
             "direction": "DEPART",
-            "street": "Rue Cherrier",
-            "distance_m": 7,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Berri",
-            "distance_m": 14,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Berri",
-            "distance_m": 63,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue de Malines",
-            "distance_m": 6,
+            "street": "Rue Saint-Zotique Ouest",
+            "distance_m": 46,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
             "street": "path",
-            "distance_m": 8,
+            "distance_m": 15,
             "bogus_name": true
           },
           {
-            "direction": "CONTINUE",
-            "street": "Rue Berri",
-            "distance_m": 45,
-            "bogus_name": false
-          },
-          {
             "direction": "LEFT",
-            "street": "Rue Berri",
-            "distance_m": 16,
+            "street": "Rue Saint-Urbain",
+            "distance_m": 160,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Rue de Rigaud",
-            "distance_m": 98,
+            "street": "Avenue Beaumont",
+            "distance_m": 79,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Rue Saint-Denis",
-            "distance_m": 55,
+            "street": "Rue Clark",
+            "distance_m": 34,
             "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "alley",
+            "distance_m": 80,
+            "bogus_name": true
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Avenue Mozart Ouest",
+            "distance_m": 40,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Boulevard Saint-Laurent",
+            "distance_m": 80,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "alley",
+            "distance_m": 158,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Avenue Casgrain",
+            "distance_m": 2,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Place du Marché-du-Nord",
+            "distance_m": 96,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "path",
+            "distance_m": 54,
+            "bogus_name": true
           }
         ],
         "geometry_sampled_50m": [
           [
-            45.51906,
-            -73.56922
+            45.53057,
+            -73.61427
           ],
           [
-            45.51892,
-            -73.56928
+            45.5309,
+            -73.61395
           ],
           [
-            45.51857,
-            -73.56862
+            45.5311,
+            -73.614
           ],
           [
-            45.51833,
-            -73.56822
+            45.53176,
+            -73.61556
           ],
           [
-            45.51823,
-            -73.56801
+            45.53198,
+            -73.61542
           ],
           [
-            45.51779,
-            -73.56831
+            45.53228,
+            -73.61517
           ],
           [
-            45.51755,
-            -73.56853
+            45.53254,
+            -73.61551
           ],
           [
-            45.51718,
-            -73.56803
+            45.53285,
+            -73.61523
+          ],
+          [
+            45.533,
+            -73.61557
+          ],
+          [
+            45.53326,
+            -73.61544
+          ],
+          [
+            45.5335,
+            -73.61574
+          ],
+          [
+            45.53373,
+            -73.61623
+          ],
+          [
+            45.53405,
+            -73.61593
+          ],
+          [
+            45.53431,
+            -73.61569
+          ],
+          [
+            45.53472,
+            -73.61531
+          ],
+          [
+            45.53491,
+            -73.61513
+          ],
+          [
+            45.53534,
+            -73.61476
+          ],
+          [
+            45.53555,
+            -73.61457
+          ],
+          [
+            45.53591,
+            -73.61506
           ]
         ]
       }
@@ -363,334 +175,334 @@
   },
   {
     "route_id": 1,
-    "duration_sec": 2052,
-    "transfers": 1,
+    "duration_sec": 1093,
+    "transfers": 0,
     "legs": [
       {
         "mode": "WALK",
         "from": "Origin",
-        "from_lat": 45.5196781,
-        "from_lon": -73.6022304,
-        "to": "Bernard / Durocher",
-        "to_lat": 45.522164,
-        "to_lon": -73.606766,
-        "start_time": 1781995728000,
-        "end_time": 1781996122000,
-        "duration_sec": 394.0,
-        "distance_m": 504.32,
-        "route": "",
+        "from_lat": 45.5304417,
+        "from_lon": -73.6139839,
+        "to": "Destination",
+        "to_lat": 45.5359145,
+        "to_lon": -73.6150625,
+        "start_time": 1780574400000,
+        "end_time": 1780574648000,
+        "duration_sec": 1093.0,
+        "distance_m": 1235.43,
+        "route": null,
         "route_short_name": "",
         "walk_steps": [
           {
             "direction": "DEPART",
-            "street": "sidewalk",
-            "distance_m": 504,
-            "bogus_name": true
-          }
-        ],
-        "geometry_sampled_50m": [
-          [
-            45.51955,
-            -73.60234
-          ],
-          [
-            45.52008,
-            -73.60353
-          ],
-          [
-            45.52022,
-            -73.60385
-          ],
-          [
-            45.52032,
-            -73.60406
-          ],
-          [
-            45.52079,
-            -73.60512
-          ],
-          [
-            45.52153,
-            -73.60679
-          ],
-          [
-            45.52168,
-            -73.60712
-          ],
-          [
-            45.52215,
-            -73.60676
-          ]
-        ]
-      },
-      {
-        "mode": "BUS",
-        "from": "Bernard / Durocher",
-        "from_lat": 45.522164,
-        "from_lon": -73.606766,
-        "to": "Laurier / Saint-Denis",
-        "to_lat": 45.526812,
-        "to_lon": -73.589498,
-        "start_time": 1781996122000,
-        "end_time": 1781996580000,
-        "duration_sec": 458.0,
-        "distance_m": 2047.09,
-        "route": "Rockland",
-        "route_short_name": "119",
-        "walk_steps": null,
-        "geometry_sampled_50m": [
-          [
-            45.52219,
-            -73.60683
-          ],
-          [
-            45.52294,
-            -73.60614
-          ],
-          [
-            45.52354,
-            -73.60562
-          ],
-          [
-            45.52436,
-            -73.60489
-          ],
-          [
-            45.52478,
-            -73.60449
-          ],
-          [
-            45.52494,
-            -73.60435
-          ],
-          [
-            45.52552,
-            -73.6038
-          ],
-          [
-            45.52596,
-            -73.60341
-          ],
-          [
-            45.52612,
-            -73.60327
-          ],
-          [
-            45.52461,
-            -73.60001
-          ],
-          [
-            45.52525,
-            -73.59939
-          ],
-          [
-            45.52572,
-            -73.599
-          ],
-          [
-            45.52655,
-            -73.5983
-          ],
-          [
-            45.52709,
-            -73.59782
-          ],
-          [
-            45.52753,
-            -73.59741
-          ],
-          [
-            45.52625,
-            -73.5944
-          ],
-          [
-            45.52565,
-            -73.59313
-          ],
-          [
-            45.52486,
-            -73.5914
-          ],
-          [
-            45.5251,
-            -73.59096
-          ],
-          [
-            45.52552,
-            -73.59061
-          ],
-          [
-            45.52578,
-            -73.5904
-          ],
-          [
-            45.52625,
-            -73.59001
-          ],
-          [
-            45.52683,
-            -73.58956
-          ]
-        ]
-      },
-      {
-        "mode": "WALK",
-        "from": "Laurier / Saint-Denis",
-        "from_lat": 45.526812,
-        "from_lon": -73.589498,
-        "to": "Station Laurier",
-        "to_lat": 45.527436,
-        "to_lon": -73.587002,
-        "start_time": 1781996580000,
-        "end_time": 1781996957000,
-        "duration_sec": 377.0,
-        "distance_m": 292.85,
-        "route": "",
-        "route_short_name": "",
-        "walk_steps": [
-          {
-            "direction": "DEPART",
-            "street": "Avenue Laurier Est",
-            "distance_m": 4,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue Saint-Denis",
-            "distance_m": 96,
-            "bogus_name": false
-          },
-          {
-            "direction": "UTURN_LEFT",
-            "street": "Rue Saint-Denis",
-            "distance_m": 14,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue Chapais",
-            "distance_m": 73,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue Rivard",
-            "distance_m": 31,
+            "street": "Rue Saint-Zotique Ouest",
+            "distance_m": 46,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Boulevard Saint-Joseph Est",
-            "distance_m": 75,
+            "street": "path",
+            "distance_m": 15,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Saint-Urbain",
+            "distance_m": 160,
             "bogus_name": false
-          }
-        ],
-        "geometry_sampled_50m": [
-          [
-            45.52679,
-            -73.5895
-          ],
-          [
-            45.52671,
-            -73.58921
-          ],
-          [
-            45.52637,
-            -73.58846
-          ],
-          [
-            45.52651,
-            -73.58832
-          ],
-          [
-            45.52671,
-            -73.58814
-          ],
-          [
-            45.5269,
-            -73.58798
-          ],
-          [
-            45.52687,
-            -73.58755
-          ],
-          [
-            45.52738,
-            -73.58704
-          ]
-        ]
-      },
-      {
-        "mode": "SUBWAY",
-        "from": "Station Laurier",
-        "from_lat": 45.527436,
-        "from_lon": -73.587002,
-        "to": "Station Sherbrooke",
-        "to_lat": 45.51906,
-        "to_lon": -73.569217,
-        "start_time": 1781997180000,
-        "end_time": 1781997360000,
-        "duration_sec": 180.0,
-        "distance_m": 1669.74,
-        "route": "Line 2 - Orange",
-        "route_short_name": "2",
-        "walk_steps": null,
-        "geometry_sampled_50m": [
-          [
-            45.52743,
-            -73.58701
-          ],
-          [
-            45.52493,
-            -73.58196
-          ],
-          [
-            45.52481,
-            -73.58171
-          ],
-          [
-            45.51906,
-            -73.56922
-          ]
-        ]
-      },
-      {
-        "mode": "WALK",
-        "from": "Station Sherbrooke",
-        "from_lat": 45.51906,
-        "from_lon": -73.569217,
-        "to": "Destination",
-        "to_lat": 45.517151,
-        "to_lon": -73.5680582,
-        "start_time": 1781997360000,
-        "end_time": 1781997780000,
-        "duration_sec": 420.0,
-        "distance_m": 311.58,
-        "route": "",
-        "route_short_name": "",
-        "walk_steps": [
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Avenue Beaumont",
+            "distance_m": 79,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Clark",
+            "distance_m": 34,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "alley",
+            "distance_m": 80,
+            "bogus_name": true
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Avenue Mozart Ouest",
+            "distance_m": 40,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "Boulevard Saint-Laurent",
+            "distance_m": 34,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Avenue Mozart Est",
+            "distance_m": 349,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "path",
+            "distance_m": 14,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Avenue Henri-Julien",
+            "distance_m": 111,
+            "bogus_name": false
+          },
           {
             "direction": "DEPART",
-            "street": "Rue Cherrier",
+            "street": "Avenue Henri-Julien",
+            "distance_m": 76,
+            "bogus_name": false
+          },
+          {
+            "direction": "SLIGHTLY_LEFT",
+            "street": "sidewalk",
+            "distance_m": 2,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Jean-Talon Est",
             "distance_m": 7,
             "bogus_name": false
           },
           {
             "direction": "LEFT",
-            "street": "Rue Berri",
-            "distance_m": 14,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Berri",
-            "distance_m": 63,
+            "street": "Avenue Henri-Julien",
+            "distance_m": 34,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Rue de Malines",
-            "distance_m": 6,
+            "street": "Place Vieux Marché Nord",
+            "distance_m": 94,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "path",
+            "distance_m": 61,
+            "bogus_name": true
+          }
+        ],
+        "geometry_sampled_50m": [
+          [
+            45.53057,
+            -73.61427
+          ],
+          [
+            45.5309,
+            -73.61395
+          ],
+          [
+            45.5311,
+            -73.614
+          ],
+          [
+            45.53176,
+            -73.61556
+          ],
+          [
+            45.53198,
+            -73.61542
+          ],
+          [
+            45.53228,
+            -73.61517
+          ],
+          [
+            45.53254,
+            -73.61551
+          ],
+          [
+            45.53285,
+            -73.61523
+          ],
+          [
+            45.533,
+            -73.61557
+          ],
+          [
+            45.53326,
+            -73.61544
+          ],
+          [
+            45.5335,
+            -73.61574
+          ],
+          [
+            45.53382,
+            -73.61544
+          ],
+          [
+            45.53406,
+            -73.61522
+          ],
+          [
+            45.53424,
+            -73.61505
+          ],
+          [
+            45.53449,
+            -73.61481
+          ],
+          [
+            45.53469,
+            -73.61463
+          ],
+          [
+            45.53513,
+            -73.61422
+          ],
+          [
+            45.53562,
+            -73.61376
+          ],
+          [
+            45.53576,
+            -73.61374
+          ],
+          [
+            45.53611,
+            -73.61344
+          ],
+          [
+            45.53675,
+            -73.61455
+          ],
+          [
+            45.53711,
+            -73.61535
+          ],
+          [
+            45.537,
+            -73.61524
+          ],
+          [
+            45.53687,
+            -73.61511
+          ],
+          [
+            45.53661,
+            -73.61535
+          ],
+          [
+            45.53641,
+            -73.61553
+          ],
+          [
+            45.53621,
+            -73.61572
+          ],
+          [
+            45.53593,
+            -73.6151
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "route_id": 2,
+    "duration_sec": 1119,
+    "transfers": 0,
+    "legs": [
+      {
+        "mode": "WALK",
+        "from": "Origin",
+        "from_lat": 45.5304417,
+        "from_lon": -73.6139839,
+        "to": "Destination",
+        "to_lat": 45.5359145,
+        "to_lon": -73.6150625,
+        "start_time": 1780574400000,
+        "end_time": 1780574954000,
+        "duration_sec": 1119.0,
+        "distance_m": 1246.2199999999998,
+        "route": null,
+        "route_short_name": "",
+        "walk_steps": [
+          {
+            "direction": "DEPART",
+            "street": "Rue Saint-Zotique Ouest",
+            "distance_m": 46,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Rue Saint-Urbain",
+            "distance_m": 50,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "sidewalk",
+            "distance_m": 16,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Saint-Zotique Ouest",
+            "distance_m": 105,
+            "bogus_name": false
+          },
+          {
+            "direction": "SLIGHTLY_RIGHT",
+            "street": "path",
+            "distance_m": 68,
+            "bogus_name": true
+          },
+          {
+            "direction": "LEFT",
+            "street": "Rue Saint-Zotique Est",
+            "distance_m": 68,
+            "bogus_name": false
+          },
+          {
+            "direction": "UTURN_LEFT",
+            "street": "Rue Saint-Zotique Est",
+            "distance_m": 75,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Avenue Casgrain",
+            "distance_m": 35,
+            "bogus_name": false
+          },
+          {
+            "direction": "LEFT",
+            "street": "alley",
+            "distance_m": 81,
+            "bogus_name": true
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Avenue De Gaspé",
+            "distance_m": 42,
+            "bogus_name": false
+          },
+          {
+            "direction": "DEPART",
+            "street": "Avenue De Gaspé",
+            "distance_m": 77,
+            "bogus_name": false
+          },
+          {
+            "direction": "RIGHT",
+            "street": "Rue Saint-Zotique Est",
+            "distance_m": 51,
             "bogus_name": false
           },
           {
@@ -700,511 +512,172 @@
             "bogus_name": true
           },
           {
-            "direction": "CONTINUE",
-            "street": "Rue Berri",
-            "distance_m": 45,
-            "bogus_name": false
-          },
-          {
             "direction": "LEFT",
-            "street": "Rue Berri",
-            "distance_m": 16,
+            "street": "Rue Alma",
+            "distance_m": 355,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Rue de Rigaud",
-            "distance_m": 98,
+            "street": "Avenue Mozart Est",
+            "distance_m": 24,
             "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Saint-Denis",
-            "distance_m": 55,
-            "bogus_name": false
-          }
-        ],
-        "geometry_sampled_50m": [
-          [
-            45.51906,
-            -73.56922
-          ],
-          [
-            45.51892,
-            -73.56928
-          ],
-          [
-            45.51857,
-            -73.56862
-          ],
-          [
-            45.51833,
-            -73.56822
-          ],
-          [
-            45.51823,
-            -73.56801
-          ],
-          [
-            45.51779,
-            -73.56831
-          ],
-          [
-            45.51755,
-            -73.56853
-          ],
-          [
-            45.51718,
-            -73.56803
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "route_id": 2,
-    "duration_sec": 2083,
-    "transfers": 0,
-    "legs": [
-      {
-        "mode": "WALK",
-        "from": "Origin",
-        "from_lat": 45.5196781,
-        "from_lon": -73.6022304,
-        "to": "Saint-Urbain / Saint-Viateur",
-        "to_lat": 45.524413,
-        "to_lon": -73.599664,
-        "start_time": 1781995298000,
-        "end_time": 1781995947000,
-        "duration_sec": 649.0,
-        "distance_m": 739.94,
-        "route": "",
-        "route_short_name": "",
-        "walk_steps": [
-          {
-            "direction": "DEPART",
-            "street": "sidewalk",
-            "distance_m": 142,
-            "bogus_name": true
-          },
-          {
-            "direction": "RIGHT",
-            "street": "sidewalk",
-            "distance_m": 166,
-            "bogus_name": true
-          },
-          {
-            "direction": "RIGHT",
-            "street": "sidewalk",
-            "distance_m": 97,
-            "bogus_name": true
-          },
-          {
-            "direction": "CONTINUE",
-            "street": "Rue Saint-Viateur Ouest",
-            "distance_m": 76,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "sidewalk",
-            "distance_m": 1,
-            "bogus_name": true
-          },
-          {
-            "direction": "UTURN_RIGHT",
-            "street": "sidewalk",
-            "distance_m": 15,
-            "bogus_name": true
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Saint-Viateur Ouest",
-            "distance_m": 136,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "sidewalk",
-            "distance_m": 15,
-            "bogus_name": true
-          },
-          {
-            "direction": "RIGHT",
-            "street": "sidewalk",
-            "distance_m": 2,
-            "bogus_name": true
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue Saint-Viateur Ouest",
-            "distance_m": 66,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "sidewalk",
-            "distance_m": 26,
-            "bogus_name": true
-          }
-        ],
-        "geometry_sampled_50m": [
-          [
-            45.51955,
-            -73.60234
-          ],
-          [
-            45.52008,
-            -73.60353
-          ],
-          [
-            45.52022,
-            -73.60385
-          ],
-          [
-            45.52055,
-            -73.6036
-          ],
-          [
-            45.52074,
-            -73.60344
-          ],
-          [
-            45.52112,
-            -73.60309
-          ],
-          [
-            45.52134,
-            -73.60289
-          ],
-          [
-            45.52149,
-            -73.60274
-          ],
-          [
-            45.52179,
-            -73.60247
-          ],
-          [
-            45.52207,
-            -73.60221
-          ],
-          [
-            45.52224,
-            -73.60205
-          ],
-          [
-            45.52251,
-            -73.60182
-          ],
-          [
-            45.52279,
-            -73.60157
-          ],
-          [
-            45.52314,
-            -73.60125
-          ],
-          [
-            45.52335,
-            -73.60104
-          ],
-          [
-            45.52368,
-            -73.60075
-          ],
-          [
-            45.52392,
-            -73.60052
-          ],
-          [
-            45.52406,
-            -73.60039
-          ],
-          [
-            45.52427,
-            -73.6002
-          ],
-          [
-            45.52452,
-            -73.59997
-          ],
-          [
-            45.52442,
-            -73.59966
-          ]
-        ]
-      },
-      {
-        "mode": "BUS",
-        "from": "Saint-Urbain / Saint-Viateur",
-        "from_lat": 45.524413,
-        "from_lon": -73.599664,
-        "to": "Saint-Urbain / Prince-Arthur",
-        "to_lat": 45.512689,
-        "to_lon": -73.573817,
-        "start_time": 1781995947000,
-        "end_time": 1781996646000,
-        "duration_sec": 699.0,
-        "distance_m": 2399.21,
-        "route": "Saint-Laurent",
-        "route_short_name": "55",
-        "walk_steps": null,
-        "geometry_sampled_50m": [
-          [
-            45.52444,
-            -73.59964
-          ],
-          [
-            45.52359,
-            -73.59775
-          ],
-          [
-            45.52265,
-            -73.59562
-          ],
-          [
-            45.52251,
-            -73.59533
-          ],
-          [
-            45.52227,
-            -73.59479
-          ],
-          [
-            45.52184,
-            -73.5939
-          ],
-          [
-            45.52169,
-            -73.59359
-          ],
-          [
-            45.52117,
-            -73.59253
-          ],
-          [
-            45.52024,
-            -73.59047
-          ],
-          [
-            45.52009,
-            -73.59014
-          ],
-          [
-            45.51887,
-            -73.58749
-          ],
-          [
-            45.51871,
-            -73.58712
-          ],
-          [
-            45.51785,
-            -73.58518
-          ],
-          [
-            45.51773,
-            -73.58491
-          ],
-          [
-            45.5168,
-            -73.58283
-          ],
-          [
-            45.51663,
-            -73.58245
-          ],
-          [
-            45.51579,
-            -73.58062
-          ],
-          [
-            45.51525,
-            -73.57947
-          ],
-          [
-            45.51481,
-            -73.57849
-          ],
-          [
-            45.5146,
-            -73.57804
-          ],
-          [
-            45.51418,
-            -73.57709
-          ],
-          [
-            45.51392,
-            -73.57651
-          ],
-          [
-            45.51377,
-            -73.57618
-          ],
-          [
-            45.51356,
-            -73.57568
-          ],
-          [
-            45.51317,
-            -73.57484
-          ],
-          [
-            45.51271,
-            -73.5738
-          ]
-        ]
-      },
-      {
-        "mode": "WALK",
-        "from": "Saint-Urbain / Prince-Arthur",
-        "from_lat": 45.512689,
-        "from_lon": -73.573817,
-        "to": "Destination",
-        "to_lat": 45.517151,
-        "to_lon": -73.5680582,
-        "start_time": 1781996646000,
-        "end_time": 1781997381000,
-        "duration_sec": 735.0,
-        "distance_m": 777.54,
-        "route": "",
-        "route_short_name": "",
-        "walk_steps": [
-          {
-            "direction": "DEPART",
-            "street": "sidewalk",
-            "distance_m": 7,
-            "bogus_name": true
-          },
-          {
-            "direction": "UTURN_LEFT",
-            "street": "sidewalk",
-            "distance_m": 94,
-            "bogus_name": true
-          },
-          {
-            "direction": "UTURN_LEFT",
-            "street": "sidewalk",
-            "distance_m": 70,
-            "bogus_name": true
           },
           {
             "direction": "LEFT",
             "street": "path",
-            "distance_m": 19,
+            "distance_m": 40,
             "bogus_name": true
           },
           {
             "direction": "LEFT",
-            "street": "Rue Prince-Arthur Est",
-            "distance_m": 288,
+            "street": "Place du Marché-du-Nord",
+            "distance_m": 52,
             "bogus_name": false
           },
           {
             "direction": "RIGHT",
-            "street": "Avenue Laval",
-            "distance_m": 29,
-            "bogus_name": false
-          },
-          {
-            "direction": "LEFT",
-            "street": "Rue du Square-Saint-Louis",
-            "distance_m": 203,
-            "bogus_name": false
-          },
-          {
-            "direction": "RIGHT",
-            "street": "Rue Saint-Denis",
-            "distance_m": 68,
-            "bogus_name": false
+            "street": "path",
+            "distance_m": 54,
+            "bogus_name": true
           }
         ],
         "geometry_sampled_50m": [
           [
-            45.51268,
-            -73.57382
+            45.53057,
+            -73.61427
           ],
           [
-            45.51277,
-            -73.57364
+            45.5309,
+            -73.61395
           ],
           [
-            45.51307,
-            -73.57337
+            45.53079,
+            -73.61365
           ],
           [
-            45.51331,
-            -73.57315
+            45.53068,
+            -73.61338
           ],
           [
-            45.51361,
-            -73.57288
+            45.53082,
+            -73.61324
           ],
           [
-            45.51378,
-            -73.57273
+            45.53103,
+            -73.61303
           ],
           [
-            45.51392,
-            -73.5726
+            45.53127,
+            -73.6128
           ],
           [
-            45.51433,
-            -73.57222
+            45.53156,
+            -73.61251
           ],
           [
-            45.51455,
-            -73.57203
+            45.53168,
+            -73.61219
           ],
           [
-            45.51477,
-            -73.57183
+            45.53169,
+            -73.61195
           ],
           [
-            45.51521,
-            -73.57145
+            45.53184,
+            -73.61181
           ],
           [
-            45.51547,
-            -73.5712
+            45.53232,
+            -73.61137
           ],
           [
-            45.51566,
-            -73.57102
+            45.53247,
+            -73.61124
           ],
           [
-            45.51585,
-            -73.57085
+            45.53288,
+            -73.61086
           ],
           [
-            45.5161,
-            -73.57061
+            45.53273,
+            -73.61049
           ],
           [
-            45.51605,
-            -73.5703
+            45.53304,
+            -73.61016
           ],
           [
-            45.51647,
-            -73.56982
+            45.53323,
+            -73.60998
           ],
           [
-            45.51703,
-            -73.5693
+            45.53312,
+            -73.60944
           ],
           [
-            45.51743,
-            -73.56893
+            45.53331,
+            -73.60987
           ],
           [
-            45.51745,
-            -73.56862
+            45.53349,
+            -73.61025
           ],
           [
-            45.51718,
-            -73.56803
+            45.53388,
+            -73.60993
+          ],
+          [
+            45.53401,
+            -73.61002
+          ],
+          [
+            45.53419,
+            -73.61041
+          ],
+          [
+            45.53459,
+            -73.6113
+          ],
+          [
+            45.53484,
+            -73.61184
+          ],
+          [
+            45.53505,
+            -73.61232
+          ],
+          [
+            45.53524,
+            -73.61272
+          ],
+          [
+            45.53548,
+            -73.61324
+          ],
+          [
+            45.53565,
+            -73.61362
+          ],
+          [
+            45.53577,
+            -73.61376
+          ],
+          [
+            45.536,
+            -73.61406
+          ],
+          [
+            45.53585,
+            -73.61429
+          ],
+          [
+            45.53565,
+            -73.61448
+          ],
+          [
+            45.53591,
+            -73.61506
           ]
         ]
       }
