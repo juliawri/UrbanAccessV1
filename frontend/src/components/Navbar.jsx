@@ -8,7 +8,6 @@ import './Navbar.css'
 export default function Navbar({ onMapClick }) {
   const [user, setUser] = useState(null)
   const [showAuth, setShowAuth] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
   const t = useT()
 
   useEffect(() => {
@@ -20,11 +19,9 @@ export default function Navbar({ onMapClick }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const closeMenu = () => setMenuOpen(false)
-
   return (
     <>
-      <nav className={`navbar${menuOpen ? ' navbar--open' : ''}`}>
+      <nav className="navbar">
         <div className="navbar-links">
           <Link to="/" onClick={onMapClick}>{t('nav_map')}</Link>
           <Link to="/about">{t('nav_about')}</Link>
@@ -41,32 +38,6 @@ export default function Navbar({ onMapClick }) {
           )}
         </div>
 
-        <button
-          className="navbar-hamburger"
-          aria-label="Toggle menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(o => !o)}
-        >
-          <span /><span /><span />
-        </button>
-
-        {menuOpen && (
-          <div className="navbar-mobile-menu">
-            <Link to="/" onClick={() => { onMapClick?.(); closeMenu() }}>{t('nav_map')}</Link>
-            <Link to="/about" onClick={closeMenu}>{t('nav_about')}</Link>
-            <Link to="/settings" onClick={closeMenu}>{t('nav_settings')}</Link>
-            <div className="navbar-mobile-auth">
-              {user ? (
-                <>
-                  <span className="navbar-mobile-user">{user.email}</span>
-                  <button className="navbar-auth-btn" onClick={() => { supabase.auth.signOut(); closeMenu() }}>{t('nav_signout')}</button>
-                </>
-              ) : (
-                <button className="navbar-auth-btn" onClick={() => { setShowAuth(true); closeMenu() }}>{t('nav_signin')}</button>
-              )}
-            </div>
-          </div>
-        )}
       </nav>
 
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
