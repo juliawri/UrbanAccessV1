@@ -3,6 +3,7 @@
 
 Every day, people travel to work, school, appointments, community events, restaurants, and grocery stores. Most navigation apps help us choose a route by optimizing for distance or travel time. For many people with mobility impairments, however, the shortest route is not always the most accessible.
 A route that appears simple on a map may include a steep incline, a narrow sidewalk, construction barriers, poor pavement conditions, or other obstacles that make travel difficult or impossible. Information about these barriers is often unavailable before a journey begins, leaving many people uncertain about whether they can safely and comfortably reach their destination.
+
 UrbanAccess was created to help address that gap.
 Developed during AI4Good Lab 2026, UrbanAccess is an AI-powered navigation tool designed to recommend routes based not only on where a user wants to go, but also on their individual accessibility needs. By combining community input, route planning, computer vision, and generative AI, we set out to build a more personalized approach to navigating urban environments. Alongside its focus on responsible and inclusive AI, UrbanAccess was built using reproducible, containerized workflows to support collaborative machine learning development.
 
@@ -25,7 +26,8 @@ Developed during AI4Good Lab 2026, UrbanAccess is an AI-powered navigation tool 
 
 From the beginning, we wanted UrbanAccess to be guided by the experiences of the people it was intended to serve.
 We met with accessibility advocates, urban planning researchers, and community leaders working to improve accessibility across Montréal. Their insights helped us better understand the many ways the built environment affects mobility and independence.
-To broaden that perspective, we also contacted more than thirty community organizations and distributed a survey to gather feedback from individuals with lived experience navigating mobility challenges. Participants shared the barriers they encounter, the features they consider most important when evaluating a route, and the ways current navigation tools fall short.
+To further broaden that perspective, we also contacted more than thirty community organizations and distributed a survey to gather feedback from individuals with lived experience navigating mobility challenges. Participants shared the barriers they encounter, the features they consider most important when evaluating a route, and the ways current navigation tools fall short.
+
 One message emerged consistently throughout these conversations: accessibility is highly individual. A route that works well for one person may be unsuitable for another. That insight became the foundation of UrbanAccess.
 
 ### Building an Accessibility Dataset
@@ -39,21 +41,21 @@ This dataset became the foundation for training the computer vision model and ev
 
 UrbanAccess combines route planning, computer vision, multimodal AI, and large language models into a multi-stage accessibility recommendation pipeline.
 Key project accomplishments include:
-Created an accessibility dataset spanning more than 14,000 locations across Montréal using Mapillary imagery, Gemini-generated accessibility labels, and human validation
-Fine-tuned a Vision Transformer (MAE) classifier to assess sidewalk accessibility from street level images
-Built a multi-stage AI pipeline combining Vision Transformers, Gemini Vision, and Qwen to generate accessibility aware route recommendations
-Combined computer vision outputs, environmental accessibility features and user mobility profiles to generate personalized recommendations
-Designed a feedback mechanism to support future personalization and continuous system improvement
-Built and presented a working prototype during AI4Good Lab Demo Day 2026
+- Created an accessibility dataset spanning more than 14,000 locations across Montréal using Mapillary imagery, Gemini-generated accessibility labels, and human validation
+- Fine-tuned a Vision Transformer (MAE) classifier to assess sidewalk accessibility from street level images
+- Built a multi-stage AI pipeline combining Vision Transformers, Gemini Vision, and Qwen to generate accessibility aware route recommendations
+- Combined computer vision outputs, environmental accessibility features and user mobility profiles to generate personalized recommendations
+- Designed a feedback mechanism to support future personalization and continuous system improvement
+- Built and presented a working prototype during AI4Good Lab Demo Day 2026
 
 
 ### System Architecture
 
 UrbanAcess uses a multi-stage AI pipeline in which specialized models perform complementary tasks. A fine-tuned Vision Transformer (MAE) provides rapid image classification, Gemini Vision performs richer, more detailed accessibility analysis, and Qwen synthesizes the results with user preferences to generate personalized route recommendations.
 
-User Input
+User Input:
 origin, destination, travel preferences
-    ↓
+    ↓   
 Route Generation
 OpenTripPlanner generates candidate routes
     ↓
@@ -81,136 +83,113 @@ Optional user feedback supports continuous improvement of recommendations
 
 #### 1. Street-Level Image Collection
 
-#### We collected street-level imagery from Mapillary across more than 14,000 Montreal locations, sampled near transit stations and across the island. Each image was stored with latitude, longitude, and view-angle metadata so that accessibility predictions could later be mapped back onto route segments.
+We collected street-level imagery from Mapillary across more than 14,000 Montreal locations, sampled near transit stations and across the island. Each image was stored with latitude, longitude, and view-angle metadata so that accessibility predictions could later be mapped back onto route segments.
 
 #### 2. AI-Assisted Accessibility Labelling
 
-#### Because manually labelling tens of thousands of images across multiple mobility aid types was not feasible, we used Gemini 2.5 Flash to generate accessibility scores. Each image was rated on a 0–4 scale for six mobility aid categories:
+Because manually labelling tens of thousands of images across multiple mobility aid types was not feasible, we used Gemini 2.5 Flash to generate accessibility scores. Each image was rated on a 0–4 scale for six mobility aid categories:
 
 
-### Manual wheelchair
+- Manual wheelchair
+- Electric wheelchair
+- Walker
+- Walking cane
+- Mobility scooter
+- Mobility impairment without aid
 
-
-### Electric wheelchair
-
-
-### Walker
-
-
-### Walking cane
-
-
-### Mobility scooter
-
-
-### Mobility impairment without aid
-
-
-### This produced 42,342 labelled rows, with 31,887 usable sidewalk-quality examples.
+This produced 42,342 labelled rows, with 31,887 usable sidewalk-quality examples.
 
 #### 3. Human Calibration and Binarization
 
-#### To reduce bias from raw AI-generated labels, we calibrated Gemini scores against human survey ratings collected from Montreal community members and disability advocates. Survey statistics were used to z-score normalize the AI labels, then convert them into binary accessible/inaccessible labels.
+To reduce bias from raw AI-generated labels, we calibrated Gemini scores against human survey ratings collected from Montreal community members and disability advocates. Survey statistics were used to z-score normalize the AI labels, then convert them into binary accessible/inaccessible labels.
 
+z = (gemini_score − μ_gemini) / σ_gemini  
+recalibrated_score = z × σ_survey + μ_survey  
+binary_label = 1 if recalibrated_score ≥ 2.5 else 0  
 
-#### z = (gemini_score − μ_gemini) / σ_gemini
-
-
-#### recalibrated_score = z × σ_survey + μ_survey
-
-
-#### binary_label = 1 if recalibrated_score ≥ 2.5 else 0
-
-
-#### This made the final labels reflect human accessibility judgements rather than unadjusted model outputs.
+This made the final labels reflect human accessibility judgements rather than unadjusted model outputs.
 
 #### 4. MAE Pre-Training
 
-#### Before supervised training, we pre-trained a Vision Transformer using Masked Autoencoder methodology on approximately 69,000 unlabelled street-level images from Montreal, Chicago, and Seattle. This helped the model learn domain-specific visual structure such as sidewalks, curbs, ramps, road edges, and urban surfaces before being fine-tuned for accessibility classification.
+Before supervised training, we pre-trained a Vision Transformer using Masked Autoencoder methodology on approximately 69,000 unlabelled street-level images from Montreal, Chicago, and Seattle. This helped the model learn domain-specific visual structure such as sidewalks, curbs, ramps, road edges, and urban surfaces before being fine-tuned for accessibility classification.
 
 
-#### The MAE model completed 95 epochs and reached a final reconstruction loss of approximately 0.38.
+The MAE model completed 95 epochs and reached a final reconstruction loss of approximately 0.38.
 
 #### 5. Vision Transformer Fine-Tuning
 
-#### The MAE-pretrained Vision Transformer was fine-tuned on the labelled Montreal accessibility dataset. The model uses six parallel binary classification heads, one for each supported mobility aid type, allowing a single image to be scored differently depending on the user’s mobility needs.
+The MAE-pretrained Vision Transformer was fine-tuned on the labelled Montreal accessibility dataset. The model uses six parallel binary classification heads, one for each supported mobility aid type, allowing a single image to be scored differently depending on the user’s mobility needs.
 
 
-#### The deployed model was selected from six fine-tuning passes. The best deployed pass achieved:
+The deployed model was selected from six fine-tuning passes. The best deployed pass achieved:
 
 
-#### Validation accuracy: 76.1%
-
-
-#### Mean F1 score: 72.6%
+- Validation accuracy: 76.1%
+- Mean F1 score: 72.6%
 
 #### 6. VLM Secondary Scoring
 
-#### At inference time, the Vision Transformer provides fast accessibility scoring for route imagery. The system then sends the most uncertain or inaccessible route points to Gemini 2.5 Flash for richer contextual analysis. This produces natural-language justifications for barriers such as steep slopes, missing curb cuts, construction, uneven pavement, or obstructed sidewalks.
+At inference time, the Vision Transformer provides fast accessibility scoring for route imagery. The system then sends the most uncertain or inaccessible route points to Gemini 2.5 Flash for richer contextual analysis. This produces natural-language justifications for barriers such as steep slopes, missing curb cuts, construction, uneven pavement, or obstructed sidewalks.
 
 #### 7. Route Recommendation Synthesis
 
-#### For each user query, Urban Access generates multiple candidate routes, retrieves street-level images along each path, scores route segments with the ViT, enriches critical points with VLM reasoning, and combines the results with auxiliary data including:
+For each user query, Urban Access generates multiple candidate routes, retrieves street-level images along each path, scores route segments with the ViT, enriches critical points with VLM reasoning, and combines the results with auxiliary data including:
 
 
-#### Pedestrian safety data
+- Pedestrian safety data
 
+- Construction data
 
-#### Construction data
+- Gradient and elevation data
 
+- User feedback from similar journeys
 
-#### Gradient and elevation data
-
-
-#### User feedback from similar journeys
-
-
-#### An open-source LLM then synthesizes these signals into a ranked route recommendation with plain-language explanations and warnings.
+An open-source LLM then synthesizes these signals into a ranked route recommendation with plain-language explanations and warnings.
 
 
 
 ### Technology Stack
 
-#### Backend
-Python
-FastAPI
-Uvicorn
-SQLAlchemy
-SQLite
-Pydantic
-python-dotenv
-python-jose
-#### AI / Machine Learning
-PyTorch
-Custom ViT-B/16 with MAE pre-training
-Google Gemini 2.5 Flash
-HuggingFace models
-Sentence Transformers
-FAISS
-scikit-learn
-NumPy
-Pandas
-Pillow
-#### Routing and Geospatial Data
-OpenStreetMap
-OSRM / OpenStreetMap-based routing
-OpenTripPlanner 2.5
-GTFS / STM transit data
-Polyline route geometry
-Mapillary street-level imagery
-#### Frontend and Mapping
-HTML
-CSS
-JavaScript
-Leaflet
-Leaflet Heat
+#### Backend  
+Python  
+FastAPI  
+Uvicorn  
+SQLAlchemy  
+SQLite  
+Pydantic  
+python-dotenv  
+python-jose  
+#### AI / Machine Learning  
+PyTorch  
+Custom ViT-B/16 with MAE pre-training  
+Google Gemini 2.5 Flash  
+HuggingFace models  
+Sentence Transformers  
+FAISS  
+scikit-learn  
+NumPy  
+Pandas  
+Pillow  
+#### Routing and Geospatial Data  
+OpenStreetMap  
+OSRM / OpenStreetMap-based routing  
+OpenTripPlanner 2.5  
+GTFS / STM transit data  
+Polyline route geometry  
+Mapillary street-level imagery  
+#### Frontend and Mapping  
+HTML  
+CSS  
+JavaScript  
+Leaflet  
+Leaflet Heat  
 CARTO / OpenStreetMap basemaps
-#### Data Storage and User Feedback
-Supabase
-Row-level access controls
-Secure user account storage
-Proximity-weighted feedback integration
-Account deletion and user data control
+#### Data Storage and User Feedback  
+Supabase  
+Row-level access controls  
+Secure user account storage  
+Proximity-weighted feedback integration  
+Account deletion and user data control  
 
 
 ### Development Infrastructure
